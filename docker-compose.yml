@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    container_name: hamper-web
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/hampr:/app
+    environment:
+      - DEBUG=1
