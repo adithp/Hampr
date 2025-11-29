@@ -1,0 +1,150 @@
+{% extends "c_admin/page_base.html" %}
+
+{% block title %}User Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 25px;
+    }
+
+    .search-bar {
+        margin-bottom: 22px;
+    }
+
+    .search-input {
+        width: 280px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(15, 15, 15, 0.08);
+    }
+
+    thead {
+        background: #f7f4f2;
+    }
+
+    th {
+        padding: 14px;
+        text-align: left;
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid #eee;
+    }
+
+    td {
+        padding: 14px;
+        font-size: 14px;
+        border-bottom: 1px solid #f2f2f2;
+    }
+
+    .badge {
+        padding: 5px 10px;
+        border-radius: 6px;
+        color: white;
+        font-size: 12px;
+    }
+
+    .active-badge {
+        background: #2ecc71;
+    }
+
+    .blocked-badge {
+        background: #e74c3c;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        margin-right: 6px;
+    }
+
+    .btn-block {
+        background: #e67e22;
+        color: white;
+    }
+
+    .btn-unblock {
+        background: #2ecc71;
+        color: white;
+    }
+
+    .btn-delete {
+        background: #e74c3c;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title">User Management</h1>
+
+<!-- Search Bar -->
+<form method="GET" action="" class="search-bar">
+    <input type="text"  name="q" class="search-input" placeholder="Search by username or email..." value="{{request.GET.q}}">
+    <input type="submit" hidden>
+</form>
+
+<!-- User Table -->
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Joined Date And Time </th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for cuser in users_list %}
+        <tr>
+            <td>{{cuser.username}}</td>
+            <td>{{cuser.email}}</td>
+            <td>{{cuser.date_joined}}</td>
+            <td>
+                {% if cuser.is_active %}
+                <span class="badge active-badge">Active</span>
+                {% else %}
+                <span class="badge blocked-badge">Blocked</span>
+                {% endif %}
+
+            </td>
+            <td>
+                {% if cuser.is_active %}
+                <a style="text-decoration: none;" href="{% url 'cadmin:user_block' cuser.id %}"
+                    class="btn btn-block">Block</a>
+                {% else %}
+                <a style="text-decoration: none;" href="{% url 'cadmin:user_block' cuser.id %}"
+                    class="btn btn-unblock">Unblock</a>
+                {% endif %}
+
+            </td>
+        </tr>
+        {% endfor %}
+
+
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

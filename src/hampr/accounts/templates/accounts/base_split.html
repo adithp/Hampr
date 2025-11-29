@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>{% block title %}Hampr{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+    <div class="auth-split">
+        <div class="left">
+            <!-- kept original local path you uploaded -->
+            <img src="{% static 'accounts/images/landright1.png' %}" alt="Hampr image">
+        </div>
+
+        <div class="right">
+            <div class="card-area">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    <script>window.addEventListener("pageshow", function (e) {
+            if (e.persisted) {
+                document.querySelector("form").reset();
+            }
+        });</script>
+</body>
+
+</html>

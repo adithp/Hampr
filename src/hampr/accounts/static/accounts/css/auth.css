@@ -1,0 +1,644 @@
+/* ------------ Global reset & fonts ------------ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body,
+input,
+button {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* small helpers */
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: #C78A3B;
+    margin-bottom: 24px;
+}
+
+/* ---------- SPLIT LAYOUT (login & otp) ---------- */
+.auth-split {
+    display: flex;
+    min-height: 100vh;
+    background: #F5F1ED;
+}
+
+.auth-split .left,
+.auth-split .right {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-split .left img {
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0)
+    }
+
+    50% {
+        transform: translateY(-10px)
+    }
+}
+
+.auth-split .card-area {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* login card */
+.login-card {
+    width: 420px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 48px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-card h2 {
+    font-size: 20px;
+    color: #111;
+    margin-bottom: 24px;
+}
+
+.login-card form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.login-card input {
+    border: none;
+    border-bottom: 2px solid #111;
+    padding: 10px 4px;
+    font-size: 14px;
+    outline: none;
+    color: #333;
+}
+
+.login-card input::placeholder {
+    color: #888;
+}
+
+/* otp card (split) */
+.otp-card {
+    width: 420px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    padding: 48px;
+    text-align: center;
+}
+
+.otp-card h2 {
+    font-size: 20px;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.otp-card .subtext {
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.otp-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.otp-inputs input {
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+    border: none;
+    border-bottom: 3px solid #111;
+    background: transparent;
+    outline: none;
+}
+
+/* common split styles */
+.btn-primary {
+    width: 100%;
+    background: #111;
+    color: #C78A3B;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all .3s ease;
+    margin-top: 16px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google,
+.google-btn {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #111;
+    color: #111;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.google-btn img,
+.btn-google img {
+    width: 18px !important;
+    height: 18px !important;
+    object-fit: contain;
+}
+
+/* small helpers used across pages in split layout */
+.signup-row {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #444;
+    text-align: center;
+}
+
+.signup-row a,
+.footer-link,
+.footer-links a {
+    color: #C78A3B;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.footer-link,
+.footer-links {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+/* ---------- CENTER LAYOUT (signup, forgot, reset) ---------- */
+.center-bg {
+    background: #fffaf2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+}
+
+/* Signup container (centered but left illustration included inside) */
+.signup-container {
+    display: flex;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 900px;
+    max-width: 95%;
+
+}
+
+.form-left,
+.form-right {
+    flex: 1;
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.form-left {
+    background: linear-gradient(135deg, #fff4e6, #f7e1b5);
+    align-items: center;
+    text-align: center;
+}
+
+.form-left img {
+    width: 250px;
+    margin-bottom: 20px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.form-left h2 {
+    font-size: 24px;
+    color: #111;
+    margin-bottom: 12px;
+}
+
+.form-left p {
+    color: #555;
+    font-size: 14px;
+    width: 80%;
+}
+
+
+/* signup form */
+.form-right h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.form-right p.subheading {
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 32px;
+}
+
+.form-right form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+    width: 100%;
+}
+
+.form-right form label {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-right input[type="text"],
+.form-right input[type="email"],
+.form-right input[type="password"],
+.form-right input[type="tel"] {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #000;
+    padding: 8px 4px;
+    font-size: 14px;
+    outline: none;
+    color: #333;
+}
+
+.form-right .full-width {
+    grid-column: span 2;
+}
+
+.form-right .checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #000;
+    margin-top: 10px;
+    grid-column: span 2;
+}
+
+.form-right .checkbox input {
+    accent-color: #c78a1a;
+    margin-right: 8px;
+}
+
+.form-right .divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 16px 0;
+    color: #777;
+    font-size: 12px;
+    grid-column: span 2;
+}
+
+.form-right .divider::before,
+.form-right .divider::after {
+    content: '';
+    height: 1px;
+    width: 40%;
+    background: #ddd;
+    margin: 0 8px;
+}
+
+/* centered small card used by forgot/reset */
+.card {
+    width: 420px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    padding: 48px;
+    text-align: center;
+    animation: fadeIn .8s ease;
+}
+
+.card .logo {
+    margin-bottom: 32px;
+}
+
+.card h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.card .subtext {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.card form {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+.card label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 6px;
+}
+
+/* Fix google button inside signup card */
+.form-right .google-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.input-group {
+    width: 100% !important;
+}
+
+.input-group input {
+    width: 100% !important;
+}
+
+.form-right .google-btn img {
+    width: 18px;
+    height: 18px;
+}
+
+.login-card .btn-google {
+    margin-top: 16px;
+}
+
+.card .btn-primary {
+    margin-bottom: 16px;
+}
+
+
+
+.card input {
+    border: none;
+    border-bottom: 2px solid #111;
+    padding: 14px 0;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.card input:focus {
+    border-bottom-color: #C78A3B;
+}
+
+/* password reset helpers */
+.input-group {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+}
+
+/* strength bar & requirements */
+.strength-bar {
+    height: 4px;
+    width: 100%;
+    background: #ddd;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    transition: background .3s;
+}
+
+.requirements {
+    list-style: none;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 16px;
+    padding-left: 0;
+}
+
+.requirements li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.check {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    display: inline-block;
+    transition: all .3s;
+}
+
+.checked {
+    background-color: #C78A3B;
+    border-color: #C78A3B;
+}
+
+/* success state */
+.success-state,
+.success {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.success-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #C78A3B;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+/* small utilities */
+.resend {
+    font-size: 14px;
+    color: #888;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 16px;
+    display: inline-block;
+}
+
+.enable {
+    color: #C78A3B !important;
+    cursor: pointer;
+}
+
+
+.footer-row,
+.footer {
+    font-size: 14px;
+    color: #666;
+}
+
+.alert-error {
+    background: #ffe6e6;
+    border: 1px solid #e74c3c;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.alert-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 6px;
+    color: #c0392b;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.alert-row:last-child {
+    margin-bottom: 0;
+}
+
+.alert-icon {
+    margin-right: 8px;
+    margin-top: 1px;
+    font-size: 16px;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 38px;
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.7;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+}
+
+/* responsive */
+@media (max-width: 950px) {
+    .auth-split {
+        flex-direction: column;
+    }
+
+    .auth-split .left,
+    .auth-split .right {
+        width: 100%;
+        height: auto;
+    }
+
+    .auth-split .left img {
+        width: 300px;
+        height: 300px;
+    }
+
+    .login-card,
+    .otp-card {
+        width: 90%;
+        margin: 40px 0;
+    }
+
+    .signup-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .form-left {
+        display: none;
+    }
+
+    .form-right {
+        padding: 40px 30px;
+    }
+
+    .form-right form {
+        grid-template-columns: 1fr;
+    }
+}
+
+.errorlist {
+    margin: 4px 0 0 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+.errorlist li {
+    color: #d93025 !important;
+    /* Modern clean error red */
+    font-size: 12px !important;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+/* Highlight inputs that have errors */
+.input-error {
+    border-bottom: 1px solid #d93025 !important;
+}

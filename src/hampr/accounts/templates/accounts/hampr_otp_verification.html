@@ -1,0 +1,115 @@
+{% extends 'accounts/base_split.html' %}
+{% block title %}Hampr — OTP Verification{% endblock %}
+{% block content %}
+<div class="otp-card">
+
+  <div class="logo">Hampr</div>
+  <h2>Enter 4-digit Code</h2>
+  <p class="subtext">We sent a code to your email/phone</p>
+  <form method="POST" action="">
+    {% csrf_token %}
+    <div class="otp-inputs">
+      <input type="text" maxlength="1" name="otp1" />
+      <input type="text" maxlength="1" name="otp2" />
+      <input type="text" maxlength="1" name="otp3" />
+      <input type="text" maxlength="1" name="otp4" />
+    </div>
+    {% if error %}
+
+    <span style="font-size: 12px;color:red;">{{error}}</span>
+
+    {% endif %}
+    <span style="font-size: 12px;color:red;" id="resend_error"></span>
+    <span style="font-size: 12px;color:green;" id="resend_succ"></span>
+    <button class="btn-primary ">Verify & Continue</button>
+  </form>
+  <div>
+    <span style="font-size: 12px;color:#666" id="time_message"> </span><span> </span><span
+      style="font-size: 12px;color:#666" id="time"></span>
+    <button onclick="resend_button_click()" style="border: none;margin-top:10px;" href="#" class="resend "
+      disabled>Resend Code</button>
+
+  </div>
+
+  <div class="footer-row">
+    Wrong email/phone? <a href="javascript:history.back()">Go Back</a>
+  </div>
+</div>
+
+<script>
+  // small helper to move focus between OTP boxes
+  const inputs = document.querySelectorAll('.otp-inputs input');
+  inputs.forEach((input, index) => {
+    input.addEventListener('input', () => {
+      if (input.value && index < inputs.length - 1) inputs[index + 1].focus();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && index > 0) inputs[index - 1].focus();
+    });
+  });
+
+  const button = document.querySelector('.resend');
+  const showspan = document.getElementById('resend_succ');
+  const showspaner = document.getElementById('resend_error');
+  let sec = 10;
+  function render_timer() {
+
+    const time_text = document.getElementById('time');
+    const time_message = document.getElementById('time_message');
+    button.disabled = true;
+    time_text.textContent = sec;
+    time_message.textContent = "Time Remaining"
+    sec = 10
+    const intervel = setInterval(() => {
+
+      time_text.textContent = sec;
+      sec--;
+      if (sec == 0) {
+        button.disabled = false
+        button.classList.add('enable')
+        time_text.textContent = ''
+        time_message.textContent = 'You can resend the code now'
+        clearInterval(intervel)
+      }
+    }, 1000)
+
+  }
+  render_timer()
+
+  async function otp_resend() {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/auth/otp_resend/');
+      const data = await response.json()
+      if (data.success == true) {
+
+        showspan.textContent = data.message
+        return true
+      }
+      else {
+
+        showspaner.textContent = data.message
+        return false
+      }
+    }
+    catch (error) {
+      console.error(error)
+      return false
+    }
+  }
+
+  async function resend_button_click() {
+    showspan.textContent = ""
+    showspaner.textContent = ""
+    let result = await otp_resend()
+    if (result == true) {
+      button.disabled = true
+      button.classList.remove('enable')
+      render_timer()
+    }
+
+
+
+  }
+
+</script>
+{% endblock %}

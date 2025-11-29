@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 
-from .models import CustomUser,OTP,UserAddress,UserDevice,AuditLog
+from .models import CustomUser,OTP,UserAddress,AuditLog,PasswordReset
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
@@ -19,9 +19,9 @@ class UserAddressAdmin(admin.ModelAdmin):
 
 
 
-@admin.register(UserDevice)
-class UserDeviceAdmin(admin.ModelAdmin):
-    pass
+# @admin.register(UserDevice)
+# class UserDeviceAdmin(admin.ModelAdmin):
+#     pass
 
 
 
@@ -30,3 +30,7 @@ class UserDeviceAdmin(admin.ModelAdmin):
 class AuditLogAdmin(admin.ModelAdmin):
     pass
 
+
+@admin.register(PasswordReset)
+class PasswordResetAdmin(admin.ModelAdmin):
+    pass

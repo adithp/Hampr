@@ -1,0 +1,175 @@
+{% extends "c_admin/base.html" %}
+
+{% block title %}Admin Login — Hampr{% endblock %}
+
+{% block extra_css %}
+<style>
+    .heading {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .sub {
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    form .field {
+        margin-bottom: 16px;
+    }
+
+    .logo {
+        font-weight: 800;
+        color: var(--gold);
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 8px;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 14px;
+        border: 1px solid #E8E4E0;
+        border-radius: 8px;
+        background: #fff;
+    }
+
+    /* password group */
+    .password-wrap {
+        position: relative;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* keep the input height consistent and reserve space on the right */
+    .password-wrap input {
+        width: 100%;
+        padding: 10px 56px 10px 14px;
+        /* make right padding for the button */
+        height: 42px;
+        border-radius: 8px;
+        border: 1px solid #E8E4E0;
+        box-sizing: border-box;
+        font-size: 14px;
+    }
+
+    /* Show button inside the input on the right */
+    .toggle-visibility {
+        position: absolute;
+        right: 8px;
+        /* distance from the input right edge */
+        top: 70%;
+        transform: translateY(-50%);
+        padding: 6px 10px;
+        height: auto;
+        line-height: 1;
+        border-radius: 6px;
+        border: 1px solid rgba(199, 138, 59, 0.22);
+        background: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* optional: when button is visually minimal (no rectangle) */
+    .toggle-visibility--link {
+        background: transparent;
+        border: none;
+        color: var(--gold);
+        padding: 0 8px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        background: var(--black);
+        color: var(--gold);
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .forgot-row {
+        text-align: right;
+        margin-bottom: 12px;
+    }
+
+    .forgot-link {
+        color: var(--gold);
+        text-decoration: none;
+    }
+
+    .security-footer {
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 18px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="logo">Hampr</div>
+    <div class="heading">Admin Portal</div>
+    <div class="sub">Sign in to manage the Hampr backend</div>
+
+    <form method="POST" action="">
+        {% csrf_token %}
+
+        <div class="field">
+            <label>Email or Username</label>
+            <input type="text" name="identifier" placeholder="admin@hampr.com" required />
+        </div>
+
+        <div class="field password-wrap">
+            <label>Password</label>
+            <input type="password" name="password" id="password" required placeholder="Enter Your password" />
+            <button type="button" class="toggle-visibility" id="pwd-toggle">Show</button>
+        </div>
+        {% if messages %}
+        {% for message in messages %}
+        <p style="color:red;">{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+        <div class="forgot-row">
+            <a href="#" class="forgot-link">Forgot Password?</a>
+        </div>
+
+        <button class="btn-primary" type="submit">Login</button>
+    </form>
+
+    <div class="security-footer">Authorized Access Only</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        const pwd = document.getElementById('password');
+        const toggle = document.getElementById('pwd-toggle');
+        toggle.addEventListener('click', () => {
+            const isPassword = pwd.type === 'password';
+            pwd.type = isPassword ? 'text' : 'password';
+            toggle.textContent = isPassword ? 'Hide' : 'Show';
+        });
+    })();
+</script>
+{% endblock %}

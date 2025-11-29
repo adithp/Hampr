@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser 
 from django.utils import timezone
+from datetime import timedelta
 import uuid
 from django.core.validators import MinLengthValidator,MaxLengthValidator
 
 
-from core.validaters import validate_indian_phone_number
+from core.validaters import validate_indian_phone_number,no_all_digits,username_validater
 
 
 class Gender(models.TextChoices):
@@ -38,22 +39,25 @@ class COUNTRY(models.TextChoices):
     CANADA = "CA", "Canada"
     AUSTRALIA = "AU", "Australia"
     UAE = "AE", "United Arab Emirates"
-    GERMANY = "DE", "Germany"
-    FRANCE = "FR", "France"
+    
     
     
 class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True,null=True)
+    username = models.CharField(max_length=20,unique=True,validators=[no_all_digits,username_validater])
     dob = models.DateField(blank=True,null=True)
     email_notification = models.BooleanField(default=True)
     email_verified = models.BooleanField(default=False)
     gender = models.CharField(max_length=1,choices=Gender.choices,blank=True,null=True)
-    newsletter_subscribed = models.BooleanField(default=False)
     phone_number = models.CharField(max_length=13,null=True,blank=True,unique=True,validators=[validate_indian_phone_number])
     phone_verified = models.BooleanField(default=False)
     profile_picture = models.ImageField(upload_to='profiles/',null=True,blank=True)
-    promotional_emails = models.BooleanField(default=True)
-    sms_notification = models.BooleanField(default=False)
-    two_factor_enabled = models.BooleanField(default=False)
+    # promotional_emails = models.BooleanField(default=True)
+    # sms_notification = models.BooleanField(default=False)
+    # two_factor_enabled = models.BooleanField(default=False)
+    # google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    # newsletter_subscribed = models.BooleanField(default=False)
+
     
     
     def __str__(self):
@@ -70,6 +74,19 @@ class OTP(models.Model):
     otp_type = models.CharField(choices=OTP_TYPE.choices,max_length=2)
     otp_delivery = models.CharField(choices=OTP_DELIVERY.choices,max_length=1)
     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    
+
+    
+class PasswordReset(models.Model):
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    token = models.CharField(max_length=64,db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    
+    def is_expired(self):
+        time = timezone.now() - self.created_at
+        return time > timedelta(minutes=60)   
+    
     
 
 class UserAddress(models.Model):
@@ -89,19 +106,17 @@ class UserAddress(models.Model):
     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     
     
+# class UserDevice(models.Model):
+#     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
+#     device_name = models.CharField(max_length=100)
+#     device_type = models.CharField(max_length=100)
+#     first_accessed = models.DateTimeField(auto_now_add=True)
+#     ip_address = models.GenericIPAddressField(protocol='both')
+#     is_active = models.BooleanField(default=True)
+#     last_accessed = models.DateTimeField(auto_now=True)
+#     location = models.CharField(max_length=255,null=True,blank=True)
+#     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     
-class UserDevice(models.Model):
-    id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
-    device_name = models.CharField(max_length=100)
-    device_type = models.CharField(max_length=100)
-    first_accessed = models.DateTimeField(auto_now_add=True)
-    ip_address = models.GenericIPAddressField(protocol='both')
-    is_active = models.BooleanField(default=True)
-    last_accessed = models.DateTimeField(auto_now=True)
-    location = models.CharField(max_length=255,null=True,blank=True)
-    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
-    
-
 
 # class UserWishlist(models.Model):
 #     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
@@ -109,7 +124,6 @@ class UserDevice(models.Model):
 #     hamper_template = models.ForeignKey()
     
     
-
 class AuditLog(models.Model):
     entity_id = models.CharField(max_length=100)
     entity_type = models.CharField(max_length=50)

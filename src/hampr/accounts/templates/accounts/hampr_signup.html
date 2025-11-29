@@ -1,0 +1,98 @@
+{% extends 'accounts/base_center.html' %}
+{% load static %}
+
+{% block title %}Hampr — Sign Up{% endblock %}
+{% load socialaccount %}
+{% block content %}
+<div class="signup-container">
+
+  <div class="form-left">
+    <img src="{% static 'accounts/images/signup.png' %}" alt="Hamper Gift">
+    <h2>Welcome to Hampr!</h2>
+    <p>Design the perfect personalized gift hamper for any occasion. Create moments that matter.</p>
+  </div>
+
+  <div class="form-right">
+    <div class="logo">Hampr</div>
+    <h1>Create Your Account</h1>
+    <p class="subheading">Join us to build beautiful hampers</p>
+
+    <form action="" method="POST">
+      {% csrf_token %}
+      <div>
+        <label>First Name</label>
+
+        {{form.first_name}}
+        {{form.first_name.errors}}
+      </div>
+
+      <div>
+        <label>Last Name</label>
+        {{form.last_name}}
+        {{form.last_name.errors}}
+
+      </div>
+      <div class="full-width">
+        <label>Username *</label>
+        {{form.username}}
+        {{form.username.errors}}
+
+      </div>
+
+      <div class="full-width">
+        <label>Email Address*</label>
+        {{form.email}}
+        {{form.email.errors}}
+
+      </div>
+
+
+
+      <div class="full-width password-wrapper">
+        <label>Password*</label>
+        {{form.password1}}
+        <!-- <span class="toggle-password" onclick="togglePassword('id_password1', this)">👁️</span> -->
+        {{form.password1.errors}}
+      </div>
+
+      <div class="full-width password-wrapper">
+        <label>Confirm Password*</label>
+        {{form.password2}}
+        <!-- <span class="toggle-password" onclick="togglePassword('id_password2', this)">👁️</span> -->
+        {{form.password2.errors}}
+      </div>
+
+
+
+      <!-- <div class="checkbox">
+        <input type="checkbox" id="terms" required>
+        <label for="terms">I agree to Terms & Conditions</label>
+      </div> -->
+      <!-- FULL WIDTH BUTTON -->
+      <div class="full-width">
+        <button class="btn-primary">Create Account</button>
+      </div>
+
+      <!-- FULL WIDTH FOOTER -->
+      <div class="full-width footer-links">
+        Already have an account? <a href="{% url 'accounts:login' %}">Sign In</a>
+      </div>
+
+      <!-- FULL WIDTH DIVIDER -->
+      <div class="full-width divider">OR</div>
+
+      <!-- FULL WIDTH GOOGLE BUTTON -->
+      <div class="full-width">
+        <a href="{% provider_login_url 'google' %}" type="button" class="google-btn">
+          <img src="https://www.svgrepo.com/show/355037/google.svg" alt="">
+          Sign up with Google
+        </a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+{% endblock %}

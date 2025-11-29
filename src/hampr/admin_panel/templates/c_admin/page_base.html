@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Hampr CAdmin{% endblock %}</title>
+
+    <style>
+        :root {
+            --cream: #F5F1ED;
+            --gold: #C78A3B;
+            --black: #111111;
+            --muted: #6b6b6b;
+            --card-bg: #ffffff;
+            --radius: 10px;
+            --shadow: 0 6px 18px rgba(15, 15, 15, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Inter, Poppins, system-ui;
+            background: var(--cream);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: #ffffff;
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 26px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .menu-section {
+            margin-top: 15px;
+        }
+
+        .menu-link {
+            display: block;
+            padding: 12px 16px;
+            background: #F1EEEA;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--black);
+            font-size: 14px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .menu-link:hover {
+            background: #e9e5e1;
+        }
+
+        .menu-link.active {
+            background: var(--gold);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* LOGOUT BUTTON */
+
+
+        .logout-section {
+            margin-top: auto;
+            padding-top: 15px;
+        }
+
+        /* More visible + gold-tinted modern logout button */
+        .logout-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+
+            background: rgba(199, 138, 59, 0.12);
+            /* soft gold tint */
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--gold);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+
+            border: 1px solid rgba(199, 138, 59, 0.35);
+            box-shadow: 0 3px 7px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(199, 138, 59, 0.18);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+
+
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            padding: 40px 50px;
+            overflow-x: hidden;
+        }
+    </style>
+
+    {% block extra_css %}
+
+    {% endblock %}
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo">Hampr</div>
+
+        <div class="menu-section">
+
+            <!-- DASHBOARD -->
+            {% url 'cadmin:admin_dashboard' as dashboard_url %}
+            <a href="{{ dashboard_url }}"
+                class="menu-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                Dashboard
+            </a>
+
+            <!-- USER MANAGEMENT -->
+            {% url 'cadmin:user_management' as users_url %}
+            <a href="{{ users_url }}"
+                class="menu-link {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}">
+                User Management
+            </a>
+
+        </div>
+
+        <!-- LOGOUT BUTTON (ADDED HERE) -->
+        <div class="logout-section">
+            <a href="{% url 'core:logout' %}" class="logout-btn">Logout</a>
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>
