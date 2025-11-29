@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Hampr Admin{% endblock %}</title>
+
+    <style>
+        :root {
+            --cream: #F5F1ED;
+            --gold: #C78A3B;
+            --black: #111111;
+            --muted: #6b6b6b;
+            --card-bg: #ffffff;
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(15, 15, 15, 0.08);
+        }
+
+        body {
+            font-family: Inter, Poppins, system-ui;
+            background: linear-gradient(180deg, rgba(199, 138, 59, 0.06) 0%, rgba(245, 241, 237, 1) 45%);
+            height: 100vh;
+            /* Fixed */
+            margin: 0;
+            /* Fixed */
+            display: flex;
+            justify-content: center;
+            /* Center horizontally */
+            align-items: center;
+            /* Center vertically */
+        }
+
+
+        .admin-wrapper {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(232, 228, 224, 0.8);
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="admin-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

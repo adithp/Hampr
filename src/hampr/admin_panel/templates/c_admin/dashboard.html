@@ -1,0 +1,66 @@
+{% extends "c_admin/page_base.html" %}
+
+{% block title %}CAdmin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dashboard-title {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    color: var(--black);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    max-width: 1000px;
+    margin-bottom: 40px;
+  }
+
+  .stat-box {
+    background: #ffffff;
+    padding: 26px 24px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow);
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="dashboard-title">CAdmin Dashboard</h1>
+
+<div class="stats-grid">
+
+  <div class="stat-box">
+    <div class="stat-value">{{ users_count }}</div>
+    <div class="stat-label">Total Users</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-value">{{ active_users }}</div>
+    <div class="stat-label">Active Users</div>
+  </div>
+
+  <div class="stat-box">
+    <div class="stat-value">{{ blocked_users }}</div>
+    <div class="stat-label">Blocked Users</div>
+  </div>
+
+</div>
+
+{% endblock %}

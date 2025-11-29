@@ -1,0 +1,28 @@
+{% extends 'accounts/base_split.html' %}
+{% block title %}Hampr — Login{% endblock %}
+{% load socialaccount %}
+
+{% block content %}
+<div class="login-card">
+  <div class="logo">Hampr</div>
+  <h2>Sign In to Your Account</h2>
+  <form action="" method="POST">
+    {% csrf_token %}
+    <input type="text" placeholder="Email or Username" required name="identifier">
+    <input type="password" placeholder="Password" required name="password">
+    <button class="btn-primary" type="submit">Login</button>
+    {% if messages %}
+    {% for message in messages %}
+    <p style="color:red;">{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+  </form>
+
+  <a href="{% provider_login_url 'google' %}" class="btn-google">
+    <img src="https://www.svgrepo.com/show/355037/google.svg" alt="">
+    Continue with Google
+  </a>
+  <div class="signup-row">Don't have an account?<a href="{% url 'accounts:signup' %}">Sign Up</a></div>
+  <a href="{% url 'accounts:reset_link' %}" class="footer-link">Forgot Password?</a>
+</div>
+{% endblock %}
