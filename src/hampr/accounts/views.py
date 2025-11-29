@@ -150,6 +150,7 @@ class CustomLoginView(NeverCacheMixin,View):
         login(request,user)
         return redirect('accounts:suc')
     
+    
 @method_decorator(never_cache,name='dispatch')
 class ResetPasswordLinkSend(View):
     
@@ -176,6 +177,7 @@ class ResetPasswordLinkSend(View):
         cache.set(f"reset:{user.id}",1,1800)
         messages.success(request,'Succsesfully send password reset link to your email')
         return redirect('accounts:reset_link')
+        
         
 @method_decorator(never_cache,name='dispatch')
 class ResetPassword(View):

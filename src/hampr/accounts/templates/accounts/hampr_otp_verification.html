@@ -51,7 +51,7 @@
   const button = document.querySelector('.resend');
   const showspan = document.getElementById('resend_succ');
   const showspaner = document.getElementById('resend_error');
-  let sec = 10;
+  let sec = 30;
   function render_timer() {
 
     const time_text = document.getElementById('time');
@@ -59,7 +59,7 @@
     button.disabled = true;
     time_text.textContent = sec;
     time_message.textContent = "Time Remaining"
-    sec = 10
+    sec = 30
     const intervel = setInterval(() => {
 
       time_text.textContent = sec;

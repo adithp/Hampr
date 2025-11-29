@@ -9,9 +9,7 @@
 
     <style>
         /* ------------------ BASE ------------------ */
-        *,
-        *::before,
-        *::after {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -24,10 +22,27 @@
             overflow-x: hidden;
         }
 
+        /* ------------------ CONTAINER ------------------ */
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ------------------ HEADER ------------------ */
         header {
+            background: #fffaf5;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            padding: 18px 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-inner {
             display: flex;
             align-items: center;
-            padding: 24px 64px;
+            justify-content: space-between;
         }
 
         .logo {
@@ -36,63 +51,111 @@
             color: #C78A3B;
         }
 
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .header-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            background: #fff;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            color: #111;
+            transition: 0.3s;
+        }
+
+        .header-btn:hover {
+            background: #C78A3B;
+            color: #fff;
+        }
+
+        .menu-btn {
+            font-size: 1.7rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* ------------------ SIDE MENU ------------------ */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -260px;
+            width: 240px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -8px 0 22px rgba(0, 0, 0, 0.15);
+            transition: 0.4s ease;
+            padding: 30px 20px;
+            z-index: 2000;
+        }
+
+        .side-menu.open {
+            right: 0;
+        }
+
+        .menu-content {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+
+        .menu-item {
+            padding-bottom: 6px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.1rem;
+            color: #111;
+            text-decoration: none;
+        }
+
         /* ------------------ HERO ------------------ */
         .hero {
+            padding: 60px 0;
+        }
+
+        .hero-inner {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 60px 80px;
             gap: 40px;
-        }
-
-        .hero-text {
-            flex: 1;
-            animation: fadeInLeft 1s ease forwards;
         }
 
         .hero-text h1 {
             font-size: 3.5rem;
-            line-height: 1.1;
             margin-bottom: 20px;
+            line-height: 1.1;
         }
 
         .hero-text p {
-            font-size: 1.1rem;
+            margin-bottom: 30px;
             color: #444;
-            margin-bottom: 32px;
+            font-size: 1.1rem;
         }
 
         .btns {
             display: flex;
-            gap: 20px;
+            gap: 18px;
         }
 
         .btn-primary {
             background: #111;
             color: #fff;
+            border: none;
             padding: 14px 28px;
             border-radius: 6px;
-            border: none;
             cursor: pointer;
-            transition: .3s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-        }
-
-        .btn-secondary {
-            background: none;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .hero-img {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            animation: fadeInRight 1s ease forwards;
         }
 
         .hero-img img {
@@ -106,23 +169,12 @@
             color: #C78A3B;
         }
 
-        /* ------------------ SECTION BASE ------------------ */
+        /* ------------------ FEATURED ------------------ */
         .section {
-            padding: 80px 64px;
+            padding: 80px 0;
             text-align: center;
         }
 
-        .section h2 {
-            font-size: 2.3rem;
-            margin-bottom: 12px;
-        }
-
-        .section p {
-            margin-bottom: 40px;
-            color: #666;
-        }
-
-        /* ------------------ FEATURED CARDS ------------------ */
         .cards {
             display: flex;
             justify-content: center;
@@ -132,11 +184,10 @@
 
         .card {
             background: #fff;
-            padding: 24px;
+            padding: 22px;
             width: 260px;
             border-radius: 14px;
             box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
-            transition: .3s;
         }
 
         .card img {
@@ -145,34 +196,27 @@
             margin-bottom: 16px;
         }
 
-        .card:hover {
-            transform: translateY(-6px);
+        /* ------------------ CTA ------------------ */
+        .cta-wrapper {
+            padding: 80px 0;
         }
 
-        /* ------------------ CTA BOX ------------------ */
         .cta-box {
             background: #111;
             color: #fff;
-            padding: 80px 40px;
-            margin: 80px auto;
-            max-width: 950px;
+            padding: 70px 40px;
             border-radius: 18px;
             text-align: center;
         }
 
-        .cta-box p {
-            margin: 16px 0;
-        }
-
         .cta-box button {
             background: #C78A3B;
-            padding: 14px 30px;
-            border-radius: 8px;
             border: none;
-            color: #fff;
+            padding: 14px 30px;
+            color: white;
+            border-radius: 8px;
             font-size: 1.1rem;
             cursor: pointer;
-            transition: .3s;
         }
 
         /* ------------------ WHY CHOOSE ------------------ */
@@ -181,17 +225,14 @@
             justify-content: center;
             gap: 26px;
             flex-wrap: wrap;
-            max-width: 1200px;
-            margin: 0 auto;
         }
 
         .feature {
             width: 260px;
             background: #fff;
+            padding: 30px;
             border-radius: 16px;
-            padding: 30px 24px;
-            text-align: center;
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
         }
 
         .icon-circle {
@@ -202,12 +243,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0 auto 18px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.06);
-        }
-
-        .icon-circle img {
-            width: 50px;
+            margin: 0 auto 16px;
         }
 
         /* ------------------ HOW IT WORKS ------------------ */
@@ -218,10 +254,6 @@
             flex-wrap: wrap;
         }
 
-        .step {
-            width: 200px;
-        }
-
         .step-number {
             width: 65px;
             height: 65px;
@@ -229,59 +261,25 @@
             color: #fff;
             border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             margin: 0 auto 14px;
         }
 
-        /* ------------------ TESTIMONIALS ------------------ */
-        .testimonial-box {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .testimonial {
-            background: #fff;
-            padding: 28px;
-            border-radius: 14px;
-            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
+        .cta-box p {
+            padding: 16px 0;
         }
 
         /* ------------------ FOOTER ------------------ */
         footer {
             background: #111;
-            padding: 50px;
+            color: #ccc;
+            padding: 40px 0;
             text-align: center;
             margin-top: 80px;
-            color: #ccc;
         }
 
         /* ------------------ ANIMATIONS ------------------ */
-        @keyframes fadeInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-60px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(60px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
         @keyframes float {
 
             0%,
@@ -294,39 +292,19 @@
             }
         }
 
-        /* ------------------ RESPONSIVE FIXES ------------------ */
-
-        @media(max-width: 1050px) {
-            .icon-features {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-        }
-
-        @media(max-width: 900px) {
-            .hero {
+        /* ------------------ RESPONSIVE ------------------ */
+        @media (max-width: 950px) {
+            .hero-inner {
                 flex-direction: column;
                 text-align: center;
-                padding: 40px 30px;
             }
 
-            .hero-img img {
-                width: 320px;
-            }
-        }
-
-        /* hide hero image on small screens */
-        @media(max-width: 768px) {
             .hero-img {
                 display: none;
             }
-
-            .hero-text h1 {
-                font-size: 2.6rem;
-            }
         }
 
-        @media(max-width: 500px) {
+        @media(max-width: 600px) {
 
             .card,
             .feature {
@@ -334,155 +312,209 @@
             }
         }
     </style>
-
 </head>
 
 <body>
 
     <!-- HEADER -->
     <header>
-        <div class="logo">Hampr<span style="color:#111">.</span></div>
+        <div class="container header-inner">
+
+            <div class="logo">Hampr<span style="color:#111">.</span></div>
+
+            <div class="header-buttons">
+                <button class="menu-btn" id="menuBtn">☰</button>
+
+                {% if user.is_authenticated %}
+                <a href="#" class="header-btn">Cart 🛒</a>
+                <a href="{% url 'core:logout' %}" class="header-btn">Logout</a>
+                {% else %}
+                <a href="{% url 'accounts:signup' %}" class="header-btn">Get Started</a>
+                {% endif %}
+            </div>
+
+        </div>
     </header>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-text">
-            <h1>Craft the Perfect <span class="highlight">Gift</span>,<br>Your Way<span class="highlight">.</span></h1>
-            <p>Choose your box, fill it with love, and make every gift truly personal.</p>
+    <!-- SIDE MENU -->
+    <div id="sideMenu" class="side-menu">
+        <div class="menu-content">
+            <button class="close-btn" id="closeMenu">✕</button>
 
-            <div class="btns">
-                <button class="btn-primary">Start Building Your Hamper</button>
-                <button class="btn-secondary"><a style="text-decoration: none;color:#000;" href="{% url 'accounts:signup' %}">Get
-                        Started</a></button>
-            </div>
+            <a href="#hero" class="menu-item">Home</a>
+            <a href="#featured" class="menu-item">Featured Categories</a>
+            <a href="#why" class="menu-item">Why Choose Us</a>
+            <a href="#how" class="menu-item">How It Works</a>
+            <a href="#footer" class="menu-item">Contact</a>
         </div>
+    </div>
 
-        <div class="hero-img">
-            <img src="{% static 'images/landright1.png' %}" alt="">
+    <!-- HERO -->
+    <section id="hero" class="hero">
+        <div class="container hero-inner">
+            <div class="hero-text">
+                <h1>Craft the Perfect <span class="highlight">Gift</span>,<br>Your Way<span class="highlight">.</span>
+                </h1>
+                <p>Choose your box, fill it with love, and make every gift truly personal.</p>
+
+                <div class="btns">
+                    <button class="btn-primary">Start Building Your Hamper</button>
+                    <button class="btn-secondary" style="border: none;"><a href="{% url 'accounts:signup' %}"
+                            style="color:#111;text-decoration:none;border:none;">Get Started</a></button>
+                </div>
+            </div>
+
+            <div class="hero-img">
+                <img width="50" src="{% static 'images/landright1.png' %}">
+            </div>
         </div>
     </section>
 
-    <!-- FEATURED -->
-    <section class="section">
-        <h2>Featured Categories</h2>
-        <p>Everything you need to create the perfect gift hamper.</p>
+    <!-- FEATURED CATEGORIES -->
+    <section id="featured" class="section">
+        <div class="container">
+            <h2 style="margin-bottom: 12px;">Featured Categories</h2>
+            <p>Everything you need to create the perfect gift hamper.</p>
 
-        <div class="cards">
-            <div class="card">
-                <img src="{% static 'images/box.jpg' %}" alt="">
-                <h3>Hamper Boxes</h3>
+            <div class="cards">
+
+                <!-- Hamper Boxes -->
+                <div class="card">
+                    <img src="{% static 'images/1.png' %}" alt="Hamper Boxes">
+                    <h3>Hamper Boxes</h3>
+                </div>
+
+                <!-- Premium Products -->
+                <div class="card">
+                    <img src="{% static 'images/2.png' %}" alt="Premium Products">
+                    <h3>Premium Products</h3>
+                </div>
+
+                <!-- Decorations -->
+                <div class="card">
+                    <img src="{% static 'images/3.png' %}" alt="Decorations">
+                    <h3>Decorations</h3>
+                </div>
+
             </div>
 
-            <div class="card">
-                <img src="{% static 'images/products.jpg' %}" alt="">
-                <h3>Premium Products</h3>
-            </div>
-
-            <div class="card">
-                <img src="{% static 'images/decoration.jpg' %}" alt="">
-                <h3>Decorations</h3>
-            </div>
         </div>
     </section>
 
     <!-- CTA -->
-    <div class="cta-box">
-        <h2>Build a Gift They'll Never Forget</h2>
-        <p>Choose your box, add items, decorate it and craft the perfect surprise.</p>
-        <button>Start Customizing</button>
-    </div>
-
-    <!-- WHY CHOOSE -->
-    <section class="section">
-        <h2>Why Choose Hampr?</h2>
-        <p>Experience premium gifting like never before.</p>
-
-        <div class="icon-features">
-
-            <div class="feature">
-                <div class="icon-circle">
-                    <img src="{% static 'images/icons8-gift.gif' %}" alt="">
-                </div>
-                <h3>Fully Customizable</h3>
-                <p>Create a hamper exactly the way you imagine it.</p>
+    <section class="cta-wrapper">
+        <div class="container">
+            <div class="cta-box">
+                <h2>Build a Gift They'll Never Forget</h2>
+                <p>Choose your box, add items, decorate it and craft the perfect surprise.</p>
+                <button>Start Customizing</button>
             </div>
+        </div>
+    </section>
 
-            <div class="feature">
-                <div class="icon-circle">
-                    <img src="{% static 'images/icons8-star.gif' %}" alt="">
-                </div>
-                <h3>Premium Quality</h3>
-                <p>Only the finest products and packaging.</p>
-            </div>
+    <!-- WHY CHOOSE US -->
+    <section id="why" class="section">
+        <div class="container">
+            <h2>Why Choose Hampr?</h2>
+            <p>Experience premium gifting like never before.</p>
 
-            <div class="feature">
-                <div class="icon-circle">
-                    <img src="{% static 'images/icons8-delivery.gif' %}" alt="">
+            <div class="icon-features">
+                <div class="feature">
+                    <div class="icon-circle">
+                        <img width="50px" src="{% static 'images/icons8-gift.gif' %}">
+                    </div>
+                    <h3>Fully Customizable</h3>
+                    <p>Create a hamper exactly the way you imagine it.</p>
                 </div>
-                <h3>Fast Delivery</h3>
-                <p>Quick, safe, and reliable delivery services.</p>
-            </div>
 
-            <div class="feature">
-                <div class="icon-circle">
-                    <img src="{% static 'images/icons8-near-me.gif' %}" alt="">
+                <div class="feature">
+                    <div class="icon-circle">
+                        <img src="{% static 'images/icons8-star.gif' %}">
+                    </div>
+                    <h3>Premium Quality</h3>
+                    <p>Only the finest products and packaging.</p>
                 </div>
-                <h3>Live Order Tracking</h3>
-                <p>Track updates from preparation to delivery.</p>
+
+                <div class="feature">
+                    <div class="icon-circle">
+                        <img src="{% static 'images/icons8-delivery.gif' %}">
+                    </div>
+                    <h3>Fast Delivery</h3>
+                    <p>Quick, safe, and reliable delivery services.</p>
+                </div>
+
+                <div class="feature">
+                    <div class="icon-circle">
+                        <img src="{% static 'images/icons8-near-me.gif' %}">
+                    </div>
+                    <h3>Live Order Tracking</h3>
+                    <p>Track every step from preparation to delivery.</p>
+                </div>
             </div>
 
         </div>
     </section>
 
     <!-- HOW IT WORKS -->
-    <section class="section">
-        <h2>How It Works</h2>
-        <p>Creating your personalized hamper is simple.</p>
+    <section id="how" class="section">
+        <div class="container">
+            <h2>How It Works</h2>
+            <p style="margin: 18px 0;">Creating your personalized hamper is simple.</p>
 
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3>Choose a Box</h3>
-            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Choose a Box</h3>
+                </div>
 
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3>Add Products</h3>
-            </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Add Products</h3>
+                </div>
 
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3>Decorate</h3>
-            </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Decorate</h3>
+                </div>
 
-            <div class="step">
-                <div class="step-number">4</div>
-                <h3>Checkout</h3>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Checkout</h3>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- TESTIMONIALS -->
-    <!-- <section class="section">
-        <h2>What Our Customers Say</h2>
-
-        <div class="testimonial-box">
-            <div class="testimonial">
-                <h4>★★★★★</h4>
-                <p>"Beautiful packaging and amazing quality. My friend loved it!"</p>
-            </div>
-
-            <div class="testimonial">
-                <h4>★★★★★</h4>
-                <p>"Custom builder was so easy to use. Delivery was super fast too!"</p>
-            </div>
-        </div>
-    </section> -->
-
     <!-- FOOTER -->
-    <footer>
-        <p>© 2025 Hampr. All Rights Reserved.</p>
+    <footer id="footer">
+        <div class="container">
+            <p>© 2025 Hampr. All Rights Reserved.</p>
+        </div>
     </footer>
+
+    <!-- MENU JS -->
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const sideMenu = document.getElementById('sideMenu');
+        const closeMenu = document.getElementById('closeMenu');
+
+        menuBtn.onclick = () => sideMenu.classList.add('open');
+        closeMenu.onclick = () => sideMenu.classList.remove('open');
+
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                sideMenu.classList.remove('open');
+
+                const target = document.querySelector(item.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 50,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+    </script>
 
 </body>
 
