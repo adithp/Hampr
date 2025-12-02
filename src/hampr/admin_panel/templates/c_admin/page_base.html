@@ -161,6 +161,12 @@
     </main>
 
     {% block extra_js %}{% endblock %}
+    <script>
+        window.addEventListener("pageshow", function (e) {
+            if (e.persisted) {
+                document.querySelector("form").reset();
+            }
+        });</script>
 </body>
 
 </html>

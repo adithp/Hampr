@@ -13,12 +13,13 @@ def otp_pending_verify(func):
             return redirect('accounts:signup')
     return wrapper
 
-def guest_only(func):
-    @wraps(func)
-    def wrapper(request,*args, **kwargs):
-        user = request.user
-        if  user.is_authenticated:
-            return redirect('accounts:suc')
-        return func(request,*args, **kwargs)
-    return wrapper
-        
+    def guest_only(func):
+        @wraps(func)
+        def wrapper(request,*args, **kwargs):
+            print(args)
+            user = request.user
+            if  user.is_authenticated:
+                return redirect('core:landing_page')
+            return func(request,*args, **kwargs)
+        return wrapper
+            

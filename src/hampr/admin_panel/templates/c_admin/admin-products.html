@@ -1,0 +1,450 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Management | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+    <style>
+        /* Dashboard Specific Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .category-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 100%;
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--primary-gold);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .category-card:hover::before {
+            opacity: 1;
+        }
+
+        .cat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            background-color: rgba(212, 175, 55, 0.1);
+            color: var(--primary-gold);
+        }
+
+        .table-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-img-thumb {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 101;
+            background: var(--white);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+            <p class="text-muted small">Admin Portal</p>
+        </div>
+        <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cadmin:admin_dashboard' %}">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">
+                        <i class="fas fa-box"></i>
+                        Products
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-shopping-cart"></i>
+                        Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-users"></i>
+                        Customers
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto px-3 pt-5">
+                <a href="admin-login.html" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="mb-4 pt-3 pt-md-0">
+            <h2 class="fw-bold">Products Management</h2>
+            <p class="text-muted mb-0">Manage your inventory across all categories</p>
+        </div>
+
+        <!-- Category Cards -->
+        <div class="row g-4 mb-5">
+            <!-- Box Products -->
+            <div class="col-md-4">
+                <div class="category-card p-4 text-center" onclick="window.location.href='#'">
+                    <div class="d-flex justify-content-center">
+                        <div class="cat-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-2">Box Products</h4>
+                    <p class="text-muted mb-0">12 Boxes Available</p>
+                </div>
+            </div>
+
+            <!-- Interior Products -->
+            <div class="col-md-4">
+                <div class="category-card p-4 text-center" onclick="window.location.href='#'">
+                    <div class="d-flex justify-content-center">
+                        <div class="cat-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-2">Interior Products</h4>
+                    <p class="text-muted mb-0">45 Products Available</p>
+                </div>
+            </div>
+
+            <!-- Decorations -->
+            <div class="col-md-4">
+                <div class="category-card p-4 text-center" onclick="window.location.href='#'">
+                    <div class="d-flex justify-content-center">
+                        <div class="cat-icon">
+                            <i class="fas fa-ribbon"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-2">Decorations</h4>
+                    <p class="text-muted mb-0">28 Items Available</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card table-card p-4 mb-4">
+            <h5 class="fw-bold mb-3">Quick Actions</h5>
+            <div class="d-flex flex-wrap gap-3">
+                <button class="btn btn-primary px-4 py-2">
+                    <i class="fas fa-plus me-2"></i> Add Box Product
+                </button>
+                <button class="btn btn-outline-gold px-4 py-2">
+                    <i class="fas fa-plus me-2"></i> Add Interior Product
+                </button>
+                <button class="btn btn-outline-dark px-4 py-2">
+                    <i class="fas fa-plus me-2"></i> Add Decoration
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Low Stock Summary -->
+            <div class="col-lg-5">
+                <div class="card table-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Low Stock
+                            Alerts</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="border-0 rounded-start">Product</th>
+                                    <th class="border-0">Type</th>
+                                    <th class="border-0 rounded-end text-end">Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/8B6F47/FFFFFF?text=C"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Swiss Choco</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">Interior</span></td>
+                                    <td class="text-end"><span class="text-danger fw-bold">5</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/D4AF37/FFFFFF?text=R"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Red Ribbon</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">Decor</span></td>
+                                    <td class="text-end"><span class="text-danger fw-bold">8</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/F5DEB3/000000?text=B"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Kraft Box S</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">Box</span></td>
+                                    <td class="text-end"><span class="text-danger fw-bold">2</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Products Added -->
+            <div class="col-lg-7">
+                <div class="card table-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Recently Added Products</h5>
+                        <a href="#" class="btn btn-sm btn-outline-gold">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="border-0 rounded-start">Product</th>
+                                    <th class="border-0">Category</th>
+                                    <th class="border-0">Price</th>
+                                    <th class="border-0 rounded-end">Date Added</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/D4AF37/FFFFFF?text=L"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Luxury Gold Box</span>
+                                        </div>
+                                    </td>
+                                    <td>Box</td>
+                                    <td>$15.00</td>
+                                    <td>Today</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/8B6F47/FFFFFF?text=T"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Truffle Set</span>
+                                        </div>
+                                    </td>
+                                    <td>Interior</td>
+                                    <td>$24.50</td>
+                                    <td>Yesterday</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/F5DEB3/000000?text=S"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Satin Bow</span>
+                                        </div>
+                                    </td>
+                                    <td>Decor</td>
+                                    <td>$3.00</td>
+                                    <td>Oct 25</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/D4AF37/FFFFFF?text=W"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Wooden Crate</span>
+                                        </div>
+                                    </td>
+                                    <td>Box</td>
+                                    <td>$12.00</td>
+                                    <td>Oct 24</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://placehold.co/40x40/8B6F47/FFFFFF?text=C"
+                                                class="product-img-thumb me-2" alt="Img">
+                                            <span class="fw-medium">Candle Set</span>
+                                        </div>
+                                    </td>
+                                    <td>Interior</td>
+                                    <td>$18.00</td>
+                                    <td>Oct 24</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>

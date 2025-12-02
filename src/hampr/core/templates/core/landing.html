@@ -1,521 +1,542 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hampr — Craft the Perfect Gift</title>
+    <title>HAMPR | Create Your Perfect Custom Hamper</title>
+    <meta name="description"
+        content="Create bespoke gift hampers tailored to perfection. Premium selections, personal touch. Start building your custom hamper today.">
 
-    <style>
-        /* ------------------ BASE ------------------ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #fffaf5;
-            color: #111;
-            overflow-x: hidden;
-        }
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        /* ------------------ CONTAINER ------------------ */
-        .container {
-            max-width: 1250px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        /* ------------------ HEADER ------------------ */
-        header {
-            background: #fffaf5;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            padding: 18px 0;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-        }
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-        .header-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
 
-        .logo {
-            font-weight: 700;
-            font-size: 1.8rem;
-            color: #C78A3B;
-        }
+    <script>
 
-        .header-buttons {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
+        window.onunload = function () { };
 
-        .header-btn {
-            padding: 10px 18px;
-            border-radius: 6px;
-            background: #fff;
-            border: 1px solid #ddd;
-            text-decoration: none;
-            font-size: 0.9rem;
-            color: #111;
-            transition: 0.3s;
-        }
 
-        .header-btn:hover {
-            background: #C78A3B;
-            color: #fff;
-        }
-
-        .menu-btn {
-            font-size: 1.7rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* ------------------ SIDE MENU ------------------ */
-        .side-menu {
-            position: fixed;
-            top: 0;
-            right: -260px;
-            width: 240px;
-            height: 100%;
-            background: #fff;
-            box-shadow: -8px 0 22px rgba(0, 0, 0, 0.15);
-            transition: 0.4s ease;
-            padding: 30px 20px;
-            z-index: 2000;
-        }
-
-        .side-menu.open {
-            right: 0;
-        }
-
-        .menu-content {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            align-self: flex-end;
-        }
-
-        .menu-item {
-            padding-bottom: 6px;
-            border-bottom: 1px solid #ddd;
-            font-size: 1.1rem;
-            color: #111;
-            text-decoration: none;
-        }
-
-        /* ------------------ HERO ------------------ */
-        .hero {
-            padding: 60px 0;
-        }
-
-        .hero-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 40px;
-        }
-
-        .hero-text h1 {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            line-height: 1.1;
-        }
-
-        .hero-text p {
-            margin-bottom: 30px;
-            color: #444;
-            font-size: 1.1rem;
-        }
-
-        .btns {
-            display: flex;
-            gap: 18px;
-        }
-
-        .btn-primary {
-            background: #111;
-            color: #fff;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .hero-img img {
-            width: 420px;
-            border-radius: 14px;
-            animation: float 4s ease-in-out infinite;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .highlight {
-            color: #C78A3B;
-        }
-
-        /* ------------------ FEATURED ------------------ */
-        .section {
-            padding: 80px 0;
-            text-align: center;
-        }
-
-        .cards {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .card {
-            background: #fff;
-            padding: 22px;
-            width: 260px;
-            border-radius: 14px;
-            box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
-        }
-
-        .card img {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 16px;
-        }
-
-        /* ------------------ CTA ------------------ */
-        .cta-wrapper {
-            padding: 80px 0;
-        }
-
-        .cta-box {
-            background: #111;
-            color: #fff;
-            padding: 70px 40px;
-            border-radius: 18px;
-            text-align: center;
-        }
-
-        .cta-box button {
-            background: #C78A3B;
-            border: none;
-            padding: 14px 30px;
-            color: white;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-
-        /* ------------------ WHY CHOOSE ------------------ */
-        .icon-features {
-            display: flex;
-            justify-content: center;
-            gap: 26px;
-            flex-wrap: wrap;
-        }
-
-        .feature {
-            width: 260px;
-            background: #fff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
-        }
-
-        .icon-circle {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #fff2dd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 16px;
-        }
-
-        /* ------------------ HOW IT WORKS ------------------ */
-        .steps {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-        }
-
-        .step-number {
-            width: 65px;
-            height: 65px;
-            background: #C78A3B;
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 14px;
-        }
-
-        .cta-box p {
-            padding: 16px 0;
-        }
-
-        /* ------------------ FOOTER ------------------ */
-        footer {
-            background: #111;
-            color: #ccc;
-            padding: 40px 0;
-            text-align: center;
-            margin-top: 80px;
-        }
-
-        /* ------------------ ANIMATIONS ------------------ */
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-12px);
-            }
-        }
-
-        /* ------------------ RESPONSIVE ------------------ */
-        @media (max-width: 950px) {
-            .hero-inner {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .hero-img {
-                display: none;
-            }
-        }
-
-        @media(max-width: 600px) {
-
-            .card,
-            .feature {
-                width: 90%;
-            }
-        }
-    </style>
+    </script>
 </head>
 
-<body>
+<body class="overflow-x-hidden">
 
-    <!-- HEADER -->
-    <header>
-        <div class="container header-inner">
-
-            <div class="logo">Hampr<span style="color:#111">.</span></div>
-
-            <div class="header-buttons">
-                <button class="menu-btn" id="menuBtn">☰</button>
-
-                {% if user.is_authenticated %}
-                <a href="#" class="header-btn">Cart 🛒</a>
-                <a href="{% url 'core:logout' %}" class="header-btn">Logout</a>
-                {% else %}
-                <a href="{% url 'accounts:signup' %}" class="header-btn">Get Started</a>
-                {% endif %}
-            </div>
-
-        </div>
-    </header>
-
-    <!-- SIDE MENU -->
-    <div id="sideMenu" class="side-menu">
-        <div class="menu-content">
-            <button class="close-btn" id="closeMenu">✕</button>
-
-            <a href="#hero" class="menu-item">Home</a>
-            <a href="#featured" class="menu-item">Featured Categories</a>
-            <a href="#why" class="menu-item">Why Choose Us</a>
-            <a href="#how" class="menu-item">How It Works</a>
-            <a href="#footer" class="menu-item">Contact</a>
-        </div>
-    </div>
-
-    <!-- HERO -->
-    <section id="hero" class="hero">
-        <div class="container hero-inner">
-            <div class="hero-text">
-                <h1>Craft the Perfect <span class="highlight">Gift</span>,<br>Your Way<span class="highlight">.</span>
-                </h1>
-                <p>Choose your box, fill it with love, and make every gift truly personal.</p>
-
-                <div class="btns">
-                    <button class="btn-primary">Start Building Your Hamper</button>
-                    <button class="btn-secondary" style="border: none;"><a href="{% url 'accounts:signup' %}"
-                            style="color:#111;text-decoration:none;border:none;">Get Started</a></button>
-                </div>
-            </div>
-
-            <div class="hero-img">
-                <img width="50" src="{% static 'images/landright1.png' %}">
-            </div>
-        </div>
-    </section>
-
-    <!-- FEATURED CATEGORIES -->
-    <section id="featured" class="section">
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top transition-all" id="mainNav">
         <div class="container">
-            <h2 style="margin-bottom: 12px;">Featured Categories</h2>
-            <p>Everything you need to create the perfect gift hamper.</p>
+            <a class="navbar-brand fw-bold fs-3" href="index.html">
+                <span class="text-gold">HAM</span><span class="text-dark">PR.</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            <div class="cards">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#collections">Collections</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#reviews">Reviews</a></li>
+                </ul>
 
-                <!-- Hamper Boxes -->
-                <div class="card">
-                    <img src="{% static 'images/1.png' %}" alt="Hamper Boxes">
-                    <h3>Hamper Boxes</h3>
+                <div class="d-flex align-items-center gap-3">
+                    {% if user.is_authenticated %}
+
+                    <form action="{% url 'core:logout' %}" method="POST">
+                        {% csrf_token %}
+                        <button
+                            class="btn btn-outline-dark rounded-pill px-3 py-1 fw-semibold btn-sm hover-scale-up hover-ripple"
+                            style="border-width: 2px;">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </button>
+
+                    </form>
+
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}"
+                        class="btn btn-outline-gold rounded-pill px-4 btn-sm d-none d-lg-block">Sign In</a>
+                    {% endif %}
+                    <a href="{% url 'accounts:signup' %}"
+                        class="btn btn-primary rounded-pill px-4 btn-sm hover-ripple">Start Building</a>
                 </div>
-
-                <!-- Premium Products -->
-                <div class="card">
-                    <img src="{% static 'images/2.png' %}" alt="Premium Products">
-                    <h3>Premium Products</h3>
-                </div>
-
-                <!-- Decorations -->
-                <div class="card">
-                    <img src="{% static 'images/3.png' %}" alt="Decorations">
-                    <h3>Decorations</h3>
-                </div>
-
             </div>
-
         </div>
-    </section>
+    </nav>
 
-    <!-- CTA -->
-    <section class="cta-wrapper">
-        <div class="container">
-            <div class="cta-box">
-                <h2>Build a Gift They'll Never Forget</h2>
-                <p>Choose your box, add items, decorate it and craft the perfect surprise.</p>
-                <button>Start Customizing</button>
-            </div>
-        </div>
-    </section>
+    <!-- Section 1: Hero Section -->
+    <section class="hero-section d-flex align-items-center position-relative overflow-hidden"
+        style="min-height: 100vh; padding-top: 80px;">
+        <!-- Background Shapes -->
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <div class="floating-shape shape-4"></div>
+        <div class="floating-shape shape-5"></div>
 
-    <!-- WHY CHOOSE US -->
-    <section id="why" class="section">
-        <div class="container">
-            <h2>Why Choose Hampr?</h2>
-            <p>Experience premium gifting like never before.</p>
-
-            <div class="icon-features">
-                <div class="feature">
-                    <div class="icon-circle">
-                        <img width="50px" src="{% static 'images/icons8-gift.gif' %}">
+        <div class="container position-relative z-1">
+            <div class="row align-items-center">
+                <!-- Hero Content -->
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <div class="hero-content">
+                        <span
+                            class="text-gold fw-bold text-uppercase letter-spacing-2 d-block mb-3 letter-reveal-group">Premium
+                            Gifting</span>
+                        <h1 class="display-3 fw-bold mb-4 text-dark word-reveal-group">
+                            Curated Hampers for <br>
+                            <span class="text-brown fst-italic">Every Occasion</span>
+                        </h1>
+                        <p class="lead text-muted mb-5 animate-fade-up delay-1000" style="max-width: 500px;">
+                            Create bespoke gift hampers tailored to perfection. Premium selections. Personal touch.
+                        </p>
+                        <div class="animate-scale-in delay-1200">
+                            <button
+                                class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg hover-scale-up position-relative overflow-hidden btn-loader">
+                                <span class="position-relative z-1">Start Creating Your Hamper</span>
+                            </button>
+                        </div>
                     </div>
-                    <h3>Fully Customizable</h3>
-                    <p>Create a hamper exactly the way you imagine it.</p>
                 </div>
 
-                <div class="feature">
-                    <div class="icon-circle">
-                        <img src="{% static 'images/icons8-star.gif' %}">
+                <!-- Hero Background/Image -->
+                <div class="col-lg-6 position-relative">
+                    <div class="hero-image-wrapper parallax-element" data-speed="0.5">
+                        <div class="bg-cream rounded-circle position-absolute top-50 start-50 translate-middle"
+                            style="width: 600px; height: 600px; z-index: -1; opacity: 0.4;"></div>
+                        <img src="{% static 'core/images/latest1.png' %}" alt="Luxury Hamper"
+                            class="img-fluid animate-float-y hover-3d" style="transform-style: preserve-3d;">
                     </div>
-                    <h3>Premium Quality</h3>
-                    <p>Only the finest products and packaging.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="icon-circle">
-                        <img src="{% static 'images/icons8-delivery.gif' %}">
-                    </div>
-                    <h3>Fast Delivery</h3>
-                    <p>Quick, safe, and reliable delivery services.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="icon-circle">
-                        <img src="{% static 'images/icons8-near-me.gif' %}">
-                    </div>
-                    <h3>Live Order Tracking</h3>
-                    <p>Track every step from preparation to delivery.</p>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- HOW IT WORKS -->
-    <section id="how" class="section">
-        <div class="container">
-            <h2>How It Works</h2>
-            <p style="margin: 18px 0;">Creating your personalized hamper is simple.</p>
-
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Choose a Box</h3>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Add Products</h3>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Decorate</h3>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3>Checkout</h3>
                 </div>
             </div>
         </div>
+
+        <!-- Scroll Indicator -->
+        <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 animate-bounce-infinite">
+            <a href="#collections" class="text-gold opacity-75 hover-opacity-100 transition-all">
+                <i class="fas fa-chevron-down fa-2x"></i>
+            </a>
+        </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer id="footer">
+    <!-- Section 2: Featured Collections (Display Only) -->
+    <section id="collections" class="py-5 bg-light position-relative overflow-hidden">
+        <div class="container py-5">
+            <div class="text-center mb-5 section-header">
+                <h2 class="display-5 fw-bold mb-3 animate-on-scroll fade-up">Our Premium Collections</h2>
+                <p class="text-muted lead animate-on-scroll fade-up delay-100">Discover curated hamper themes handpicked
+                    for elegance</p>
+                <div class="d-flex justify-content-center mt-3">
+                    <svg width="100" height="10" class="draw-line-svg">
+                        <path d="M0 5 Q 50 10 100 5" stroke="#D4AF37" stroke-width="2" fill="none" class="draw-path" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Card 1: Luxury Gold -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="collection-card h-100 p-4 rounded-4 bg-white shadow-sm hover-3d animate-on-scroll fade-up delay-0">
+                        <div class="card-icon mb-4 text-gold display-4">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Luxury Gold</h4>
+                        <p class="text-muted small">Premium elegance with golden accents</p>
+                        <div class="card-bg-gradient gradient-gold"></div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Wellness Retreat -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="collection-card h-100 p-4 rounded-4 bg-white shadow-sm hover-3d animate-on-scroll fade-up delay-100">
+                        <div class="card-icon mb-4 text-success display-4">
+                            <i class="fas fa-spa"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Wellness Retreat</h4>
+                        <p class="text-muted small">Relaxation and self-care essentials</p>
+                        <div class="card-bg-gradient gradient-green"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Corporate Prestige -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="collection-card h-100 p-4 rounded-4 bg-white shadow-sm hover-3d animate-on-scroll fade-up delay-200">
+                        <div class="card-icon mb-4 text-primary display-4">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Corporate Prestige</h4>
+                        <p class="text-muted small">Executive gifts for business excellence</p>
+                        <div class="card-bg-gradient gradient-navy"></div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Romance & Celebration -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="collection-card h-100 p-4 rounded-4 bg-white shadow-sm hover-3d animate-on-scroll fade-up delay-300">
+                        <div class="card-icon mb-4 text-danger display-4">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Romance</h4>
+                        <p class="text-muted small">Perfect for special moments</p>
+                        <div class="card-bg-gradient gradient-rose"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 animate-on-scroll fade-in delay-400">
+                <p class="text-muted fst-italic">Each collection can be customized to your preference</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Category Showcase (Display Only) -->
+    <section class="py-5 position-relative">
+        <div class="container py-5">
+            <div class="text-center mb-5 section-header">
+                <h2 class="display-5 fw-bold mb-3 animate-on-scroll fade-up">Perfect for Every Occasion</h2>
+                <p class="text-muted lead animate-on-scroll fade-up delay-100">From intimate gatherings to grand
+                    celebrations</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Category 1 -->
+                <div class="col-md-6 col-lg-4">
+                    <div
+                        class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-0">
+                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
+                            <img src="https://placehold.co/600x400/png?text=Birthdays" class="img-fluid w-100"
+                                alt="Birthdays">
+                        </div>
+                        <div
+                            class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <h3 class="text-white fw-bold display-6">Birthdays</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category 2 -->
+                <div class="col-md-6 col-lg-4">
+                    <div
+                        class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-100">
+                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
+                            <img src="https://placehold.co/600x400/png?text=Weddings" class="img-fluid w-100"
+                                alt="Weddings">
+                        </div>
+                        <div
+                            class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <h3 class="text-white fw-bold display-6">Weddings</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category 3 -->
+                <div class="col-md-6 col-lg-4">
+                    <div
+                        class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-200">
+                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
+                            <img src="https://placehold.co/600x400/png?text=Corporate" class="img-fluid w-100"
+                                alt="Corporate">
+                        </div>
+                        <div
+                            class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <h3 class="text-white fw-bold display-6">Corporate</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category 4 -->
+                <div class="col-md-6 col-lg-4">
+                    <div
+                        class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-0">
+                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
+                            <img src="https://placehold.co/600x400/png?text=Festivals" class="img-fluid w-100"
+                                alt="Festivals">
+                        </div>
+                        <div
+                            class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <h3 class="text-white fw-bold display-6">Festivals</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category 5 -->
+                <div class="col-md-6 col-lg-4">
+                    <div
+                        class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-100">
+                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
+                            <img src="https://placehold.co/600x400/png?text=Romantic" class="img-fluid w-100"
+                                alt="Romantic">
+                        </div>
+                        <div
+                            class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <h3 class="text-white fw-bold display-6">Romantic</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Category 6 -->
+                <div class="col-md-6 col-lg-4">
+                    <div
+                        class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-200">
+                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
+                            <img src="https://placehold.co/600x400/png?text=Wellness" class="img-fluid w-100"
+                                alt="Wellness">
+                        </div>
+                        <div
+                            class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                            <h3 class="text-white fw-bold display-6">Wellness</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Why Choose HAMPR -->
+    <section class="py-5 bg-cream position-relative overflow-hidden">
+        <div class="container py-5 position-relative z-1">
+            <div class="text-center mb-5 section-header">
+                <h2 class="display-5 fw-bold mb-3 animate-on-scroll fade-up">Why Choose HAMPR</h2>
+                <p class="text-muted lead animate-on-scroll fade-up delay-100">Trusted by 50,000+ customers worldwide
+                </p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <!-- Feature 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="feature-box-premium bg-white p-4 rounded-4 shadow-sm h-100 text-center animate-on-scroll scale-up delay-0">
+                        <div class="icon-wrapper-premium mb-4 text-gold display-4">
+                            <i class="fas fa-gift animate-icon-rotate"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Curated Selection</h4>
+                        <p class="text-muted">Hand-picked excellence by our experts.</p>
+                    </div>
+                </div>
+                <!-- Feature 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="feature-box-premium bg-white p-4 rounded-4 shadow-sm h-100 text-center animate-on-scroll scale-up delay-150">
+                        <div class="icon-wrapper-premium mb-4 text-gold display-4">
+                            <i class="fas fa-box-open animate-icon-bounce"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Premium Packaging</h4>
+                        <p class="text-muted">Luxury presentation with personalized wrapping.</p>
+                    </div>
+                </div>
+                <!-- Feature 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="feature-box-premium bg-white p-4 rounded-4 shadow-sm h-100 text-center animate-on-scroll scale-up delay-300">
+                        <div class="icon-wrapper-premium mb-4 text-gold display-4">
+                            <i class="fas fa-truck animate-icon-slide"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Fast Delivery</h4>
+                        <p class="text-muted">Same-day delivery and real-time tracking.</p>
+                    </div>
+                </div>
+                <!-- Feature 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div
+                        class="feature-box-premium bg-white p-4 rounded-4 shadow-sm h-100 text-center animate-on-scroll scale-up delay-450">
+                        <div class="icon-wrapper-premium mb-4 text-gold display-4">
+                            <i class="fas fa-shield-alt animate-icon-pulse"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Satisfaction Guarantee</h4>
+                        <p class="text-muted">100% money-back guarantee if not satisfied.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Testimonials Carousel -->
+
+    <!-- Section 6: How It Works -->
+    <section id="how-it-works" class="py-5 bg-white position-relative">
+        <div class="container py-5">
+            <div class="text-center mb-5 section-header">
+                <h2 class="display-5 fw-bold mb-3 animate-on-scroll fade-up">How HAMPR Works</h2>
+                <p class="text-muted lead animate-on-scroll fade-up delay-100">4 Simple Steps to Your Perfect Hamper</p>
+            </div>
+
+            <div class="row g-4 position-relative">
+                <!-- Connecting Line (Desktop) -->
+                <div class="d-none d-lg-block position-absolute top-50 start-0 w-100 z-0"
+                    style="transform: translateY(-50%); height: 2px;">
+                    <svg width="100%" height="10" class="w-100">
+                        <line x1="0" y1="5" x2="100%" y2="5" stroke="#D4AF37" stroke-width="2" stroke-dasharray="10,10"
+                            class="draw-line-anim" />
+                    </svg>
+                </div>
+
+                <!-- Step 1 -->
+                <div class="col-lg-3 text-center position-relative z-1">
+                    <div class="step-card bg-white p-3 d-inline-block animate-on-scroll fade-up delay-0">
+                        <div class="step-icon-premium bg-gold text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg animate-icon-bounce"
+                            style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <h4 class="fw-bold">01. Choose Box</h4>
+                        <p class="text-muted small">Select from our premium box styles</p>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="col-lg-3 text-center position-relative z-1">
+                    <div class="step-card bg-white p-3 d-inline-block animate-on-scroll fade-up delay-300">
+                        <div class="step-icon-premium bg-gold text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg animate-icon-rotate"
+                            style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h4 class="fw-bold">02. Add Products</h4>
+                        <p class="text-muted small">Browse and select products</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="col-lg-3 text-center position-relative z-1">
+                    <div class="step-card bg-white p-3 d-inline-block animate-on-scroll fade-up delay-600">
+                        <div class="step-icon-premium bg-gold text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg animate-icon-spread"
+                            style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <h4 class="fw-bold">03. Customize</h4>
+                        <p class="text-muted small">Add decorations and message</p>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="col-lg-3 text-center position-relative z-1">
+                    <div class="step-card bg-white p-3 d-inline-block animate-on-scroll fade-up delay-900">
+                        <div class="step-icon-premium bg-gold text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4 shadow-lg animate-icon-slide"
+                            style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h4 class="fw-bold">04. Deliver</h4>
+                        <p class="text-muted small">We deliver with care</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Statistics -->
+    <section class="py-5 bg-dark text-white position-relative overflow-hidden">
+        <div class="parallax-bg position-absolute top-0 start-0 w-100 h-100"
+            style="background: url('https://placehold.co/1920x1080/222/333') center/cover; opacity: 0.1;"></div>
+        <div class="container py-5 position-relative z-1">
+            <div class="row g-4 text-center">
+                <div class="col-6 col-md-3">
+                    <div class="stat-box animate-on-scroll fade-in delay-0">
+                        <div class="display-4 fw-bold text-gold mb-2 counter" data-target="50000" data-suffix="+">0
+                        </div>
+                        <p class="lead"><i class="fas fa-smile text-gold me-2 animate-pulse"></i>Happy Customers</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-box animate-on-scroll fade-in delay-200">
+                        <div class="display-4 fw-bold text-gold mb-2 counter" data-target="10000" data-suffix="+">0
+                        </div>
+                        <p class="lead"><i class="fas fa-truck text-gold me-2 animate-slide"></i>Hampers Delivered</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-box animate-on-scroll fade-in delay-400">
+                        <div class="display-4 fw-bold text-gold mb-2 counter" data-target="98" data-suffix="%">0</div>
+                        <p class="lead"><i class="fas fa-trophy text-gold me-2 animate-bounce"></i>Satisfaction Rate</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-box animate-on-scroll fade-in delay-600">
+                        <div class="display-4 fw-bold text-gold mb-2">24/7</div>
+                        <p class="lead"><i class="fas fa-headset text-gold me-2 animate-rotate"></i>Customer Support</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 8: CTA Section -->
+    <section class="py-5 position-relative overflow-hidden" style="height: 600px; display: flex; align-items: center;">
+        <div class="parallax-bg position-absolute top-0 start-0 w-100 h-100"
+            style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://placehold.co/1920x1080/png?text=Premium+Gift'); background-size: cover; background-position: center; transform: scale(1.1);">
+        </div>
+
+        <div class="container text-center position-relative z-1">
+            <h2 class="display-3 fw-bold text-white mb-4 letter-reveal-group-scroll">Ready to Create Your Perfect
+                Hamper?</h2>
+            <p class="lead text-white-50 mb-5 animate-on-scroll fade-up delay-600">Join thousands of happy customers and
+                make someone's day special.</p>
+            <div class="d-flex justify-content-center gap-3 animate-on-scroll scale-up delay-800">
+                <button class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg hover-scale-up hover-glow">Start
+                    Creating Now</button>
+                <button class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill hover-scale-up">Browse
+                    Collections</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark pt-5 pb-3">
         <div class="container">
-            <p>© 2025 Hampr. All Rights Reserved.</p>
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h3 class="text-white mb-4">HAM<span class="text-gold">PR.</span></h3>
+                    <p class="text-white-50">Premium gift hampers for all occasions. Curated with love and care.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Shop</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">All
+                                Products</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">New
+                                Arrivals</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">Best
+                                Sellers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Company</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">About
+                                Us</a></li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">Contact</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">Privacy
+                                Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="text-white mb-3">Newsletter</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Your email">
+                        <button class="btn btn-primary hover-ripple">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center text-white-50">
+                <small>&copy; 2023 HAMPR. All rights reserved.</small>
+            </div>
         </div>
     </footer>
 
-    <!-- MENU JS -->
-    <script>
-        const menuBtn = document.getElementById('menuBtn');
-        const sideMenu = document.getElementById('sideMenu');
-        const closeMenu = document.getElementById('closeMenu');
-
-        menuBtn.onclick = () => sideMenu.classList.add('open');
-        closeMenu.onclick = () => sideMenu.classList.remove('open');
-
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', () => {
-                sideMenu.classList.remove('open');
-
-                const target = document.querySelector(item.getAttribute('href'));
-                if (target) {
-                    window.scrollTo({
-                        top: target.offsetTop - 50,
-                        behavior: "smooth"
-                    });
-                }
-            });
-        });
-    </script>
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="{% static 'accounts/js/main.js' %}"></script>
 </body>
 
 </html>

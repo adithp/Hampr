@@ -8,10 +8,14 @@ from accounts.models import CustomUser
 from django.db.models import Q
 from django.contrib.auth import login
 from django.db.models import Q
+from django.contrib import messages
+
+
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
-
+from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd
+from catalog.models import BoxCategory,BoxType,HamperBox
 
 
 
@@ -86,3 +90,47 @@ class AdminBlockUser(StaffRequiredMixin,View):
             user.is_active = True
             user.save()
         return redirect('cadmin:user_management')
+    
+    
+    
+class AdminProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
+    template_name = 'c_admin/admin-products.html'
+    
+    
+class AdminBoxProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
+    template_name = 'c_admin/admin-products-boxes.html'
+    
+    
+
+    
+class AdminBoxProductsAddItem(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        categories = BoxCategory.objects.all()
+        types = BoxType.objects.all()
+        form = HamperBoxForm()
+        return render(request,'c_admin/admin-products-boxes-add-step1.html',{'form':form,'categories':categories,'types':types})
+    
+    
+class AdminBoxTypeItemAdd(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        
+        form = BoxTypeForm()
+        return render(request,'c_admin/admin-products-box-types-add.html',{'form':form,})
+    
+    def post(self,request,*args, **kwargs):
+        data = request.POST
+        form = BoxTypeForm(data)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Box Type added successfully!")
+            return redirect('cadmin:box_type_add')
+        else:
+            return render(request,'c_admin/admin-products-box-types-add.html',{'form':form})
+
+class AdminBoxCategoryItemAdd(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        
+        form = BoxCategoryAdd()
+        return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,})
+    
+    
