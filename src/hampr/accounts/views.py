@@ -19,15 +19,15 @@ from django.contrib.auth.views import LogoutView
 
 
 from .forms import CustomUserCreationForm,EmailOrUsernameLogin
-from core.decorators import otp_pending_verify,guest_only
+from core.decorators import otp_pending_verify
 from .models import CustomUser,OTP,PasswordReset
 from .utils import otp_send_signup,otp_block_time_verify,password_reset_link,token_checker
 from core.utils import FMT
-from core.mixins import NeverCacheMixin
+from core.mixins import NeverCacheMixin,GuestOnlyMixin
 
 
-@method_decorator(guest_only,name='dispatch')
-class UserSignupView(CreateView):
+
+class UserSignupView(GuestOnlyMixin,CreateView):
     
     template_name = 'accounts/hampr_signup.html'
     form_class = CustomUserCreationForm
@@ -68,7 +68,7 @@ class Otp_Verify_View(NeverCacheMixin,View):
         login(request,user)
         obj_otp.delete()
         
-        return redirect(reverse_lazy('accounts:suc'))
+        return redirect(reverse_lazy('core:landing_page'))
  
 
 
@@ -111,8 +111,7 @@ class BackButtonOtp(View):
         return JsonResponse({'succses':True})
 
 
-@method_decorator(guest_only,name='dispatch')
-class CustomLoginView(NeverCacheMixin,View):
+class CustomLoginView(NeverCacheMixin,GuestOnlyMixin,View):
     def get(self, request, *args, **kwargs):
         return render(request,'accounts/hampr_login.html')
     
@@ -124,9 +123,14 @@ class CustomLoginView(NeverCacheMixin,View):
         except CustomUser.DoesNotExist:
             messages.error(request,"Invalid Username")
             return redirect(reverse_lazy('accounts:login'))
-        if not user.check_password(password):
-            messages.error(request,"password invalid")
+        if user.has_usable_password():
+            if not user.check_password(password):
+                messages.error(request, "password invalid")
+                return redirect(reverse_lazy('accounts:login'))
+        else:
+            messages.error(request, "This account was created with Google. Please login using Google.")
             return redirect(reverse_lazy('accounts:login'))
+        
         if not user.is_active:
             messages.error(request,"Contact admin user blocked by admin")
             return redirect(reverse_lazy('accounts:login'))
@@ -148,7 +152,8 @@ class CustomLoginView(NeverCacheMixin,View):
             return redirect(reverse_lazy('accounts:otp_verify'))
         user.backend = 'django.contrib.auth.backends.ModelBackend'  
         login(request,user)
-        return redirect('accounts:suc')
+        return redirect(reverse_lazy('core:landing_page'))
+    
     
 @method_decorator(never_cache,name='dispatch')
 class ResetPasswordLinkSend(View):
@@ -176,6 +181,7 @@ class ResetPasswordLinkSend(View):
         cache.set(f"reset:{user.id}",1,1800)
         messages.success(request,'Succsesfully send password reset link to your email')
         return redirect('accounts:reset_link')
+        
         
 @method_decorator(never_cache,name='dispatch')
 class ResetPassword(View):

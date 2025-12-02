@@ -45,6 +45,13 @@
             border: 1px solid rgba(232, 228, 224, 0.8);
         }
     </style>
+    <script>
+        window.addEventListener("pageshow", function (e) {
+    if (e.persisted) {
+        document.querySelector("form").reset();
+    }
+});
+</script>
 
     {% block extra_css %}{% endblock %}
 </head>

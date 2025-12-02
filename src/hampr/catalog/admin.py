@@ -1,3 +1,14 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import BoxType,BoxCategory,BoxCategoryImage,HamperBox
+
+
+
+admin.site.register(BoxType)
+
+admin.site.register(BoxCategory)
+
+admin.site.register(BoxCategoryImage)
+
+
+admin.site.register(HamperBox)

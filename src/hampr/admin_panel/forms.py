@@ -1,0 +1,270 @@
+from catalog.models import BoxCategory,BoxType,HamperBox,BoxSize
+from django import forms
+import re
+from django.core.exceptions import ValidationError
+
+
+class HamperBoxForm(forms.ModelForm):
+    
+
+    class Meta():
+        model = HamperBox
+        fields = '__all__'
+        widgets = {
+            'category':forms.Select(attrs={
+                'class':'form-select',
+                'id':'boxCategory',
+                'required':True,
+            }),
+            'name':forms.TextInput(attrs={
+                'type':'text',
+                'class':'form-control',
+                'id':'boxName',
+                'placeholder':"e.g., Classic Kraft Box, Woven Basket",
+                'maxlength':'40',
+                'required':True,
+                'oninput':"updateCharCount(this, 'nameCount')"
+                
+            }),
+            'description':forms.Textarea(attrs={
+                'class':"form-control",
+                'id':"boxDescription",
+                'rows':'5',
+                'placeholder':"Describe materials, features, durability...",
+                'maxlength':'1000',
+                'oninput':"updateCharCount(this, 'descCount')"
+                
+            }),
+            'is_active':forms.CheckboxInput(attrs={
+                'class':"form-check-input",
+                'type':"checkbox",
+                'id':"activeStatus"
+                
+            })
+        }
+        
+        
+    def __init__(self,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].empty_label = 'Select box type category'
+        
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        
+        if not name:
+            raise ValidationError("Box Name Is Required")
+        
+        if len(name) < 3:
+            raise ValidationError("Box Length Must be under 3 characters")
+        
+        if not re.match(r'^[A-Za-z ]+$', name):
+            raise ValidationError("Box name must contain only alphabets and spaces")
+        if BoxType.objects.filter(name__iexact=name).exists():
+            raise ValidationError("This box name already exists")
+    
+        return name
+    
+    
+    def clean_description(self):
+        description = self.cleaned_data.get('description')
+        
+        if not description:
+            raise ValidationError("Box Name Is Required")
+        
+        if len(description) < 20:
+            raise ValidationError("Box Length Must be under 20 characters")
+        if description.isdigit():
+            raise ValidationError("Must Conatin Alphabets")
+
+        return description
+    
+
+    
+class BoxTypeForm(forms.ModelForm):
+ 
+    class Meta():
+        model = BoxType
+        fields = '__all__'
+        widgets = {
+            'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'typeName','placeholder':"e.g., Standard Box, Basket, Wooden Crate",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
+            'description':forms.Textarea(attrs={'class':"form-control",'id':"typeDescription",'row':'4', 'placeholder':"Describe this box type...",'maxlength':'200','oninput':"updateCharCount(this)"}),
+            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"typeStatus",'checked':True})
+        }
+        
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        
+        if not name:
+            raise ValidationError("Box Name Is Required")
+        
+        if len(name) < 3:
+            raise ValidationError("Box Length Must be under 3 characters")
+        
+        if not re.match(r'^[A-Za-z ]+$', name):
+            raise ValidationError("Box name must contain only alphabets and spaces")
+        if BoxType.objects.filter(name__iexact=name).exists():
+            raise ValidationError("This box name already exists")
+        
+        return name
+    
+    
+class BoxCategoryAdd(forms.ModelForm):
+    
+    class Meta:
+        model = BoxCategory
+        fields = '__all__'
+        widgets = {
+            'box_type':forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'boxType',
+                'required': True,
+                'onchange': 'validateInput(this)',
+            }),
+            'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'categoryName','placeholder':"e.g., Birthday, Wedding",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
+            'description':forms.Textarea(attrs={'class':"form-control",'id':"categoryDescription",'row':'4', 'placeholder':"Describe this category...",'maxlength':'200','oninput':"updateCharCount(this)"}),
+            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus",'checked':True})
+        }
+        
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['box_type'].empty_label = "Select Box Type"
+        
+        
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        
+        if not name:
+            raise ValidationError("Box Name Is Required")
+        
+        if len(name) < 3:
+            raise ValidationError("Box Length Must be under 3 characters")
+        
+        if not re.match(r'^[A-Za-z ]+$', name):
+            raise ValidationError("Box name must contain only alphabets and spaces")
+        if BoxType.objects.filter(name__iexact=name).exists():
+            raise ValidationError("This box name already exists")
+        
+        return name
+    
+    
+class BoxSizeForm(forms.ModelForm):
+    
+    
+    
+
+
+    class Meta:
+        model = BoxSize
+        fields = ['height','width','depth','cost','price','stock','size_label','is_active']
+        
+        widgets = {
+            'size_label':forms.Select(attrs={
+                'class':'form-select size-select',
+                'onchange':"updateSizeLabel(1, this)",
+                
+            }),
+            'height':forms.TextInput(attrs={
+                'type':'number',
+                'class':'form-control',
+                'placeholder':"Height",
+                'required':True,
+                'oninput':"calcVolume(1)"
+                
+            }),
+            'width':forms.TextInput(attrs={
+                'type':'number',
+                'class':'form-control',
+                'placeholder':"Width",
+                'required':True,
+                'oninput':"calcVolume(1)"
+            }),
+            'depth':forms.TextInput(attrs={
+                'type':'number',
+                'class':'form-control',
+                'placeholder':"Depth",
+                'required':True,
+                'oninput':"calcVolume(1)"
+            }),
+            'cost':forms.TextInput(attrs={
+                'type':'number',
+                'class':"form-control cost-price",
+                'placeholder':"0.00",
+                'required':True,
+                'oninput':"calcProfit(1)"
+                
+            }),
+            'price':forms.TextInput(attrs={
+                'type':'number',
+                'class':"form-control selling-price",
+                'placeholder':"0.00",
+                'required':True,
+                'oninput':"calcProfit(1)"
+            }),
+            'stock':forms.TextInput(attrs={
+                'type':'number',
+                'class':'form-control',
+                'placeholder':'0',
+                'required':True
+            }),
+            'is_active':forms.CheckboxInput(attrs={
+                'class':'form-check-input',
+                'type':'checkbox',
+                'checked':True
+            })
+            
+            
+             
+         
+        
+        
+        
+        
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['size_label'].choices = [
+            choice for choice in self.fields['size_label'].choices if choice[0] != ''
+        ]
+    def clean_height(self):
+        height = self.cleaned_data.get('height')
+        
+        if float(height) < 0:
+            raise ValidationError('height must be greater than 0 ')
+        
+        return height
+    
+    def clean_width(self):
+        width = self.cleaned_data.get('width')
+        
+        if float(width) < 0:
+            raise ValidationError('width must be greater than 0 ')
+        
+        return width
+    
+    def clean_depth(self):
+        depth = self.cleaned_data.get('depth')
+        
+        if float(depth) < 0:
+            raise ValidationError('depth must be greater than 0 ')
+        
+        return depth
+    
+    def clean_cost(self):
+        cost = self.cleaned_data.get('cost')
+        if float(cost) < 0:
+            raise ValidationError('cost must be greater than 0 ')
+        
+        return cost
+    
+    def clean_stock(self):
+        stock = self.cleaned_data.get('stock')
+        if int(stock) < 0:
+            raise ValidationError('stock must be greater than 0 ')
+        
+        return stock
+
+        
+    

@@ -57,7 +57,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware'
+    'allauth.account.middleware.AccountMiddleware',
+    # 'core.middleware.NoCacheMiddleware'
 ]
 
 
@@ -156,10 +157,12 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 
 LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "accounts:suc"
+LOGIN_REDIRECT_URL = "core:landing_page"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = "accounts.adapters.GoogleBlockAdapter"
+
+
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

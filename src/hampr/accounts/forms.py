@@ -10,39 +10,10 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ['first_name','last_name','email','username','password1','password2']
         widgets = {
-            'first_name':forms.TextInput(attrs={
-                'type':'text',
-                'placeholder':'Jhon',
-                
-            }),
-            'last_name':forms.TextInput(attrs={
-                'type':'text',
-                'placeholder':'Doe',
-                
-            }),
-            'email':forms.EmailInput(attrs={
-                'type':'email',
-                'placeholder':'example@email.com',
-                'required':True
-                
-            }),
-            'username':forms.TextInput(attrs={
-                'type':'text',
-                'placeholder':'jhondoe',
-                'required':True
-                
-            }),
-            'password1':forms.PasswordInput(attrs={
-                'type':'password',
-                'placeholder':'••••••••',
-                'required':True
-            })
-            ,
-            'password2':forms.PasswordInput(attrs={
-                'type':'password',
-                'placeholder':'••••••••',
-                'required':True
-            })
+            'first_name': forms.TextInput(attrs={'class': 'form-control bg-light', 'placeholder': 'First Name','required':False}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control bg-light', 'placeholder': 'Last Name'}),
+            'username': forms.TextInput(attrs={'class': 'form-control bg-light', 'placeholder': 'Username'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control bg-light', 'placeholder': 'example@email.com'}),
             
         }
     

@@ -8,15 +8,20 @@ from django.urls import reverse
 
 
 class GoogleBlockAdapter(DefaultSocialAccountAdapter):
-    def pre_social_login(self, request, sociallogin):
+     def pre_social_login(self, request, sociallogin):
         email = sociallogin.account.extra_data.get('email')
-        
         if not email:
             return
         
-        if CustomUser.objects.filter(email=email).exists():
-            messages.error(request,'user already register login with email and password')
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return  
+        if user.has_usable_password():
+            messages.error(request, "You already registered using email & password. Please login using your password.")
             raise ImmediateHttpResponse(
                 redirect(reverse("accounts:login"))
             )
         
+       
+        return

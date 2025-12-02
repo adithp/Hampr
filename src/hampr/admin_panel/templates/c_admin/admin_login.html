@@ -1,175 +1,219 @@
-{% extends "c_admin/base.html" %}
+{% load static %}
 
-{% block title %}Admin Login — Hampr{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block extra_css %}
-<style>
-    .heading {
-        text-align: center;
-        font-size: 18px;
-        font-weight: 700;
-        margin-bottom: 6px;
-    }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | HAMPR</title>
 
-    .sub {
-        text-align: center;
-        color: var(--muted);
-        font-size: 13px;
-        margin-bottom: 20px;
-    }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
 
-    form .field {
-        margin-bottom: 16px;
-    }
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    .logo {
-        font-weight: 800;
-        color: var(--gold);
-        font-size: 20px;
-        text-align: center;
-        margin-bottom: 18px;
-    }
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    label {
-        display: block;
-        font-size: 13px;
-        color: var(--muted);
-        margin-bottom: 8px;
-    }
+    <!-- AOS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    input {
-        width: 100%;
-        padding: 12px 14px;
-        font-size: 14px;
-        border: 1px solid #E8E4E0;
-        border-radius: 8px;
-        background: #fff;
-    }
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
 
-    /* password group */
-    .password-wrap {
-        position: relative;
-        width: 100%;
-        box-sizing: border-box;
-    }
+        .text-gold {
+            color: #d2b356;
+        }
 
-    /* keep the input height consistent and reserve space on the right */
-    .password-wrap input {
-        width: 100%;
-        padding: 10px 56px 10px 14px;
-        /* make right padding for the button */
-        height: 42px;
-        border-radius: 8px;
-        border: 1px solid #E8E4E0;
-        box-sizing: border-box;
-        font-size: 14px;
-    }
+        /* Password wrapper */
+        .password-wrapper {
+            position: relative;
+        }
 
-    /* Show button inside the input on the right */
-    .toggle-visibility {
-        position: absolute;
-        right: 8px;
-        /* distance from the input right edge */
-        top: 70%;
-        transform: translateY(-50%);
-        padding: 6px 10px;
-        height: auto;
-        line-height: 1;
-        border-radius: 6px;
-        border: 1px solid rgba(199, 138, 59, 0.22);
-        background: #fff;
-        font-size: 13px;
-        cursor: pointer;
-        box-shadow: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
+        .password-wrapper input {
+            padding-right: 42px;
+            /* make space for eye icon */
+        }
 
-    /* optional: when button is visually minimal (no rectangle) */
-    .toggle-visibility--link {
-        background: transparent;
-        border: none;
-        color: var(--gold);
-        padding: 0 8px;
-    }
+        .password-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #777;
+        }
 
-    .btn-primary {
-        width: 100%;
-        background: var(--black);
-        color: var(--gold);
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 15px;
-        cursor: pointer;
-    }
+        .password-eye:hover {
+            color: #000;
+        }
 
-    .forgot-row {
-        text-align: right;
-        margin-bottom: 12px;
-    }
+        .floating-shape {
+            opacity: 0.4;
+        }
+    </style>
 
-    .forgot-link {
-        color: var(--gold);
-        text-decoration: none;
-    }
+</head>
 
-    .security-footer {
-        text-align: center;
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 18px;
-    }
-</style>
-{% endblock %}
+<body class="bg-light d-flex align-items-center min-vh-100 py-5">
 
-{% block content %}
-<div class="card">
-    <div class="logo">Hampr</div>
-    <div class="heading">Admin Portal</div>
-    <div class="sub">Sign in to manage the Hampr backend</div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
 
-    <form method="POST" action="">
-        {% csrf_token %}
+                <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px;">
+                    <div class="row g-0">
 
-        <div class="field">
-            <label>Email or Username</label>
-            <input type="text" name="identifier" placeholder="admin@hampr.com" required />
+                        <!-- LEFT SECTION -->
+                        <div class="col-lg-6 p-5 bg-white d-flex flex-column justify-content-center"
+                            data-aos="fade-right">
+
+                            <h3 class="fw-bold text-dark">
+                                HAM<span class="text-gold">PR.</span>
+                            </h3>
+
+                            <h4 class="fw-bold mt-4">Admin Portal</h4>
+
+                            <p class="text-danger fw-semibold">
+                                <i class="fas fa-shield-alt me-2"></i> Authorized Personnel Only
+                            </p>
+
+                            <form method="POST" action="">
+                                {% csrf_token %}
+
+                                <!-- Identifier -->
+                                <div class="mb-3">
+                                    <label class="form-label">Email or Username</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="far fa-user text-muted"></i>
+                                        </span>
+                                        <input type="text" name="identifier"
+                                            class="form-control border-start-0 bg-light ps-0"
+                                            placeholder="admin@hampr.com" required>
+                                    </div>
+                                </div>
+
+                                <!-- Password -->
+                                <div class="mb-2">
+                                    <label class="form-label">Password</label>
+                                    <div class="input-group password-wrapper">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="fas fa-lock text-muted"></i>
+                                        </span>
+
+                                        <input type="password" id="password" name="password"
+                                            class="form-control border-start-0 bg-light ps-0" placeholder="••••••••"
+                                            required>
+
+                                        <i class="far fa-eye password-eye" id="toggleEye"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Messages -->
+                                {% if messages %}
+                                {% for message in messages %}
+                                <p class="text-danger small">{{ message }}</p>
+                                {% endfor %}
+                                {% endif %}
+
+                                <!-- Forgot -->
+
+
+                                <!-- Button -->
+                                <button type="submit" class="btn btn-primary w-100 py-2"
+                                    style="background:#d2b356; border:none; font-weight:600;">
+                                    Login
+                                </button>
+
+                                <!-- Footer -->
+                                <p class="text-center mt-4 text-muted small">Admin Access Only</p>
+
+                            </form>
+
+                        </div>
+
+                        <!-- RIGHT DECORATION -->
+                        <div class="col-lg-6 bg-dark d-none d-lg-flex align-items-center justify-content-center position-relative"
+                            data-aos="fade-left">
+
+                            <div class="position-absolute top-0 start-0 w-100 h-100 opacity-25">
+                                <div class="floating-shape bg-gold rounded-circle position-absolute"
+                                    style="width: 110px; height: 110px; top: 10%; left: 12%;"></div>
+
+                                <div class="floating-shape bg-cream rounded-circle position-absolute"
+                                    style="width: 150px; height: 150px; bottom: 18%; right: 8%;"></div>
+
+                                <div class="floating-shape bg-brown rounded-circle position-absolute"
+                                    style="width: 90px; height: 90px; top: 42%; right: 30%;"></div>
+                            </div>
+
+                            <div class="text-center text-white position-relative z-2 px-4">
+                                <h2 class="fw-bold mb-3">Administrative Access</h2>
+                                <p class="text-white-50">
+                                    Secure gateway for system management and backend operations.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
         </div>
+    </div>
 
-        <div class="field password-wrap">
-            <label>Password</label>
-            <input type="password" name="password" id="password" required placeholder="Enter Your password" />
-            <button type="button" class="toggle-visibility" id="pwd-toggle">Show</button>
-        </div>
-        {% if messages %}
-        {% for message in messages %}
-        <p style="color:red;">{{ message }}</p>
-        {% endfor %}
-        {% endif %}
-        <div class="forgot-row">
-            <a href="#" class="forgot-link">Forgot Password?</a>
-        </div>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-        <button class="btn-primary" type="submit">Login</button>
-    </form>
+    <script>
+        AOS.init();
 
-    <div class="security-footer">Authorized Access Only</div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    (function () {
-        const pwd = document.getElementById('password');
-        const toggle = document.getElementById('pwd-toggle');
-        toggle.addEventListener('click', () => {
-            const isPassword = pwd.type === 'password';
-            pwd.type = isPassword ? 'text' : 'password';
-            toggle.textContent = isPassword ? 'Hide' : 'Show';
+        anime({
+            targets: '.floating-shape',
+            translateY: () => anime.random(-20, 20),
+            translateX: () => anime.random(-20, 20),
+            scale: () => anime.random(0.85, 1.15),
+            easing: 'easeInOutQuad',
+            duration: 4000,
+            direction: 'alternate',
+            loop: true
         });
-    })();
-</script>
-{% endblock %}
+
+        // Toggle Password Visibility
+        const passwordInput = document.getElementById("password");
+        const toggleIcon = document.getElementById("toggleEye");
+
+        toggleIcon.addEventListener("click", () => {
+            const isHidden = passwordInput.type === "password";
+
+            passwordInput.type = isHidden ? "text" : "password";
+            toggleIcon.classList.toggle("fa-eye");
+            toggleIcon.classList.toggle("fa-eye-slash");
+        });
+    </script>
+    <script>
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+
+
+</body>
+
+</html>
