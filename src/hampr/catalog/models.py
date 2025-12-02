@@ -25,6 +25,9 @@ class BoxCategory(models.Model):
     name = models.CharField(max_length=30)
     slug = AutoSlugField(populate_from="name",unique=True)
     
+    def __str__(self):
+        return self.name
+    
     
 class BoxCategoryImage(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=True)
@@ -35,10 +38,12 @@ class BoxCategoryImage(models.Model):
     is_primary = models.BooleanField(default=False)
     
     
+    
+    
 class HamperBox(models.Model):
     id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
     category = models.ForeignKey(BoxCategory,on_delete=models.CASCADE)
-    box_type = models.ForeignKey(BoxType,on_delete=models.CASCADE)
+    
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField()
     is_active = models.BooleanField(default=True)

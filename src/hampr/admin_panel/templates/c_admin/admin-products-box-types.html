@@ -190,7 +190,8 @@
         <div class="px-3">
             <ul class="nav flex-column gap-2">
                 <li class="nav-item">
-                    <a href="admin-dashboard.html" class="nav-link text-dark"><i class="fas fa-home me-2"></i>
+                    <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark"><i
+                            class="fas fa-home me-2"></i>
                         Dashboard</a>
                 </li>
                 <li class="nav-item">
@@ -199,7 +200,7 @@
                 </li>
             </ul>
             <hr>
-            <a href="admin-products.html" class="btn btn-outline-secondary w-100 btn-sm">
+            <a href="{% url 'cadmin:box_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
                 <i class="fas fa-arrow-left me-2"></i>Back to Products
             </a>
         </div>
@@ -224,13 +225,13 @@
                 <h2 class="fw-bold mb-1">Manage Box Types</h2>
                 <p class="text-muted mb-0">Edit physical container types available in your system</p>
             </div>
-            <a href="admin-products-box-types-add.html" class="btn btn-primary-custom px-4 py-2">
+            <a href="{% url 'cadmin:box_type_add' %}" class="btn btn-primary-custom px-4 py-2">
                 <i class="fas fa-plus me-2"></i> Add New Box Type
             </a>
         </div>
 
         <!-- Filters & Search -->
-        <div class="card table-card p-3 mb-4">
+        <!-- <div class="card table-card p-3 mb-4">
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="input-group">
@@ -254,7 +255,7 @@
                     </select>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Box Types Table -->
         <div class="card table-card p-4">
@@ -262,7 +263,7 @@
                 <table class="table table-hover align-middle">
                     <thead class="bg-light">
                         <tr>
-                            <th class="border-0 rounded-start" style="width: 60px;"></th>
+
                             <th class="border-0">Box Type Name</th>
                             <th class="border-0">Description</th>
                             <th class="border-0 text-center">Products</th>
@@ -271,55 +272,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Item 1 -->
+                        {% for box_type in box_types %}
                         <tr>
-                            <td data-label="Icon">
-                                <div class="type-icon"><i class="fas fa-box-open"></i></div>
-                            </td>
+
                             <td data-label="Name" class="fw-bold"><a href="admin-products-box-types-add.html"
-                                    class="text-decoration-none text-dark">Standard Box</a></td>
-                            <td data-label="Description" class="text-muted small">Basic cardboard boxes for general
-                                items...</td>
+                                    class="text-decoration-none text-dark">{{box_type.name}}</a></td>
+                            <td data-label="Description" class="text-muted small">{% if box_type.description %}
+                                {{box_type.description}}{% else %} No Data Avaialabe{% endif%}</td>
                             <td data-label="Products" class="text-center"><span
-                                    class="badge bg-light text-dark border">142</span></td>
+                                    class="badge bg-light text-dark border">None</span></td>
+                            {%if box_type.is_active %}
                             <td data-label="Status"><span class="status-badge status-active">Active</span></td>
-                            <td data-label="Actions" class="text-end">
-                                <a href="admin-products-box-types-add.html" class="btn btn-sm btn-light me-1"
-                                    title="Edit"><i class="fas fa-edit"></i></a>
-                                <button class="btn btn-sm btn-light text-danger" onclick="confirmDelete()"
-                                    title="Delete"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <!-- Item 2 -->
-                        <tr>
-                            <td data-label="Icon">
-                                <div class="type-icon"><i class="fas fa-shopping-basket"></i></div>
-                            </td>
-                            <td data-label="Name" class="fw-bold"><a href="admin-products-box-types-add.html"
-                                    class="text-decoration-none text-dark">Basket</a></td>
-                            <td data-label="Description" class="text-muted small">Woven baskets for gift hampers...</td>
-                            <td data-label="Products" class="text-center"><span
-                                    class="badge bg-light text-dark border">45</span></td>
-                            <td data-label="Status"><span class="status-badge status-active">Active</span></td>
-                            <td data-label="Actions" class="text-end">
-                                <a href="admin-products-box-types-add.html" class="btn btn-sm btn-light me-1"
-                                    title="Edit"><i class="fas fa-edit"></i></a>
-                                <button class="btn btn-sm btn-light text-danger" onclick="confirmDelete()"
-                                    title="Delete"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <!-- Item 3 -->
-                        <tr>
-                            <td data-label="Icon">
-                                <div class="type-icon"><i class="fas fa-pallet"></i></div>
-                            </td>
-                            <td data-label="Name" class="fw-bold"><a href="admin-products-box-types-add.html"
-                                    class="text-decoration-none text-dark">Wooden Crate</a></td>
-                            <td data-label="Description" class="text-muted small">Rustic wooden crates for premium
-                                feel...</td>
-                            <td data-label="Products" class="text-center"><span
-                                    class="badge bg-light text-dark border">28</span></td>
+                            {% else %}
                             <td data-label="Status"><span class="status-badge status-inactive">Inactive</span></td>
+                            {% endif %}
                             <td data-label="Actions" class="text-end">
                                 <a href="admin-products-box-types-add.html" class="btn btn-sm btn-light me-1"
                                     title="Edit"><i class="fas fa-edit"></i></a>
@@ -327,6 +293,8 @@
                                     title="Delete"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
+                        {% endfor %}
+
                     </tbody>
                 </table>
             </div>
@@ -343,7 +311,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+            <!-- <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                 <p class="text-muted small mb-0">Showing 1 to 3 of 3 entries</p>
                 <nav>
                     <ul class="pagination pagination-sm mb-0">
@@ -352,7 +320,7 @@
                         <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
                     </ul>
                 </nav>
-            </div>
+            </div> -->
         </div>
     </main>
 
@@ -369,6 +337,16 @@
             }
         }
     </script>
+    <script>
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+
 </body>
 
 </html>

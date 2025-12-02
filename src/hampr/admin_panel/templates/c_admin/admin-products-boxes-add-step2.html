@@ -193,7 +193,7 @@
                 <div class="fw-bold text-primary"><i class="fas fa-box me-2"></i>Adding New Box</div>
             </div>
             <hr>
-            <a href="admin-products-boxes.html" class="btn btn-outline-secondary w-100 btn-sm">
+            <a href="" class="btn btn-outline-secondary w-100 btn-sm">
                 <i class="fas fa-times me-2"></i>Cancel & Exit
             </a>
         </div>
@@ -247,98 +247,108 @@
                 </div>
             </div>
         </div>
-
-        <!-- Size Cards Container -->
-        <div id="sizeCardsContainer">
-            <!-- Initial Card (Template) -->
-            <div class="size-card" id="sizeCard-1">
-                <div class="size-card-header d-flex justify-content-between align-items-center"
-                    data-bs-toggle="collapse" data-bs-target="#collapse-1">
-                    <h6 class="fw-bold mb-0 text-primary">Size #1: <span class="size-label-preview">Small</span></h6>
-                    <div class="d-flex align-items-center gap-3">
-                        <button type="button" class="btn btn-sm text-danger delete-size-btn d-none"
-                            onclick="removeSizeCard(1, event)"><i class="fas fa-times"></i></button>
-                        <i class="fas fa-chevron-down text-muted"></i>
-                    </div>
-                </div>
-                <div class="collapse show" id="collapse-1">
-                    <div class="card-body p-4">
-                        <!-- Section 1: Label -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Size Label <span class="text-danger">*</span></label>
-                            <select class="form-select size-select" onchange="updateSizeLabel(1, this)">
-                                <option value="Small" selected>Small</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Large">Large</option>
-                                <option value="Extra Large">Extra Large</option>
-                            </select>
-                        </div>
-
-                        <!-- Section 2: Dimensions -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Dimensions (cm) <span
-                                    class="text-danger">*</span></label>
-                            <div class="row g-2">
-                                <div class="col-4">
-                                    <input type="number" class="form-control" placeholder="Height" required
-                                        oninput="calcVolume(1)">
-                                    <small class="text-muted" style="font-size: 0.75rem;">Height</small>
-                                </div>
-                                <div class="col-4">
-                                    <input type="number" class="form-control" placeholder="Width" required
-                                        oninput="calcVolume(1)">
-                                    <small class="text-muted" style="font-size: 0.75rem;">Width</small>
-                                </div>
-                                <div class="col-4">
-                                    <input type="number" class="form-control" placeholder="Depth" required
-                                        oninput="calcVolume(1)">
-                                    <small class="text-muted" style="font-size: 0.75rem;">Depth</small>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-muted small" id="volume-1">Volume: 0 cm³</div>
-                        </div>
-
-                        <!-- Section 3: Pricing & Stock -->
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Cost Price (₹) <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control cost-price" placeholder="0.00" required
-                                    oninput="calcProfit(1)">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Selling Price (₹) <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control selling-price" placeholder="0.00" required
-                                    oninput="calcProfit(1)">
-                            </div>
-                            <div class="col-12">
-                                <div id="profit-1" class="small">Profit: ₹0 (0%)</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Stock Quantity <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control" placeholder="0" required>
-                            </div>
-                            <div class="col-md-6 d-flex align-items-end">
-                                <div class="form-check form-switch mb-2">
-                                    <input class="form-check-input" type="checkbox" checked>
-                                    <label class="form-check-label">Active Status</label>
-                                </div>
-                            </div>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <!-- Size Cards Container -->
+            <div id="sizeCardsContainer" action="">
+                <!-- Initial Card (Template) -->
+                <div class="size-card" id="sizeCard-1">
+                    <div class="size-card-header d-flex justify-content-between align-items-center"
+                        data-bs-toggle="collapse" data-bs-target="#collapse-1">
+                        <h6 class="fw-bold mb-0 text-primary">Size #1: <span class="size-label-preview">Small</span>
+                        </h6>
+                        <div class="d-flex align-items-center gap-3">
+                            <button type="button" class="btn btn-sm text-danger delete-size-btn d-none"
+                                onclick="removeSizeCard(1, event)"><i class="fas fa-times"></i></button>
+                            <i class="fas fa-chevron-down text-muted"></i>
                         </div>
                     </div>
+                    <div class="collapse show" id="collapse-1">
+                        <div class="card-body p-4">
+                            <!-- Section 1: Label -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Size Label <span
+                                        class="text-danger">*</span></label>
+                                {{form.size_label}}
+                                {{form.size_label.errors}}
+                            </div>
+
+                            <!-- Section 2: Dimensions -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Dimensions (cm) <span
+                                        class="text-danger">*</span></label>
+                                <div class="row g-2">
+                                    <div class="col-4">
+                                        {{form.height}}
+                                        {{form.height.errors}}
+                                        <small class="text-muted" style="font-size: 0.75rem;">Height</small>
+                                    </div>
+                                    <div class="col-4">
+                                        {{form.width}}
+                                        {{form.width.errors}}
+                                        <small class="text-muted" style="font-size: 0.75rem;">Width</small>
+                                    </div>
+                                    <div class="col-4">
+                                        {{form.depth}}
+                                        {{form.depth.errors}}
+                                        <small class="text-muted" style="font-size: 0.75rem;">Depth</small>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-muted small" id="volume-1">Volume: 0 cm³</div>
+                            </div>
+
+                            <!-- Section 3: Pricing & Stock -->
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Cost Price (₹) <span
+                                            class="text-danger">*</span></label>
+                                    {{form.cost}}
+                                    {{form.cost.errors}}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Selling Price (₹) <span
+                                            class="text-danger">*</span></label>
+                                    {{form.price}}
+                                    {{form.price.errors}}
+                                </div>
+                                <div class="col-12">
+                                    <div id="profit-1" class="small">Profit: ₹0 (0%)</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Stock Quantity <span
+                                            class="text-danger">*</span></label>
+                                    {{form.stock}}
+                                    {{form.stock.errors}}
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="form-check form-switch mb-2">
+                                        {{form.is_active}}
+                                        {{form.is_active.errors}}
+                                        <label class="form-check-label">Active Status</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
-        </div>
 
-        <!-- Add More Button -->
-        <div class="text-center mb-5">
-            <button type="button" class="btn btn-outline-custom px-4 py-2" onclick="addSizeCard()">
-                <i class="fas fa-plus me-2"></i> Add Another Size
-            </button>
-        </div>
-
+            <!-- Add More Button -->
+            <div class="text-center mb-5">
+                <button type="button" class="btn btn-outline-custom px-4 py-2" onclick="addSizeCard()">
+                    <i class="fas fa-plus me-2"></i> Add Another Size
+                </button>
+            </div>
+            <div class="d-flex gap-2 w-100 w-md-auto">
+                <a href="admin-products-boxes.html"
+                    class="btn btn-outline-secondary px-4 d-flex align-items-center justify-content-center btn-footer">Cancel</a>
+                <button type="submit"
+                    class="btn btn-primary-custom px-5 d-flex align-items-center justify-content-center btn-footer ms-auto ms-md-0">
+                    Next: Upload Images <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </form>
         <!-- Footer Actions -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-5 pt-3 border-top">
             <div class="d-flex gap-2 w-100 w-md-auto mb-3 mb-md-0">
@@ -347,14 +357,7 @@
                     <i class="fas fa-arrow-left me-2"></i> Back
                 </a>
             </div>
-            <div class="d-flex gap-2 w-100 w-md-auto">
-                <a href="admin-products-boxes.html"
-                    class="btn btn-outline-secondary px-4 d-flex align-items-center justify-content-center btn-footer">Cancel</a>
-                <button type="button" onclick="goToNextStep()"
-                    class="btn btn-primary-custom px-5 d-flex align-items-center justify-content-center btn-footer ms-auto ms-md-0">
-                    Next: Upload Images <i class="fas fa-arrow-right ms-2"></i>
-                </button>
-            </div>
+
         </div>
 
     </main>
@@ -463,6 +466,16 @@
             window.location.href = 'admin-products-boxes-add-step3.html';
         }
     </script>
+    <script>
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+
 </body>
 
 </html>

@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,7 +25,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css  ' %}">
 
     <style>
         body {
@@ -55,7 +57,6 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             max-width: 800px;
-            /* Increased width for images */
             margin: 0 auto;
         }
 
@@ -63,16 +64,6 @@
         .form-select:focus {
             border-color: #0066cc;
             box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.1);
-        }
-
-        .form-control.is-valid,
-        .form-select.is-valid {
-            border-color: #198754;
-            padding-right: calc(1.5em + 0.75rem);
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
         }
 
         .btn-primary-custom {
@@ -155,6 +146,9 @@
         .order-input-container {
             padding: 8px;
             border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         /* Crop Modal Styles */
@@ -213,12 +207,14 @@
         <div class="px-3">
             <ul class="nav flex-column gap-2">
                 <li class="nav-item">
-                    <a href="admin-dashboard.html" class="nav-link text-dark"><i class="fas fa-home me-2"></i>
-                        Dashboard</a>
+                    <a href="admin-dashboard.html" class="nav-link text-dark">
+                        <i class="fas fa-home me-2"></i> Dashboard
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a href="admin-products.html" class="nav-link active text-primary fw-bold bg-light rounded"><i
-                            class="fas fa-box me-2"></i> Products</a>
+                    <a href="admin-products.html" class="nav-link active text-primary fw-bold bg-light rounded">
+                        <i class="fas fa-box me-2"></i> Products
+                    </a>
                 </li>
             </ul>
             <hr>
@@ -234,10 +230,14 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="admin-products.html"
-                            class="text-decoration-none text-muted">Products</a></li>
-                    <li class="breadcrumb-item"><a href="admin-products-box-categories.html"
-                            class="text-decoration-none text-muted">Box Categories</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="admin-products.html" class="text-decoration-none text-muted">Products</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="admin-products-box-categories.html" class="text-decoration-none text-muted">
+                            Box Categories
+                        </a>
+                    </li>
                     <li class="breadcrumb-item active" aria-current="page">Add New Category</li>
                 </ol>
             </nav>
@@ -250,31 +250,44 @@
         </div>
 
         <!-- Form Card -->
-        {{form}}
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="card form-card p-4 p-md-5">
-            <form id="boxCategoryForm" onsubmit="handleSave(event)">
-
+            <form id="boxCategoryForm" action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
                 <div class="row g-4">
                     <!-- Left Column: Basic Info -->
                     <div class="col-md-6">
                         <!-- Box Type Selection -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">Box Type <span class="text-danger">*</span></label>
-                            {{form.box_type}}
+                            {{ form.box_type }}
+                            {{form.box_type.errors}}
                             <div class="invalid-feedback">Please select a box type.</div>
                         </div>
 
                         <!-- Name -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
-                            {{form.name}}
+                            {{ form.name }}
+                            {{form.name.errors}}
                             <div class="invalid-feedback">Please enter a category name.</div>
                         </div>
 
                         <!-- Description -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">Description</label>
-                            {{form.description}}
+                            {{ form.description }}
+                            {{form.description.errors}}
                             <div class="d-flex justify-content-end mt-1">
                                 <small class="text-muted" id="charCount">0/200</small>
                             </div>
@@ -283,8 +296,9 @@
                         <!-- Status -->
                         <div class="mb-4">
                             <div class="form-check form-switch">
-                                {{form.is_active}}
-                                <label class="form-check-label fw-bold" for="categoryStatus">Active</label>
+                                {{ form.is_active }}
+                                {{form.is_active.errors}}
+                                <label class="form-check-label fw-bold" for="id_is_active">Active</label>
                             </div>
                         </div>
                     </div>
@@ -298,39 +312,38 @@
                             onclick="document.getElementById('fileInput').click()">
                             <i class="fas fa-cloud-upload-alt text-primary fs-2 mb-2"></i>
                             <p class="mb-0 fw-medium">Click to Upload & Crop</p>
-                            <small class="text-muted">JPG, PNG, WebP (Max 5MB)</small>
+                            <small class="text-muted">JPG, PNG, WebP (Max 5MB, up to 5 images)</small>
                             <input type="file" id="fileInput" class="d-none" accept="image/*"
                                 onchange="handleFileSelect(this)">
                         </div>
 
                         <!-- Image Gallery -->
                         <div class="row g-2" id="imageGallery">
-                            <!-- Images will be added here -->
                             <div class="col-12 text-center py-3 text-muted small" id="emptyState">
                                 No images uploaded yet.
                             </div>
                         </div>
+
+                        <!-- Order Error Message -->
+                        <div id="orderError" class="text-danger fw-bold mt-2" style="display:none;"></div>
                     </div>
                 </div>
-        </div>
 
-        <!-- Actions -->
-        <div class="d-flex gap-2 pt-3 border-top mt-4">
-            <a href="admin-products-box-categories.html" class="btn btn-light border flex-grow-1">Cancel</a>
-            <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
-        </div>
+                <!-- Actions -->
+                <div class="d-flex gap-2 pt-3 border-top mt-4">
+                    <a href="admin-products-box-categories.html" class="btn btn-light border flex-grow-1">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
+                </div>
 
-        <!-- Delete Button (Hidden for Add Mode) -->
-        <div class="text-center mt-3 d-none" id="deleteContainer">
-            <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm"
-                onclick="confirmDelete()">
-                <i class="fas fa-trash me-1"></i> Delete Category
-            </button>
+                <!-- Delete Button (hidden in add mode, can show in edit mode) -->
+                <div class="text-center mt-3 d-none" id="deleteContainer">
+                    <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm"
+                        onclick="confirmDelete()">
+                        <i class="fas fa-trash me-1"></i> Delete Category
+                    </button>
+                </div>
+            </form>
         </div>
-
-        </form>
-        </div>
-
     </main>
 
     <!-- Crop Modal -->
@@ -354,123 +367,108 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts at bottom -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <script>
-        let uploadedImages = [];
-        let cropper;
-        const imageToCrop = document.getElementById('imageToCrop');
-        const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
 
+    <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        function updateCharCount(input) {
-            const current = input.value.length;
-            const max = input.getAttribute('maxlength');
-            document.getElementById('charCount').textContent = `${current}/${max}`;
-        }
-
-        function validateInput(input) {
-            if (input.value.trim() !== "") {
-                input.classList.add('is-valid');
-                input.classList.remove('is-invalid');
-            } else {
-                input.classList.remove('is-valid');
-                input.classList.add('is-invalid');
+        // Description char counter – assumes textarea name="description"
+        document.addEventListener('input', function (e) {
+            if (e.target.matches('textarea[name="description"]')) {
+                const max = e.target.getAttribute('maxlength') || 200;
+                const current = e.target.value.length;
+                const counter = document.getElementById('charCount');
+                if (counter) counter.textContent = `${current}/${max}`;
             }
-        }
+        });
 
-        // --- Image Handling ---
+        // ---------- Image & Crop Logic ----------
+
+        let uploadedImages = []; // { id, file, src, order, isPrimary }
+
+        let cropper;
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropModalEl = document.getElementById('cropModal');
+        const cropModal = new bootstrap.Modal(cropModalEl);
 
         function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
+            if (!input.files || !input.files[0]) return;
 
-                if (uploadedImages.length >= 5) {
-                    alert('Maximum 5 images allowed.');
-                    input.value = '';
-                    return;
-                }
+            const file = input.files[0];
 
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        imageToCrop.src = e.target.result;
-                        input.value = ''; // Reset input
-
-                        // Show Modal
-                        cropModal.show();
-
-                        // Initialize Cropper when modal is shown
-                        document.getElementById('cropModal').addEventListener('shown.bs.modal', initCropper, { once: true });
-                    };
-                    reader.readAsDataURL(file);
-                }
+            if (uploadedImages.length >= 5) {
+                alert('Maximum 5 images allowed.');
+                input.value = '';
+                return;
             }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload a valid image file.');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageToCrop.src = e.target.result;
+                cropModal.show();
+            };
+            reader.readAsDataURL(file);
+
+            // Clear so user can reselect the same file if needed
+            input.value = '';
         }
 
-        function initCropper() {
+        cropModalEl.addEventListener('shown.bs.modal', function () {
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(imageToCrop, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1
+            });
+        });
+
+        cropModalEl.addEventListener('hidden.bs.modal', function () {
             if (cropper) {
                 cropper.destroy();
+                cropper = null;
             }
-            cropper = new Cropper(imageToCrop, {
-                aspectRatio: 1, // Square crop
-                viewMode: 1,
-                autoCropArea: 1,
-            });
-        }
+        });
 
         function cropAndSave() {
             if (!cropper) return;
 
-            const canvas = cropper.getCroppedCanvas({
-                width: 400,
-                height: 400,
-            });
+            cropper.getCroppedCanvas({
+                width: 1000,
+                height: 1000
+            }).toBlob((blob) => {
+                if (!blob) return;
 
-            const croppedImageSrc = canvas.toDataURL('image/jpeg');
-            addImageToGallery(croppedImageSrc);
-            cropModal.hide();
-        }
+                const id = Date.now() + Math.random();
+                const order = uploadedImages.length + 1;
+                const isPrimary = uploadedImages.length === 0;
 
-        function addImageToGallery(src) {
-            const id = Date.now() + Math.random();
-            const order = uploadedImages.length + 1;
-            const isFirst = uploadedImages.length === 0;
+                const file = new File([blob], `category_${id}.jpg`, {
+                    type: 'image/jpeg'
+                });
 
-            uploadedImages.push({ id, src, order, isPrimary: isFirst });
-            refreshGallery();
-        }
+                const src = URL.createObjectURL(file);
 
-        function removeImage(id) {
-            uploadedImages = uploadedImages.filter(img => img.id != id);
+                uploadedImages.push({
+                    id,
+                    file,
+                    src,
+                    order,
+                    isPrimary
+                });
 
-            // Re-normalize orders
-            uploadedImages.forEach((img, index) => {
-                img.order = index + 1;
-            });
-
-            if (uploadedImages.length > 0) {
-                if (!uploadedImages.some(img => img.isPrimary)) uploadedImages[0].isPrimary = true;
-            }
-
-            refreshGallery();
-        }
-
-        function setPrimary(id) {
-            uploadedImages.forEach(img => img.isPrimary = (img.id == id));
-            refreshGallery();
-        }
-
-        function updateOrder(id, newOrder) {
-            const img = uploadedImages.find(i => i.id == id);
-            if (img) {
-                img.order = parseInt(newOrder) || 0;
                 refreshGallery();
-            }
+                cropModal.hide();
+            }, 'image/jpeg', 0.9);
         }
 
         function refreshGallery() {
@@ -479,87 +477,200 @@
 
             if (uploadedImages.length === 0) {
                 gallery.innerHTML = `
-                <div class="col-12 text-center py-3 text-muted small" id="emptyState">
-                    No images uploaded yet.
-                </div>`;
-            } else {
-                // Sort by order
-                uploadedImages.sort((a, b) => a.order - b.order);
-
-                uploadedImages.forEach(img => {
-                    const col = document.createElement('div');
-                    col.className = 'col-6 fade-in';
-                    col.innerHTML = `
-                        <div class="image-card">
-                            <img src="${img.src}" alt="Category Image">
-                            ${img.isPrimary ? '<span class="badge-primary-img">Primary</span>' : ''}
-                            <div class="image-overlay">
-                                <button class="btn btn-sm btn-light rounded-circle" onclick="setPrimary('${img.id}')" title="Set as Primary"><i class="fas fa-star text-warning"></i></button>
-                                <button class="btn btn-sm btn-light rounded-circle text-danger" onclick="removeImage('${img.id}')" title="Delete"><i class="fas fa-trash"></i></button>
-                            </div>
-                            <div class="order-input-container d-flex align-items-center justify-content-between">
-                                <small class="text-muted fw-bold" style="font-size: 0.7rem;">Order:</small>
-                                <input type="number" class="form-control form-control-sm w-50 text-center p-1" style="font-size: 0.8rem;" value="${img.order}" min="1" onchange="updateOrder('${img.id}', this.value)">
-                            </div>
-                        </div>
-                    `;
-                    gallery.appendChild(col);
-                });
+                    <div class="col-12 text-center py-3 text-muted small" id="emptyState">
+                        No images uploaded yet.
+                    </div>`;
+                // also clear error
+                const errorBox = document.getElementById("orderError");
+                if (errorBox) {
+                    errorBox.style.display = "none";
+                    errorBox.textContent = "";
+                }
+                return;
             }
+
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
+                const col = document.createElement('div');
+                col.className = 'col-6';
+                col.innerHTML = `
+                    <div class="image-card">
+                        <img src="${img.src}" alt="Category Image">
+                        ${img.isPrimary ? '<span class="badge-primary-img">Primary</span>' : ''}
+                        <div class="image-overlay">
+                            <button type="button" class="btn btn-sm btn-light rounded-circle"
+                                onclick="setPrimary('${img.id}')" title="Set as Primary">
+                                <i class="fas fa-star text-warning"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light rounded-circle text-danger"
+                                onclick="removeImage('${img.id}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="order-input-container">
+                            <small class="text-muted fw-bold" style="font-size: 0.7rem;">Order:</small>
+                            <input type="number"
+                                class="form-control form-control-sm w-50 text-center p-1"
+                                value="${img.order}"
+                                min="1"
+                                max="10"
+                                onchange="updateOrder('${img.id}', this.value)">
+                        </div>
+                    </div>
+                `;
+                gallery.appendChild(col);
+            });
+
+            // run validation after redraw
+            validateOrders();
         }
 
-        // --- Save & Delete ---
+        function setPrimary(id) {
+            uploadedImages.forEach(img => {
+                img.isPrimary = (img.id == id);
+            });
+            refreshGallery();
+        }
 
-        function handleSave(e) {
-            e.preventDefault();
-            const name = document.getElementById('categoryName');
-            const type = document.getElementById('boxType');
-
-            let isValid = true;
-            if (name.value.trim() === "") {
-                name.classList.add('is-invalid');
-                isValid = false;
+        function removeImage(id) {
+            const img = uploadedImages.find(i => i.id == id);
+            if (img && img.src) {
+                URL.revokeObjectURL(img.src);
             }
-            if (type.value === "") {
-                type.classList.add('is-invalid');
-                isValid = false;
+            uploadedImages = uploadedImages.filter(i => i.id != id);
+
+            // Re-normalize orders
+            uploadedImages.forEach((img, index) => {
+                img.order = index + 1;
+            });
+
+            // Ensure at least one primary if images exist
+            if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isPrimary)) {
+                uploadedImages[0].isPrimary = true;
             }
 
-            if (!isValid) return;
+            refreshGallery();
+        }
 
-            // Simulate API call
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Saving...';
-            btn.disabled = true;
+        // ---- Order validation (1–10, sequential, no gaps) ----
+        function validateOrders() {
+            const errorBox = document.getElementById("orderError");
+            if (!errorBox) return true;
 
-            setTimeout(() => {
-                alert('Category saved successfully!');
-                window.location.href = 'admin-products-box-categories.html';
-            }, 1000);
+            errorBox.style.display = "none";
+            errorBox.textContent = "";
+
+            if (uploadedImages.length === 0) {
+                // no images, no order to validate
+                return true;
+            }
+
+            const orders = uploadedImages.map(img => parseInt(img.order) || 0);
+
+            // 1. must be between 1 and 10
+            if (orders.some(o => o < 1 || o > 10)) {
+                errorBox.style.display = "block";
+                errorBox.textContent = "Order number must be between 1 and 10.";
+                return false;
+            }
+
+            // 2. must be sequential without gaps: 1..N
+            const sorted = [...orders].sort((a, b) => a - b);
+            for (let i = 0; i < sorted.length; i++) {
+                if (sorted[i] !== i + 1) {
+                    errorBox.style.display = "block";
+                    errorBox.textContent =
+                        "Order must be sequential (1, 2, 3, ...). Do not skip numbers.";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function updateOrder(id, newOrder) {
+            const img = uploadedImages.find(i => i.id == id);
+            if (!img) return;
+
+            const orderVal = parseInt(newOrder) || 1;
+            img.order = orderVal;
+
+            refreshGallery();
+            validateOrders();
         }
 
         function confirmDelete() {
             if (confirm('Are you sure? This will affect products in this category.')) {
-                alert('Category deleted.');
-                window.location.href = 'admin-products-box-categories.html';
+                // Hook to Django delete view if needed
+                alert('Category deleted (front-end demo).');
             }
         }
 
-        // Check if Edit Mode (Simulated)
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('id')) {
-            document.querySelector('h2').textContent = 'Edit Category';
-            document.querySelector('button[type="submit"]').textContent = 'Update Category';
-            document.getElementById('deleteContainer').classList.remove('d-none');
+        // ---------- Attach files + meta before submit ----------
+        document.getElementById('boxCategoryForm').addEventListener('submit', function (e) {
+            const form = this;
 
-            // Simulate loading data
-            document.getElementById('categoryName').value = 'Birthday';
-            document.getElementById('boxType').value = 'Rigid Box';
-            document.getElementById('categoryDescription').value = 'Fun and festive...';
-            validateInput(document.getElementById('categoryName'));
-            validateInput(document.getElementById('boxType'));
-        }
+            // Validate orders before actually submitting
+            if (!validateOrders()) {
+                e.preventDefault();
+                alert("Please fix the image order before submitting.");
+                return;
+            }
+
+            // Remove old dynamic inputs (if user resubmits)
+            form.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
+
+            // If you want to enforce at least one image, uncomment:
+            // if (uploadedImages.length === 0) {
+            //     e.preventDefault();
+            //     alert('Please upload at least one image.');
+            //     return;
+            // }
+
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
+                // file input
+                const dt = new DataTransfer();
+                dt.items.add(img.file);
+
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'images';  // Django: request.FILES.getlist("images")
+                fileInput.files = dt.files;
+                fileInput.classList.add('dynamic-image-input', 'd-none');
+
+                // order input
+                const orderInput = document.createElement('input');
+                orderInput.type = 'hidden';
+                orderInput.name = 'orders'; // Django: request.POST.getlist("orders")
+                orderInput.value = img.order;
+                orderInput.classList.add('dynamic-image-input');
+
+                // primary input
+                const primaryInput = document.createElement('input');
+                primaryInput.type = 'hidden';
+                primaryInput.name = 'primary'; // Django: request.POST.getlist("primary")
+                primaryInput.value = img.isPrimary ? '1' : '0';
+                primaryInput.classList.add('dynamic-image-input');
+
+                form.appendChild(fileInput);
+                form.appendChild(orderInput);
+                form.appendChild(primaryInput);
+            });
+        });
     </script>
+    <script>
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+
 </body>
 
 </html>

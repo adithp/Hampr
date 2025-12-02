@@ -241,13 +241,16 @@
         <div class="row g-4 mb-5">
             <!-- Box Products -->
             <div class="col-md-4">
-                <div class="category-card p-4 text-center" onclick="window.location.href='#'">
+                <div class="category-card p-4 text-center"
+                    onclick="window.location.href='{% url 'cadmin:box_manage'  %}'">
                     <div class="d-flex justify-content-center">
                         <div class="cat-icon">
                             <i class="fas fa-box-open"></i>
                         </div>
                     </div>
-                    <h4 class="fw-bold mb-2">Box Products</h4>
+                    <h4 class="fw-bold mb-2"><a style="text-decoration: none;color:#000;"
+                            href="{% url 'cadmin:box_manage'  %}">Box
+                            Products</a></h4>
                     <p class="text-muted mb-0">12 Boxes Available</p>
                 </div>
             </div>
@@ -445,6 +448,16 @@
             document.getElementById('sidebar').classList.toggle('active');
         }
     </script>
+    <script>
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+
 </body>
 
 </html>

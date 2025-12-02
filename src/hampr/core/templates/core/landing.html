@@ -30,10 +30,12 @@
     <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
 
     <script>
-
-        window.onunload = function () { };
-
-
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                // Page was restored from browser back cache
+                window.location.reload();
+            }
+        });
     </script>
 </head>
 
