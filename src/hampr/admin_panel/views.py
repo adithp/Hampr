@@ -16,8 +16,8 @@ from django.db import transaction
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
-from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage
+from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm
+from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product
 
 
 
@@ -102,6 +102,17 @@ class AdminProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
 class AdminBoxProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/admin-products-boxes.html'
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        boxes = HamperBox.objects.all()
+        data = []
+        for i in range(len(boxes)):
+            image = BoxImage.objects.filter(is_thumbnail=True,box_id=boxes[i]).first()
+            box_sizes = BoxSize.objects.filter(hamper_box=boxes[i])
+            data.append({'box':boxes[i],'image':image,'sizes':box_sizes})
+        context['datas'] = data
+        return context
+    
 class AdminBoxTypeManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/admin-products-box-types.html'
     
@@ -110,6 +121,8 @@ class AdminBoxTypeManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
         box_types = BoxType.objects.all()
         context['box_types'] = box_types
         return context
+    
+    
     
 class AdminBoxCategoryManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/admin-products-box-categories.html'
@@ -210,7 +223,128 @@ class AdminBoxProductsAddItem(NeverCacheMixin,StaffRequiredMixin,View):
     
 class AdminBoxProductsAddItemSecond(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
-        request.session.get('product_add_first_stage',{})
+        if not request.session.get('product_add_first_stage_id',{}):
+            messages.error(request,'First You nedd to complete first phase')
+            return redirect('cadmin:add_box_first_phase')
         
         form = BoxSizeForm()
         return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,})
+    
+    def post(self,request,*args, **kwargs):
+        if not request.session.get('product_add_first_stage_id',{}):
+            messages.error(request,'First You nedd to complete first phase')
+            return redirect('cadmin:add_box_first_phase')
+              
+        form = BoxSizeForm(request.POST)
+        
+        if form.is_valid():
+            hamper_box_id=request.session.get('product_add_first_stage_id')
+            
+            hamper_box = HamperBox.objects.get(id=hamper_box_id)
+            size_label = form.cleaned_data.get('size_label')
+            if BoxSize.objects.filter(hamper_box=hamper_box,size_label=size_label).exists():
+                form.add_error('size_label','this size already added')
+                return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,})
+            wait = form.save(commit=False)
+            wait.hamper_box = hamper_box
+            wait.save()
+            messages.success(request,'Product Added Succsesfully')
+            return redirect('cadmin:add_box_second')
+        return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,})
+    
+    
+def redirect_to_image_upload_box(request):
+    if not request.session.get('product_add_first_stage_id',{}):
+        messages.error(request,'First You nedd to complete first phase')
+        return redirect('cadmin:add_box_first_phase')
+    
+    
+    request.session['product_add_second_stage_id'] = request.session.get('product_add_first_stage_id')
+    
+    return redirect('cadmin:add_box_third')
+
+
+def productBox_adding_cancel(request):
+    id = request.session.get('product_add_first_stage_id',{})
+    box = HamperBox.objects.get(id=id)
+    box.delete()
+    return redirect('cadmin:box_manage')
+
+
+    
+    
+class AdminBoxProductsAddItemThird(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        if not request.session.get('product_add_second_stage_id',{}):
+            messages.error(request,'First You nedd to complete first phase')
+            messages.error(request,'\nComplete Second Phase')
+            return redirect('cadmin:add_box_second')
+        return render(request,'c_admin/admin-products-boxes-add-step3.html')
+    
+    def post(self,request,*args, **kwargs):
+        if not request.session.get('product_add_second_stage_id',{}):
+            messages.error(request,'First You nedd to complete first phase')
+            messages.error(request,'\nComplete Second Phase')
+            return redirect('cadmin:add_box_second')
+        print(request.POST,request.FILES)
+        hamper_id  = request.session.get('product_add_second_stage_id')
+        hamper_box = HamperBox.objects.get(id=hamper_id)
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        images = request.FILES.getlist('images')
+        
+        if len(orders) != len(primary) or len(primary) != len(images):
+            messages.error(request,'image upload error')
+            return render(request,'c_admin/admin-products-boxes-add-step3.html')
+        
+        try:
+            with transaction.atomic():
+                for i in range(len(orders)):
+                    obj = BoxImage(display_order=orders[i],image=images[i],is_thumbnail= True if primary[i] == '1' else False,box_id=hamper_box)
+                    obj.save()
+        except ValidationError as e:
+            messages.error(request,'smothing happen when image upload')
+            return render(request,'c_admin/admin-products-boxes-add-step3.html')
+
+        except Exception:
+            messages.error(request,'smothing happen when image upload')
+            return render(request,'c_admin/admin-products-boxes-add-step3.html')
+            
+        del request.session['product_add_first_stage_id'] 
+        del request.session['product_add_second_stage_id'] 
+        return redirect('cadmin:box_manage')
+    
+    
+    
+class AdminProductAddCategory(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        
+        form = ProductCategoryForm()
+        return render(request,'c_admin/admin_products_interior_category_add.html',{'form':form})
+    
+    def post(self,request,*args, **kwargs):
+        
+        form = ProductCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request,'product category added')
+            return redirect('cadmin:add_product_category')
+        else:
+            return render(request,'c_admin/admin_products_interior_category_add.html',{'form':form})    
+        
+        
+class AdminProductCategoryManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
+    template_name = 'c_admin/admin_products_interior_category_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product_categories = ProductCategory.objects.all()
+        context['product_categories'] = product_categories
+        return context
+        
+        
+class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        
+        return render(request,'admin-products-interior-add.html')
+    

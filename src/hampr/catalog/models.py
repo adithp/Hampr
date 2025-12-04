@@ -77,9 +77,21 @@ class BoxSize(models.Model):
 class BoxImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     display_order = models.IntegerField(null=True,blank=True)
-    image = models.CharField()
+    image = models.ImageField(upload_to='box_images/')
     is_thumbnail = models.BooleanField(default=False)
     box_id = models.ForeignKey(HamperBox,on_delete=models.CASCADE)
+    
+    
+class Color(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    hex = models.CharField(max_length=7, blank=True, null=True)
+    
+    
+class Size(models.Model):
+    name = models.CharField(max_length=32, unique=True)
+    sort_order = models.PositiveSmallIntegerField(default=0) 
+    
+
     
     
 class ProductCategory(models.Model):
@@ -91,13 +103,54 @@ class ProductCategory(models.Model):
     slug = AutoSlugField(populate_from='name',unique=True)
     
     
-# class Product(models.Model):
-#     avg_rating = models.DecimalField(blank=True,null=True,max_digits=4,decimal_places=2)
-#     brand = models.CharField(max_length=30)
-#     category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
-#     cost = models.DecimalField(max_digits=10,decimal_places=2)
-#     created_at = models.DateTimeField(auto_now=True)
-#     description = models.TextField()
+    def __str__(self):
+        return self.name
+    
+    
+class Product(models.Model):
+    avg_rating = models.DecimalField(blank=True,null=True,max_digits=4,decimal_places=2)
+    brand = models.CharField(max_length=30)
+    category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
+    
+    created_at = models.DateTimeField(auto_now=True)
+    description = models.TextField()
+    is_featured = models.BooleanField(default=False)
+    name = models.CharField(max_length=100)
+    slug = AutoSlugField(populate_from='name',unique=True)
+    total_reviews = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
+    sku = models.CharField(max_length=64, blank=True, null=True, db_index=True)
+    
+    cost = models.DecimalField(max_digits=10,decimal_places=2)
+    color = models.ForeignKey(Color, null=True, blank=True, on_delete=models.SET_NULL)
+    size = models.ForeignKey(Size, null=True, blank=True, on_delete=models.SET_NULL)
+    
+    price = models.DecimalField(max_digits=10, decimal_places=2)  
+    stock = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    
+    is_default = models.BooleanField(default=False)
+    height = models.DecimalField(max_digits=5, decimal_places=2, help_text="unit is cm")
+    width = models.DecimalField(max_digits=5, decimal_places=2, help_text="unit is cm")
+    depth = models.DecimalField(max_digits=5, decimal_places=2, help_text="unit is cm")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+
+class ProductImage(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    display_order = models.IntegerField()
+    image = models.ImageField(upload_to='product_image/')
+    is_thumbnail = models.BooleanField(default=False)
+    product = models.ForeignKey(ProductVariant,on_delete=models.CASCADE) 
+    
+    
+
     
     
     

@@ -230,11 +230,12 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item">
-                        <a href="{% url 'cadmin:products_manage' %}" class="text-decoration-none text-muted">Products</a>
+                        <a href="{% url 'cadmin:products_manage' %}"
+                            class="text-decoration-none text-muted">Products</a>
                     </li>
                     <li class="breadcrumb-item">
                         <a href="{% url 'cadmin:box_category_manage' %}" class="text-decoration-none text-muted">
-                            Box Categories
+                            Product Categories
                         </a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Add New Category</li>
@@ -267,12 +268,7 @@
                     <!-- Left Column: Basic Info -->
                     <div class="col-md-6">
                         <!-- Box Type Selection -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Box Type <span class="text-danger">*</span></label>
-                            {{ form.box_type }}
-                            {{form.box_type.errors}}
-                            <div class="invalid-feedback">Please select a box type.</div>
-                        </div>
+
 
                         <!-- Name -->
                         <div class="mb-4">
@@ -303,44 +299,21 @@
                     </div>
 
                     <!-- Right Column: Images -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold mb-2">Category Images</label>
 
-                        <!-- Upload Area -->
-                        <div class="upload-area mb-3" id="dropZone"
-                            onclick="document.getElementById('fileInput').click()">
-                            <i class="fas fa-cloud-upload-alt text-primary fs-2 mb-2"></i>
-                            <p class="mb-0 fw-medium">Click to Upload & Crop</p>
-                            <small class="text-muted">JPG, PNG, WebP (Max 5MB, up to 5 images)</small>
-                            <input type="file" id="fileInput" class="d-none" accept="image/*"
-                                onchange="handleFileSelect(this)">
-                        </div>
-
-                        <!-- Image Gallery -->
-                        <div class="row g-2" id="imageGallery">
-                            <div class="col-12 text-center py-3 text-muted small" id="emptyState">
-                                No images uploaded yet.
-                            </div>
-                        </div>
-
-                        <!-- Order Error Message -->
-                        <div id="orderError" class="text-danger fw-bold mt-2" style="display:none;"></div>
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 pt-3 border-top mt-4">
+                        <a href="{% url 'cadmin:box_category_manage' %}"
+                            class="btn btn-light border flex-grow-1">Cancel</a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
                     </div>
-                </div>
 
-                <!-- Actions -->
-                <div class="d-flex gap-2 pt-3 border-top mt-4">
-                    <a href="{% url 'cadmin:box_category_manage' %}" class="btn btn-light border flex-grow-1">Cancel</a>
-                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
-                </div>
-
-                <!-- Delete Button (hidden in add mode, can show in edit mode) -->
-                <div class="text-center mt-3 d-none" id="deleteContainer">
-                    <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm"
-                        onclick="confirmDelete()">
-                        <i class="fas fa-trash me-1"></i> Delete Category
-                    </button>
-                </div>
+                    <!-- Delete Button (hidden in add mode, can show in edit mode) -->
+                    <div class="text-center mt-3 d-none" id="deleteContainer">
+                        <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm"
+                            onclick="confirmDelete()">
+                            <i class="fas fa-trash me-1"></i> Delete Category
+                        </button>
+                    </div>
             </form>
         </div>
     </main>

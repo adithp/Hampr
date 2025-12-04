@@ -171,6 +171,10 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
+        .badge {
+            color: #000;
+        }
     </style>
 </head>
 
@@ -196,7 +200,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#">
+                    <a class="nav-link active" href="{% url 'cadmin:products_manage' %}">
                         <i class="fas fa-box"></i>
                         Products
                     </a>
@@ -222,9 +226,13 @@
             </ul>
 
             <div class="mt-auto px-3 pt-5">
-                <a href="admin-login.html" class="btn btn-outline-danger w-100">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                </a>
+                <form action="{% url 'core:logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger w-100">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </button>
+                </form>
+
             </div>
         </div>
     </nav>
@@ -258,13 +266,13 @@
                     <i class="fas fa-layer-group me-2"></i> Manage Box Categories
                 </a>
 
-                <a href="#" class="btn btn-success px-4">
+                <a href="{% url 'cadmin:add_box_first_phase' %}" class="btn btn-success px-4">
                     <i class="fas fa-plus me-2"></i> Add New Box Product
                 </a>
             </div>
         </div>
 
-        <!-- Filters & Search -->
+        <!-- Filters & Search
         <div class="card table-card p-3 mb-4">
             <div class="row g-3">
                 <div class="col-md-3">
@@ -300,7 +308,7 @@
                     </select>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Products Table -->
         <div class="card table-card p-4">
@@ -311,6 +319,7 @@
                             <th class="border-0 rounded-start" style="width: 80px;">Image</th>
                             <th class="border-0">Product Name</th>
                             <th class="border-0">Box Type</th>
+                            <th class="border-0">Size</th>
                             <th class="border-0">Category</th>
                             <th class="border-0">Price</th>
                             <th class="border-0">Stock</th>
@@ -319,17 +328,30 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for data in datas %}
+                        {% for size in data.sizes %}
                         <tr>
                             <td data-label="Image">
+                                {% if data.image %}
+
+                                <img src="{{data.image.image.url}}" class="product-img-thumb" alt="Product">
+                                {% else %}
                                 <img src="https://placehold.co/100x100/D4AF37/FFFFFF?text=B" class="product-img-thumb"
                                     alt="Product">
+                                {% endif %}
                             </td>
-                            <td data-label="Product Name" class="fw-bold">Classic Kraft Box</td>
-                            <td data-label="Box Type"><span class="badge badge-type">Standard Box</span></td>
-                            <td data-label="Category"><span class="badge badge-cat">Medium</span></td>
-                            <td data-label="Price" class="fw-bold">$12.00</td>
-                            <td data-label="Stock">150</td>
+                            <td data-label="Product Name" class="fw-bold">{{data.box.name}}</td>
+                            <td data-label="Box Type"><span
+                                    class="badge badge-type">{{data.box.category.box_type}}</span></td>
+                            <td data-label="Price" class="fw-bold">{{size.size_label}}</td>
+                            <td data-label="Category"><span class="badge badge-cat">{{data.box.category}}</span></td>
+                            <td data-label="Price" class="fw-bold">{{size.price}}</td>
+                            <td data-label="Stock">{{size.stock}}</td>
+                            {% if size.is_active %}
                             <td data-label="Status"><span class="status-badge status-active">Active</span></td>
+                            {% else %}
+                            <td data-label="Status"><span class="status-badge status-active">Inactive</span></td>
+                            {% endif %}
                             <td data-label="Actions" class="text-end">
                                 <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
                                 <button class="btn btn-sm btn-light text-danger"
@@ -337,84 +359,15 @@
                                         class="fas fa-trash"></i></button>
                             </td>
                         </tr>
-                        <tr>
-                            <td data-label="Image">
-                                <img src="https://placehold.co/100x100/8B6F47/FFFFFF?text=W" class="product-img-thumb"
-                                    alt="Product">
-                            </td>
-                            <td data-label="Product Name" class="fw-bold">Rustic Wooden Crate</td>
-                            <td data-label="Box Type"><span class="badge badge-type">Wooden Crate</span></td>
-                            <td data-label="Category"><span class="badge badge-cat">Large</span></td>
-                            <td data-label="Price" class="fw-bold">$25.00</td>
-                            <td data-label="Stock"><span class="text-danger fw-bold">8</span></td>
-                            <td data-label="Status"><span class="status-badge status-active">Active</span></td>
-                            <td data-label="Actions" class="text-end">
-                                <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"
-                                    onclick="confirm('Are you sure you want to delete this product?')"><i
-                                        class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="Image">
-                                <img src="https://placehold.co/100x100/F5DEB3/000000?text=W" class="product-img-thumb"
-                                    alt="Product">
-                            </td>
-                            <td data-label="Product Name" class="fw-bold">Wicker Picnic Basket</td>
-                            <td data-label="Box Type"><span class="badge badge-type">Basket</span></td>
-                            <td data-label="Category"><span class="badge badge-cat">Premium</span></td>
-                            <td data-label="Price" class="fw-bold">$45.00</td>
-                            <td data-label="Stock">32</td>
-                            <td data-label="Status"><span class="status-badge status-active">Active</span></td>
-                            <td data-label="Actions" class="text-end">
-                                <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"
-                                    onclick="confirm('Are you sure you want to delete this product?')"><i
-                                        class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="Image">
-                                <img src="https://placehold.co/100x100/C0C0C0/000000?text=T" class="product-img-thumb"
-                                    alt="Product">
-                            </td>
-                            <td data-label="Product Name" class="fw-bold">Silver Tin Box</td>
-                            <td data-label="Box Type"><span class="badge badge-type">Tin Container</span></td>
-                            <td data-label="Category"><span class="badge badge-cat">Small</span></td>
-                            <td data-label="Price" class="fw-bold">$8.50</td>
-                            <td data-label="Stock">0</td>
-                            <td data-label="Status"><span class="status-badge status-inactive">Inactive</span></td>
-                            <td data-label="Actions" class="text-end">
-                                <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"
-                                    onclick="confirm('Are you sure you want to delete this product?')"><i
-                                        class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="Image">
-                                <img src="https://placehold.co/100x100/D4AF37/FFFFFF?text=G" class="product-img-thumb"
-                                    alt="Product">
-                            </td>
-                            <td data-label="Product Name" class="fw-bold">Gold Foil Box</td>
-                            <td data-label="Box Type"><span class="badge badge-type">Standard Box</span></td>
-                            <td data-label="Category"><span class="badge badge-cat">Small</span></td>
-                            <td data-label="Price" class="fw-bold">$6.00</td>
-                            <td data-label="Stock">200</td>
-                            <td data-label="Status"><span class="status-badge status-active">Active</span></td>
-                            <td data-label="Actions" class="text-end">
-                                <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"
-                                    onclick="confirm('Are you sure you want to delete this product?')"><i
-                                        class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-4">
+            <!-- <div class="d-flex justify-content-between align-items-center mt-4">
                 <p class="text-muted small mb-0">Showing 1 to 20 of 45 entries</p>
                 <nav>
                     <ul class="pagination mb-0">
@@ -425,7 +378,7 @@
                         <li class="page-item"><a class="page-link text-dark" href="#">Next</a></li>
                     </ul>
                 </nav>
-            </div>
+            </div> -->
         </div>
     </main>
 
