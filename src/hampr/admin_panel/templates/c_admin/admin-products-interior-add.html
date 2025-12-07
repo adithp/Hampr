@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Interior Product | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        /* Dashboard Specific Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .form-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .preview-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .preview-img-container {
+            height: 200px;
+            background-color: #f8f9fa;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .preview-placeholder {
+            color: #adb5bd;
+            font-size: 3rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
+
+            .preview-card {
+                position: static;
+                margin-top: 2rem;
+            }
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 101;
+            background: var(--white);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+            <p class="text-muted small">Admin Portal</p>
+        </div>
+        <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="admin-dashboard.html">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="admin-products.html">
+                        <i class="fas fa-box"></i>
+                        Products
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-shopping-cart"></i>
+                        Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-users"></i>
+                        Customers
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto px-3 pt-5">
+                <a href="admin-login.html" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb & Back Link -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="admin-products.html"
+                            class="text-decoration-none text-muted">Products</a></li>
+                    <li class="breadcrumb-item"><a href="admin-products-interior.html"
+                            class="text-decoration-none text-muted">Interior Items</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add</li>
+                </ol>
+            </nav>
+            <a href="admin-products-interior.html" class="text-decoration-none text-muted small"><i
+                    class="fas fa-arrow-left me-1"></i> Back to Interior Products</a>
+        </div>
+
+        <!-- Header -->
+        <div class="mb-4">
+            <h2 class="fw-bold">Add New Interior Product</h2>
+            <p class="text-muted mb-0">Add a new item to your interior products catalog</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Form Section -->
+            <div class="col-lg-8">
+                <div class="card form-card p-4">
+                    <form id="addInteriorForm" onsubmit="event.preventDefault();">
+                        <!-- Wizard Progress -->
+                        <div class="wizard-progress mb-4">
+                            <div class="progress" style="height: 4px;">
+                                <div class="progress-bar bg-gold" role="progressbar" style="width: 50%"
+                                    id="wizardProgressBar"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2 text-muted small fw-bold">
+                                <span class="text-gold" id="step1Label">Step 1: Basic Details</span>
+                                <span id="step2Label">Step 2: Inventory & Variants</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Basic Details -->
+                        <div class="wizard-step active" id="step1">
+                            <div class="row g-3">
+                                <!-- Product Name -->
+                                <div class="col-12">
+                                    <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="productName"
+                                        placeholder="e.g. Swiss Dark Chocolate" required oninput="updatePreview()" name="name">
+                                </div>
+
+                                <!-- Brand -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Brand <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="productBrand" placeholder="e.g. Lindt"
+                                        required>
+                                </div>
+
+                                <!-- Category -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Category <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="productCategory" required
+                                        onchange="updatePreview()">
+                                        <option value="" selected disabled>Select Category</option>
+                                        <option value="Chocolates">Chocolates</option>
+                                        <option value="Flowers">Flowers</option>
+                                        <option value="Dry Fruits">Dry Fruits</option>
+                                        <option value="Cookies">Cookies</option>
+                                        <option value="Wine">Wine</option>
+                                        <option value="Cosmetics">Cosmetics</option>
+                                        <option value="Candles">Candles</option>
+                                        <option value="Cards">Cards</option>
+                                        <option value="Toys">Toys</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" id="productDescription" rows="5"
+                                        placeholder="Enter product details, ingredients, or benefits..."></textarea>
+                                </div>
+
+                                <!-- Featured & Status -->
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="productFeatured">
+                                        <label class="form-check-label" for="productFeatured">Featured Product</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="productStatus" checked>
+                                        <label class="form-check-label" for="productStatus">Active Status</label>
+                                    </div>
+                                </div>
+
+                                <!-- Navigation -->
+                                <div class="col-12 mt-4 text-end">
+                                    <button type="button" class="btn btn-primary px-4" onclick="goToStep2()">Next Step:
+                                        Variants <i class="fas fa-arrow-right ms-2"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="col-lg-4">
+                <div class="card preview-card">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="fw-bold mb-0">Live Preview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="card border-0 shadow-sm">
+                            <div class="preview-img-container">
+                                <i class="fas fa-image preview-placeholder" id="previewIcon"></i>
+                                <img id="previewImg" class="preview-img" alt="Preview">
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0" id="previewName">Product Name</h5>
+                                    <!-- Price removed from preview as it's not in step 1 anymore -->
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark border me-1"
+                                        id="previewCategory">Category</span>
+                                </div>
+                                <p class="card-text text-muted small" id="previewDesc">Product description will appear
+                                    here...</p>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0 small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This is how the product card will appear in the catalog.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Step 1 Logic
+        function goToStep2() {
+            // Gather Data (even if empty)
+            const productData = {
+                name: document.getElementById('productName').value,
+                brand: document.getElementById('productBrand').value,
+                category: document.getElementById('productCategory').value,
+                description: document.getElementById('productDescription').value,
+                featured: document.getElementById('productFeatured').checked,
+                status: document.getElementById('productStatus').checked
+            };
+
+            // Save to LocalStorage
+            localStorage.setItem('tempInteriorProduct', JSON.stringify(productData));
+
+            // Redirect
+            window.location.href = 'admin-products-interior-add-variants.html';
+        }
+
+        function updatePreview() {
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+
+            // Update Name
+            if (name) {
+                document.getElementById('previewName').textContent = name;
+            } else {
+                document.getElementById('previewName').textContent = 'Product Name';
+            }
+
+            // Update Category Badge
+            if (category) {
+                document.getElementById('previewCategory').textContent = category;
+            } else {
+                document.getElementById('previewCategory').textContent = 'Category';
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+</body>
+
+</html>

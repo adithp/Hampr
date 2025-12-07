@@ -1,0 +1,529 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Add Interior Product - Simple | Admin Dashboard</title>
+
+    <!-- Fonts / CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Cropper -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+
+    <style>
+        /* Keep styling close to yours */
+        body {
+            background: #f8f9fa;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 240px;
+            padding-top: 48px;
+            background: #fff;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .06);
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all .3s;
+        }
+
+        .form-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, .05);
+        }
+
+        .img-container {
+            max-height: 500px;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .variant-thumb {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+            border-radius: 6px;
+        }
+
+        .variant-img-wrapper {
+            width: 100px;
+            position: relative;
+            margin-bottom: 6px;
+            margin-right: 8px;
+        }
+
+        .primary-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: rgba(0, 123, 255, .9);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .order-input-container {
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding-top: 6px;
+            margin-top: 6px;
+        }
+
+        .variant-thumbnails {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .variant-img-upload-box {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 100px;
+            height: 100px;
+        }
+
+        .btn-sm {
+            padding: .25rem .5rem;
+            font-size: .75rem;
+        }
+
+        @media (max-width:768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .mobile-nav-toggle {
+                display: block;
+            }
+
+            /* Error message container */
+            .errorlist {
+                list-style: none;
+                padding: 0;
+                margin: 6px 0 0 0;
+            }
+
+            /* Individual error message */
+            .errorlist li {
+                background: #ffe6e6;
+                border-left: 4px solid #e60000;
+                padding: 8px 12px;
+                border-radius: 4px;
+                color: #b30000;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-weight: 500;
+            }
+
+            /* Icon */
+            .errorlist li::before {
+                content: "⚠️";
+                font-size: 14px;
+            }
+
+            a {
+                text-decoration: none;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="mobile-nav-toggle btn btn-light" onclick="toggleSidebar()"
+        style="display:none; position:fixed; z-index:101; top:12px; left:12px;">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h3 class="fw-bold">HAM<span style="color:#d4af37">PR.</span></h3>
+            <p class="text-muted small">Admin Portal</p>
+        </div>
+        <div class="px-3">
+            <form action="{% url 'cadmin:cancel_add_product' %}" method="POST">
+                <button type="submit" href="" class="btn btn-outline-secondary w-100 btn-sm">
+                    <i class="fas fa-times me-2"></i>Cancel & Exit
+                </button>
+            </form>
+
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a class="text-muted" style="text-decoration: none;">Products</a></li>
+                    <li class="breadcrumb-item"><a class="text-muted" style="text-decoration: none;">Interior Items</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Simple Product</li>
+                </ol>
+            </nav>
+            <!-- <a href="admin-products-interior-variant-selection.html" class="text-decoration-none text-muted small">
+                <i class="fas fa-arrow-left me-1"></i> Back to Selection
+            </a> -->
+        </div>
+
+        <h2 class="fw-bold">Add New Interior Product</h2>
+        <p class="text-muted mb-4">Step 2: Inventory & Images (No Variants)</p>
+
+        <div class="card form-card p-4">
+            <form id="productForm" action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <!-- <div id="step1DataContainer" class="d-none">
+                    <input type="hidden" name="name" id="hiddenName">
+                    <input type="hidden" name="brand" id="hiddenBrand">
+                    <input type="hidden" name="category" id="hiddenCategory">
+                    <input type="hidden" name="description" id="hiddenDescription">
+                    <input type="hidden" name="featured" id="hiddenFeatured">
+                    <input type="hidden" name="status" id="hiddenStatus">
+                    <input type="hidden" name="has_variants" value="false">
+                </div> -->
+
+                <div class="row g-3">
+
+                    <!-- Single (global) product container -->
+                    <div id="singleProductContainer" class="col-12">
+                        <div class="card bg-light border-0 p-3">
+                            <h6 class="fw-bold mb-3">Product Details</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Cost Price (₹)</label>
+                                    <input required type="number" class="form-control" name="cost" placeholder="0.00"
+                                        value="{{form.cost.value}}">
+                                    {{form.cost.errors}}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Selling Price (₹)</label>
+                                    <input required type="number" class="form-control" name="price" placeholder="0.00"
+                                        value="{{form.price.value}}">
+                                    {{form.price.errors}}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Stock</label>
+                                    <input required type="number" class="form-control" name="stock" placeholder="0"
+                                        value="{{form.stock.value}}">
+                                    {{from.stock.errors}}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small text-muted">Dimensions (cm)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">H</span>
+                                        <input required type="number" class="form-control" name="height"
+                                            placeholder="Height" value="{{form.height.value}}">
+                                        {{from.height.errors}}
+                                        <span class="input-group-text">W</span>
+                                        <input required type="number" class="form-control" name="width"
+                                            placeholder="Width" value="{{form.width.value}}">
+                                        {{form.width.errors}}
+                                        <span class="input-group-text">D</span>
+                                        <input required type="number" class="form-control" name="depth"
+                                            placeholder="Depth" value="{{form.depth.value}}">
+                                        {{form.depth.errors}}
+                                    </div>
+                                </div>
+
+                                <!-- Global gallery -->
+                                <div class="col-12">
+                                    <label class="form-label small text-muted">Product Images</label>
+                                    <div class="d-flex align-items-start gap-3 flex-wrap p-3 bg-white rounded-3 border">
+                                        <div id="single-thumbs" class="variant-thumbnails"></div>
+
+                                        <label class="variant-img-upload-box btn btn-outline-secondary border-dashed">
+                                            <input id="globalFileInput" type="file" accept="image/*" hidden
+                                                onchange="initCrop(this,'single')">
+                                            <i class="fas fa-plus mb-1"></i>
+                                            <small>Add</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 d-flex justify-content-between">
+                        <!-- <a class="btn btn-secondary px-4" href="">
+                            <i class="fas fa-arrow-left me-2"></i> Back
+                        </a> -->
+                        <button type="submit" class="btn btn-success px-4">Add Product</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Crop Modal -->
+    <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crop Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="img-container">
+                        <img id="cropImage" src="" alt="Image to crop">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" id="cropBtn">Crop & Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        // Shared state
+        let cropper = null;
+        let currentCropInput = null;
+        let currentVariantId = 'single';
+        let uploadedImages = []; // global gallery: [{id,file,src,order,isThumbnail}]
+        const maxImages = 10;
+
+        const cropModalEl = document.getElementById('cropModal');
+        const cropModal = new bootstrap.Modal(cropModalEl);
+        const cropImage = document.getElementById('cropImage');
+
+        // Restore step1 data (if present)
+        document.addEventListener('DOMContentLoaded', () => {
+            const stored = localStorage.getItem('tempInteriorProduct');
+            if (stored) {
+                const data = JSON.parse(stored);
+                document.getElementById('hiddenName').value = data.name || '';
+                document.getElementById('hiddenBrand').value = data.brand || '';
+                document.getElementById('hiddenCategory').value = data.category || '';
+                document.getElementById('hiddenDescription').value = data.description || '';
+                document.getElementById('hiddenFeatured').value = data.featured || '';
+                document.getElementById('hiddenStatus').value = data.status || '';
+            }
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // ---------- Crop + add to global gallery ----------
+        function initCrop(input, variantId) {
+            if (!input.files || !input.files[0]) return;
+            currentCropInput = input;
+            // Always single here
+            currentVariantId = 'single';
+
+            const file = input.files[0];
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file.');
+                input.value = '';
+                return;
+            }
+
+            if (uploadedImages.length >= maxImages) { alert('Max ' + maxImages + ' images allowed'); input.value = ''; return; }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                cropImage.src = e.target.result;
+                cropModal.show();
+                if (cropper) { cropper.destroy(); cropper = null; }
+                cropModalEl.addEventListener('shown.bs.modal', () => {
+                    cropper = new Cropper(cropImage, { aspectRatio: 1, viewMode: 1, autoCropArea: 1 });
+                }, { once: true });
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        document.getElementById('cropBtn').addEventListener('click', () => {
+            if (!cropper) return;
+            cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob((blob) => {
+                if (!blob) return;
+                const id = Date.now() + Math.random();
+                const file = new File([blob], `image_${id}.jpg`, { type: 'image/jpeg' });
+                const src = URL.createObjectURL(file);
+
+                const order = uploadedImages.length + 1;
+                const isFirst = uploadedImages.length === 0;
+                uploadedImages.push({ id, file, src, order, isThumbnail: isFirst });
+                refreshGallery();
+
+                cropModal.hide();
+                if (cropper) { cropper.destroy(); cropper = null; }
+            }, 'image/jpeg', 0.9);
+        });
+
+        // Refresh global gallery preview
+        function refreshGallery() {
+            const container = document.getElementById('single-thumbs');
+            container.innerHTML = '';
+            if (!uploadedImages.length) return;
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
+                const wrap = document.createElement('div');
+                wrap.className = 'variant-img-wrapper text-center';
+
+                const imageEl = document.createElement('img');
+                imageEl.src = img.src;
+                imageEl.className = 'variant-thumb mb-1 rounded border';
+
+                // primary badge
+                if (img.isThumbnail) {
+                    const badge = document.createElement('div');
+                    badge.className = 'primary-badge';
+                    badge.innerText = 'Primary';
+                    wrap.appendChild(badge);
+                }
+
+                // buttons row
+                const btns = document.createElement('div');
+                btns.className = 'd-flex gap-1 justify-content-center mt-1';
+
+                const setPrimary = document.createElement('button');
+                setPrimary.type = 'button';
+                setPrimary.className = 'btn btn-sm btn-light';
+                setPrimary.title = 'Set primary';
+                setPrimary.innerHTML = '<i class="fas fa-image"></i>';
+                setPrimary.onclick = () => { uploadedImages.forEach(i => i.isThumbnail = (i.id === img.id)); refreshGallery(); };
+
+                const del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'btn btn-sm btn-danger';
+                del.title = 'Delete';
+                del.innerHTML = '<i class="fas fa-trash"></i>';
+                del.onclick = () => {
+                    if (img.src) URL.revokeObjectURL(img.src);
+                    uploadedImages = uploadedImages.filter(i => i.id !== img.id);
+                    uploadedImages.forEach((it, idx) => it.order = idx + 1);
+                    if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isThumbnail)) uploadedImages[0].isThumbnail = true;
+                    refreshGallery();
+                };
+
+                btns.appendChild(setPrimary);
+                btns.appendChild(del);
+
+                // order control
+                const orderDiv = document.createElement('div');
+                orderDiv.className = 'order-input-container';
+                const small = document.createElement('small');
+                small.className = 'text-muted fw-bold';
+                small.innerText = 'Order:';
+                const orderInput = document.createElement('input');
+                orderInput.type = 'number';
+                orderInput.className = 'form-control form-control-sm w-50 text-center';
+                orderInput.min = '1';
+                orderInput.max = String(maxImages);
+                orderInput.value = img.order;
+                orderInput.onchange = () => {
+                    let v = parseInt(orderInput.value) || 1;
+                    if (v < 1) v = 1; if (v > maxImages) v = maxImages;
+                    img.order = v;
+                    uploadedImages.sort((a, b) => a.order - b.order);
+                    uploadedImages.forEach((it, idx) => it.order = idx + 1);
+                    refreshGallery();
+                };
+                orderDiv.appendChild(small);
+                orderDiv.appendChild(orderInput);
+
+                wrap.appendChild(imageEl);
+                wrap.appendChild(btns);
+                wrap.appendChild(orderDiv);
+
+                container.appendChild(wrap);
+            });
+        }
+
+        // On submit: turn file objects into actual file inputs, include orders + primary flags
+        document.getElementById('productForm').addEventListener('submit', function (e) {
+            // Normalize orders
+            uploadedImages.sort((a, b) => a.order - b.order);
+            uploadedImages.forEach((it, idx) => it.order = idx + 1);
+
+            // Remove previously appended dynamic inputs
+            this.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
+
+            // Append global images
+            uploadedImages.forEach(img => {
+                const dt = new DataTransfer();
+                dt.items.add(img.file);
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'images'; // backend: request.FILES.getlist('images')
+                fileInput.files = dt.files;
+                fileInput.classList.add('dynamic-image-input', 'd-none');
+
+                const orderInput = document.createElement('input');
+                orderInput.type = 'hidden';
+                orderInput.name = 'orders';
+                orderInput.value = img.order;
+                orderInput.classList.add('dynamic-image-input');
+
+                const primaryInput = document.createElement('input');
+                primaryInput.type = 'hidden';
+                primaryInput.name = 'primary';
+                primaryInput.value = img.isThumbnail ? '1' : '0';
+                primaryInput.classList.add('dynamic-image-input');
+
+                this.appendChild(fileInput);
+                this.appendChild(orderInput);
+                this.appendChild(primaryInput);
+            });
+
+            // allow normal post to continue
+        });
+
+        // bfcache safety
+        window.addEventListener('pageshow', (event) => { if (event.persisted) location.reload(); });
+
+    </script>
+</body>
+
+</html>

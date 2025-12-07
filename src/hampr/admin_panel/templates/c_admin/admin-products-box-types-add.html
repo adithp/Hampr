@@ -129,16 +129,16 @@
         <div class="px-3">
             <ul class="nav flex-column gap-2">
                 <li class="nav-item">
-                    <a href="admin-dashboard.html" class="nav-link text-dark"><i class="fas fa-home me-2"></i>
+                    <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark"><i class="fas fa-home me-2"></i>
                         Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a href="admin-products.html" class="nav-link active text-primary fw-bold bg-light rounded"><i
+                    <a href="{% url 'cadmin:products_manage' %}" class="nav-link active text-primary fw-bold bg-light rounded"><i
                             class="fas fa-box me-2"></i> Products</a>
                 </li>
             </ul>
             <hr>
-            <a href="admin-products-box-types.html" class="btn btn-outline-secondary w-100 btn-sm">
+            <a href="{% url 'cadmin:box_type_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
                 <i class="fas fa-arrow-left me-2"></i>Back to List
             </a>
         </div>
@@ -150,9 +150,9 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="admin-products.html"
+                    <li class="breadcrumb-item"><a href="{% url 'cadmin:products_manage' %}"
                             class="text-decoration-none text-muted">Products</a></li>
-                    <li class="breadcrumb-item"><a href="admin-products-box-types.html"
+                    <li class="breadcrumb-item"><a href="{% url 'cadmin:box_type_manage' %}"
                             class="text-decoration-none text-muted">Box Types</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Add New Box Type</li>
                 </ol>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Decoration | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+    <style>
+        /* Dashboard Specific Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .form-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .preview-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .preview-img-container {
+            height: 200px;
+            background-color: #f8f9fa;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .preview-placeholder {
+            color: #adb5bd;
+            font-size: 3rem;
+        }
+
+        /* Image Upload List Styles */
+        .image-list-item {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .image-list-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .image-crop-container {
+            max-height: 500px;
+            width: 100%;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
+
+            .preview-card {
+                position: static;
+                margin-top: 2rem;
+            }
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 101;
+            background: var(--white);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+            <p class="text-muted small">Admin Portal</p>
+        </div>
+        <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="admin-dashboard.html">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="admin-products.html">
+                        <i class="fas fa-box"></i>
+                        Products
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-shopping-cart"></i>
+                        Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-users"></i>
+                        Customers
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto px-3 pt-5">
+                <a href="admin-login.html" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb & Back Link -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="admin-products.html"
+                            class="text-decoration-none text-muted">Products</a></li>
+                    <li class="breadcrumb-item"><a href="admin-products-decorations.html"
+                            class="text-decoration-none text-muted">Decorations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add</li>
+                </ol>
+            </nav>
+            <a href="admin-products-decorations.html" class="text-decoration-none text-muted small"><i
+                    class="fas fa-arrow-left me-1"></i> Back to Decorations</a>
+        </div>
+
+        <!-- Header -->
+        <div class="mb-4">
+            <h2 class="fw-bold">Add New Decoration</h2>
+            <p class="text-muted mb-0">Add a new decorative item to your catalog</p>
+        </div>
+        {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="row g-4">
+            <!-- Form Section -->
+            <div class="col-lg-8">
+                <div class="card form-card p-4">
+                    <form id="addDecorationForm" method="POST" action="" onsubmit="return validateForm(event)"
+                        enctype="multipart/form-data">
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+
+                        <!-- Errors from color form -->
+                        {% for error in color_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+
+                        <!-- Errors from size form -->
+                        {% for error in size_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <!-- Basic Details -->
+                            <div class="col-12">
+                                <h5 class="mb-3 border-bottom pb-2">Basic Details</h5>
+                            </div>
+
+                            <!-- Name -->
+                            <div class="col-12">
+                                <label class="form-label">Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name" id="name"
+                                    placeholder="e.g. Red Silk Ribbon" required oninput="updatePreview()"
+                                    value="{% if form.name.value %}{{form.name.value}}{% endif %}">
+                            </div>
+                            {{form.name.errors}}
+                            <!-- Cost & Price -->
+                            <div class="col-md-6">
+                                <label class="form-label">Cost <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" name="cost" id="cost" placeholder="0.00"
+                                        min="0" step="0.01" required value="{{form.cost.value}}">
+                                    {{form.cost.errors}}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Price <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" name="price" id="price" placeholder="0.00"
+                                        min="0" step="0.01" required oninput="updatePreview()"
+                                        value="{{form.price.value}}">
+                                    {{form.price.errors}}
+                                </div>
+                            </div>
+
+                            <!-- Stock -->
+                            <div class="col-md-6">
+                                <label class="form-label">Stock <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="stock" id="stock" placeholder="0"
+                                    min="0" required value="{{form.stock.value}}">
+                                {{form.stock.errors}}
+                            </div>
+
+                            <!-- Dimensions -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3 border-bottom pb-2">Dimensions (cm)</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Height <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="height" placeholder="0.00" min="0"
+                                    step="0.01" required value="{{form.height.value}}">
+                                {{form.height.errors}}
+                                <div class="form-text">Unit: cm</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Width <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="width" placeholder="0.00" min="0"
+                                    step="0.01" required value="{{form.width.value}}">
+                                {{form.width.errors}}
+                                <div class="form-text">Unit: cm</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Depth <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" name="depth" placeholder="0.00" min="0"
+                                    step="0.01" required value="{{form.depth.value}}">
+                                <div class="form-text">Unit: cm</div>
+                                {{form.depth.errors}}
+                            </div>
+
+                            <!-- Settings -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3 border-bottom pb-2">Settings</h5>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active"
+                                        checked>
+                                    <label class="form-check-label" for="is_active">Is Active</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_inside" id="is_inside">
+                                    <label class="form-check-label" for="is_inside">Is Inside</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_outside" id="is_outside">
+                                    <label class="form-check-label" for="is_outside">Is Outside</label>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12 mt-3">
+                                <label class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="description" id="description" rows="4"
+                                    placeholder="Enter product description..." required
+                                    oninput="updatePreview()"></textarea>
+                            </div>
+
+                            <!-- Image Upload Section -->
+                            <div class="col-12 mt-4">
+                                <h5 class="mb-3 border-bottom pb-2">Product Images</h5>
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-outline-primary"
+                                        onclick="document.getElementById('imageInput').click()">
+                                        <i class="fas fa-plus me-2"></i> Add Image
+                                    </button>
+                                    <input type="file" id="imageInput" class="d-none" accept="image/*"
+                                        onchange="handleImageSelect(this)">
+                                </div>
+
+                                <!-- Container for added images -->
+                                <div id="imageList" class="mt-3">
+                                    <!-- Images will be added here dynamically -->
+                                </div>
+                                <div id="imageError" class="text-danger small mt-2 d-none"></div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="col-12 mt-5">
+                                <hr>
+                                <button type="submit" class="btn btn-success px-4 py-2 me-2">Save Decoration</button>
+                                <!-- <a href="admin-products-decorations.html" class="btn btn-secondary px-4 py-2">Cancel</a> -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="col-lg-4">
+                <div class="card preview-card">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="fw-bold mb-0">Live Preview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="card border-0 shadow-sm">
+                            <div class="preview-img-container">
+                                <i class="fas fa-image preview-placeholder" id="previewIcon"></i>
+                                <img id="previewImg" class="preview-img" alt="Preview">
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0" id="previewName">Product Name</h5>
+                                    <span class="badge bg-success" id="previewPrice">₹0.00</span>
+                                </div>
+                                <p class="card-text text-muted small" id="previewDesc">Product description will appear
+                                    here...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Crop Modal -->
+    <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crop Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="image-crop-container">
+                        <img id="cropImage" src="" alt="Image to crop" style="max-width: 100%;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="cropAndAdd()">Crop & Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script>
+        let cropper;
+        let imageCount = 0;
+        let uploadedFiles = []; // {id:..., file: File}
+
+        const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+        const cropImage = document.getElementById('cropImage');
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function updatePreview() {
+            document.getElementById('previewName').textContent =
+                document.getElementById('name').value || 'Product Name';
+
+            const price = document.getElementById('price') ? document.getElementById('price').value : '';
+            document.getElementById('previewPrice').textContent =
+                price ? `₹${parseFloat(price).toFixed(2)}` : '₹0.00';
+
+            document.getElementById('previewDesc').textContent =
+                document.getElementById('description').value || 'Product description will appear here...';
+        }
+
+        function handleImageSelect(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    cropImage.src = e.target.result;
+                    cropModal.show();
+
+                    if (cropper) cropper.destroy();
+
+                    setTimeout(() => {
+                        cropper = new Cropper(cropImage, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                        });
+                    }, 200);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+            input.value = '';
+        }
+
+        function cropAndAdd() {
+            if (!cropper) return;
+
+            cropper.getCroppedCanvas({
+                width: 600,
+                height: 600
+            }).toBlob((blob) => {
+                const id = Date.now() + Math.random();
+                const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
+                const previewURL = URL.createObjectURL(file);
+
+                addImageToList(file, previewURL, id);
+            }, "image/jpeg", 0.9);
+
+            cropModal.hide();
+        }
+
+        function addImageToList(file, previewURL, id) {
+            imageCount++;
+
+            uploadedFiles.push({ id: String(id), file });
+
+            const list = document.getElementById('imageList');
+            const div = document.createElement('div');
+            div.className = 'image-list-item';
+            div.id = `image-item-${imageCount}`;
+
+            const isFirst = list.children.length === 0;
+            const checked = isFirst ? 'checked' : '';
+
+            div.innerHTML = `
+            <img src="${previewURL}" class="image-list-thumb">
+            <div class="flex-grow-1">
+                <div class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="small text-muted d-block">Order</label>
+                        <input type="number" class="form-control form-control-sm image-order"
+                               value="${list.children.length + 1}" min="1" required>
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-check mt-3">
+                            <input class="form-check-input primary-radio" type="radio"
+                                name="primary_image" value="${list.children.length + 1}" ${checked}>
+                            <label class="form-check-label small">Primary</label>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" class="hidden-file-id" value="${id}">
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage('${id}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+
+            list.appendChild(div);
+
+            if (isFirst) updatePrimaryPreview(previewURL);
+        }
+
+        function removeImage(id) {
+            // find DOM item with hidden-file-id == id
+            const items = Array.from(document.querySelectorAll('.image-list-item'));
+            let removedWasPrimary = false;
+            for (const item of items) {
+                const hidden = item.querySelector('.hidden-file-id');
+                if (hidden && hidden.value === String(id)) {
+                    const radio = item.querySelector('.primary-radio');
+                    if (radio && radio.checked) removedWasPrimary = true;
+                    item.remove();
+                    break;
+                }
+            }
+
+            // remove from uploadedFiles
+            uploadedFiles = uploadedFiles.filter(f => f.id !== String(id));
+
+            // re-normalize order inputs to be sequential (1..n)
+            const orderInputs = Array.from(document.querySelectorAll('.image-order'));
+            orderInputs.forEach((input, idx) => input.value = idx + 1);
+
+            // restore primary if needed
+            if (removedWasPrimary) {
+                const first = document.querySelector('.image-list-item');
+                if (first) {
+                    const radio = first.querySelector('.primary-radio');
+                    if (radio) {
+                        radio.checked = true;
+                        updatePrimaryPreview(first.querySelector('img').src);
+                    }
+                } else {
+                    // no images left
+                    const previewImg = document.getElementById('previewImg');
+                    const previewIcon = document.getElementById('previewIcon');
+                    previewImg.style.display = 'none';
+                    previewIcon.style.display = 'block';
+                }
+            }
+        }
+
+        function updatePrimaryPreview(src) {
+            const previewImg = document.getElementById('previewImg');
+            const previewIcon = document.getElementById('previewIcon');
+
+            previewImg.src = src;
+            previewImg.style.display = 'block';
+            previewIcon.style.display = 'none';
+        }
+
+        // Main submit handler: validate inside/outside, create dynamic file inputs + meta
+        function validateForm(event) {
+            const form = document.getElementById('addDecorationForm');
+
+            // Validate inside/outside
+            const inside = document.getElementById("is_inside").checked;
+            const outside = document.getElementById("is_outside").checked;
+            if (!inside && !outside) {
+                // show inline error if desired; simple alert for now
+                alert("Please select at least one: Is Inside or Is Outside.");
+                event.preventDefault();
+                return false;
+            }
+
+            // Remove previous dynamic inputs (from earlier submits)
+            form.querySelectorAll('.dyn-file').forEach(el => el.remove());
+            form.querySelectorAll('.dyn-meta').forEach(el => el.remove());
+
+            // Normalize order inputs (make sequential starting from 1)
+            const items = Array.from(document.querySelectorAll('.image-list-item'));
+            // Build array of {elem, order, id, file} using the DOM order values
+            let orderArray = items.map((elem, idx) => {
+                const orderInput = elem.querySelector('.image-order');
+                // if order input missing, fallback to idx+1
+                const orderVal = orderInput ? parseInt(orderInput.value) || (idx + 1) : (idx + 1);
+                const hiddenId = elem.querySelector('.hidden-file-id') ? elem.querySelector('.hidden-file-id').value : null;
+                return { elem, order: orderVal, id: String(hiddenId) };
+            });
+
+            // To ensure consistent numbering (1..n), sort by current order and then reassign 1..n
+            orderArray.sort((a, b) => a.order - b.order);
+            orderArray.forEach((o, idx) => {
+                o.order = idx + 1;
+                const orderInput = o.elem.querySelector('.image-order');
+                if (orderInput) orderInput.value = o.order;
+
+                // Also update the corresponding radio value so server and UI align
+                const radio = o.elem.querySelector('.primary-radio');
+                if (radio) radio.value = o.order;
+            });
+
+            // Now append hidden meta inputs in the same sorted order, and append file inputs in that order
+            // For each ordered item, find file in uploadedFiles by id and append file input
+            for (const o of orderArray) {
+                // hidden order
+                const hiddenOrder = document.createElement('input');
+                hiddenOrder.type = 'hidden';
+                hiddenOrder.name = 'image_order';
+                hiddenOrder.value = String(o.order);
+                hiddenOrder.classList.add('dyn-meta');
+                form.appendChild(hiddenOrder);
+
+                // find file by id
+                const found = uploadedFiles.find(f => f.id === o.id);
+                if (found && found.file) {
+                    const dt = new DataTransfer();
+                    dt.items.add(found.file);
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.name = 'images';
+                    fileInput.files = dt.files;
+                    fileInput.classList.add('dyn-file');
+                    fileInput.style.display = 'none';
+                    form.appendChild(fileInput);
+                }
+            }
+
+            // Primary image: find checked primary-radio and use its (normalized) value
+            const primaryRadio = document.querySelector('.primary-radio:checked');
+            if (primaryRadio) {
+                const hiddenPrimary = document.createElement('input');
+                hiddenPrimary.type = 'hidden';
+                hiddenPrimary.name = 'primary_image';
+                hiddenPrimary.value = primaryRadio.value; // this is the normalized order value
+                hiddenPrimary.classList.add('dyn-meta');
+                form.appendChild(hiddenPrimary);
+            } else {
+                // If images exist but no radio checked, force the first as primary (defensive)
+                if (orderArray.length > 0) {
+                    const hiddenPrimary = document.createElement('input');
+                    hiddenPrimary.type = 'hidden';
+                    hiddenPrimary.name = 'primary_image';
+                    hiddenPrimary.value = '1';
+                    hiddenPrimary.classList.add('dyn-meta');
+                    form.appendChild(hiddenPrimary);
+                }
+            }
+
+            // All done — allow submit to continue
+            return true;
+        }
+
+        // Attach validateForm to the form's submit event
+        document.getElementById('addDecorationForm').addEventListener('submit', function (e) {
+            return validateForm(e);
+        });
+
+        // Ensure pageshow bfcache safety
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) location.reload();
+        });
+    </script>
+
+
+</body>
+
+</html>

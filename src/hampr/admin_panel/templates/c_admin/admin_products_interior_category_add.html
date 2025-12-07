@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Box Category | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <!-- Custom CSS -->
+    <!-- <link rel="stylesheet" href="}"> -->
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .form-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0066cc;
+            box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.1);
+        }
+
+        .btn-primary-custom {
+            background-color: #0066cc;
+            border-color: #0066cc;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        /* Image Upload Styles */
+        .upload-area {
+            border: 2px dashed #0066cc;
+            border-radius: 8px;
+            background-color: #f8f9ff;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            background-color: #e6efff;
+            border-color: #0056b3;
+        }
+
+        .image-card {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            background: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .image-card:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .badge-primary-img {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background-color: #0066cc;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .order-input-container {
+            padding: 8px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Crop Modal Styles */
+        .img-container {
+            max-height: 500px;
+        }
+
+        .img-container img {
+            max-width: 100%;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 101;
+            background: var(--white);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+            <p class="text-muted small">Admin Portal</p>
+        </div>
+        <div class="px-3">
+            <ul class="nav flex-column gap-2">
+                <li class="nav-item">
+                    <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark">
+                        <i class="fas fa-home me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'cadmin:products_manage' %}"
+                        class="nav-link active text-primary fw-bold bg-light rounded">
+                        <i class="fas fa-box me-2"></i> Products
+                    </a>
+                </li>
+            </ul>
+            <hr>
+            <a href="{% url 'cadmin:box_category_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'cadmin:products_manage' %}"
+                            class="text-decoration-none text-muted">Products</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'cadmin:box_category_manage' %}" class="text-decoration-none text-muted">
+                            Product Categories
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Add New Category</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-1">Add New Category</h2>
+            <p class="text-muted">Create a purpose or occasion category</p>
+        </div>
+
+        <!-- Form Card -->
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="card form-card p-4 p-md-5">
+            <form id="boxCategoryForm" action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <!-- Left Column: Basic Info -->
+                    <div class="col-md-6">
+                        <!-- Box Type Selection -->
+
+
+                        <!-- Name -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
+                            {{ form.name }}
+                            {{form.name.errors}}
+                            <div class="invalid-feedback">Please enter a category name.</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Description</label>
+                            {{ form.description }}
+                            {{form.description.errors}}
+                            <div class="d-flex justify-content-end mt-1">
+                                <small class="text-muted" id="charCount">0/200</small>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                {{form.is_active.errors}}
+                                <label class="form-check-label fw-bold" for="id_is_active">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Images -->
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 pt-3 border-top mt-4">
+                        <a href="{% url 'cadmin:box_category_manage' %}"
+                            class="btn btn-light border flex-grow-1">Cancel</a>
+                        <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
+                    </div>
+
+                    <!-- Delete Button (hidden in add mode, can show in edit mode) -->
+                    <div class="text-center mt-3 d-none" id="deleteContainer">
+                        <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm"
+                            onclick="confirmDelete()">
+                            <i class="fas fa-trash me-1"></i> Delete Category
+                        </button>
+                    </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Crop Modal -->
+    <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Crop Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="img-container">
+                        <img id="imageToCrop" src="" alt="Picture to crop">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="cropAndSave()">Crop & Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts at bottom -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Description char counter – assumes textarea name="description"
+        document.addEventListener('input', function (e) {
+            if (e.target.matches('textarea[name="description"]')) {
+                const max = e.target.getAttribute('maxlength') || 200;
+                const current = e.target.value.length;
+                const counter = document.getElementById('charCount');
+                if (counter) counter.textContent = `${current}/${max}`;
+            }
+        });
+
+        // ---------- Image & Crop Logic ----------
+
+        let uploadedImages = []; // { id, file, src, order, isPrimary }
+
+        let cropper;
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropModalEl = document.getElementById('cropModal');
+        const cropModal = new bootstrap.Modal(cropModalEl);
+
+        function handleFileSelect(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const file = input.files[0];
+
+            if (uploadedImages.length >= 5) {
+                alert('Maximum 5 images allowed.');
+                input.value = '';
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload a valid image file.');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageToCrop.src = e.target.result;
+                cropModal.show();
+            };
+            reader.readAsDataURL(file);
+
+            // Clear so user can reselect the same file if needed
+            input.value = '';
+        }
+
+        cropModalEl.addEventListener('shown.bs.modal', function () {
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(imageToCrop, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1
+            });
+        });
+
+        cropModalEl.addEventListener('hidden.bs.modal', function () {
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        });
+
+        function cropAndSave() {
+            if (!cropper) return;
+
+            cropper.getCroppedCanvas({
+                width: 500,
+                height: 500
+            }).toBlob((blob) => {
+                if (!blob) return;
+
+                const id = Date.now() + Math.random();
+                const order = uploadedImages.length + 1;
+                const isPrimary = uploadedImages.length === 0;
+
+                const file = new File([blob], `category_${id}.jpg`, {
+                    type: 'image/jpeg'
+                });
+
+                const src = URL.createObjectURL(file);
+
+                uploadedImages.push({
+                    id,
+                    file,
+                    src,
+                    order,
+                    isPrimary
+                });
+
+                refreshGallery();
+                cropModal.hide();
+            }, 'image/jpeg', 0.9);
+        }
+
+        function refreshGallery() {
+            const gallery = document.getElementById('imageGallery');
+            gallery.innerHTML = '';
+
+            if (uploadedImages.length === 0) {
+                gallery.innerHTML = `
+                    <div class="col-12 text-center py-3 text-muted small" id="emptyState">
+                        No images uploaded yet.
+                    </div>`;
+                // also clear error
+                const errorBox = document.getElementById("orderError");
+                if (errorBox) {
+                    errorBox.style.display = "none";
+                    errorBox.textContent = "";
+                }
+                return;
+            }
+
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
+                const col = document.createElement('div');
+                col.className = 'col-6';
+                col.innerHTML = `
+                    <div class="image-card">
+                        <img src="${img.src}" alt="Category Image">
+                        ${img.isPrimary ? '<span class="badge-primary-img">Primary</span>' : ''}
+                        <div class="image-overlay">
+                            <button type="button" class="btn btn-sm btn-light rounded-circle"
+                                onclick="setPrimary('${img.id}')" title="Set as Primary">
+                                <i class="fas fa-star text-warning"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light rounded-circle text-danger"
+                                onclick="removeImage('${img.id}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="order-input-container">
+                            <small class="text-muted fw-bold" style="font-size: 0.7rem;">Order:</small>
+                            <input type="number"
+                                class="form-control form-control-sm w-50 text-center p-1"
+                                value="${img.order}"
+                                min="1"
+                                max="10"
+                                onchange="updateOrder('${img.id}', this.value)">
+                        </div>
+                    </div>
+                `;
+                gallery.appendChild(col);
+            });
+
+            // run validation after redraw
+            validateOrders();
+        }
+
+        function setPrimary(id) {
+            uploadedImages.forEach(img => {
+                img.isPrimary = (img.id == id);
+            });
+            refreshGallery();
+        }
+
+        function removeImage(id) {
+            const img = uploadedImages.find(i => i.id == id);
+            if (img && img.src) {
+                URL.revokeObjectURL(img.src);
+            }
+            uploadedImages = uploadedImages.filter(i => i.id != id);
+
+            // Re-normalize orders
+            uploadedImages.forEach((img, index) => {
+                img.order = index + 1;
+            });
+
+            // Ensure at least one primary if images exist
+            if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isPrimary)) {
+                uploadedImages[0].isPrimary = true;
+            }
+
+            refreshGallery();
+        }
+
+        // ---- Order validation (1–10, sequential, no gaps) ----
+        function validateOrders() {
+            const errorBox = document.getElementById("orderError");
+            if (!errorBox) return true;
+
+            errorBox.style.display = "none";
+            errorBox.textContent = "";
+
+            if (uploadedImages.length === 0) {
+                // no images, no order to validate
+                return true;
+            }
+
+            const orders = uploadedImages.map(img => parseInt(img.order) || 0);
+
+            // 1. must be between 1 and 10
+            if (orders.some(o => o < 1 || o > 10)) {
+                errorBox.style.display = "block";
+                errorBox.textContent = "Order number must be between 1 and 10.";
+                return false;
+            }
+
+            // 2. must be sequential without gaps: 1..N
+            const sorted = [...orders].sort((a, b) => a - b);
+            for (let i = 0; i < sorted.length; i++) {
+                if (sorted[i] !== i + 1) {
+                    errorBox.style.display = "block";
+                    errorBox.textContent =
+                        "Order must be sequential (1, 2, 3, ...). Do not skip numbers.";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function updateOrder(id, newOrder) {
+            const img = uploadedImages.find(i => i.id == id);
+            if (!img) return;
+
+            const orderVal = parseInt(newOrder) || 1;
+            img.order = orderVal;
+
+            refreshGallery();
+            validateOrders();
+        }
+
+        function confirmDelete() {
+            if (confirm('Are you sure? This will affect products in this category.')) {
+                // Hook to Django delete view if needed
+                alert('Category deleted (front-end demo).');
+            }
+        }
+
+        // ---------- Attach files + meta before submit ----------
+        document.getElementById('boxCategoryForm').addEventListener('submit', function (e) {
+            const form = this;
+
+            // Validate orders before actually submitting
+            if (!validateOrders()) {
+                e.preventDefault();
+                alert("Please fix the image order before submitting.");
+                return;
+            }
+
+            // Remove old dynamic inputs (if user resubmits)
+            form.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
+
+            // If you want to enforce at least one image, uncomment:
+            // if (uploadedImages.length === 0) {
+            //     e.preventDefault();
+            //     alert('Please upload at least one image.');
+            //     return;
+            // }
+
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
+                // file input
+                const dt = new DataTransfer();
+                dt.items.add(img.file);
+
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'images';  // Django: request.FILES.getlist("images")
+                fileInput.files = dt.files;
+                fileInput.classList.add('dynamic-image-input', 'd-none');
+
+                // order input
+                const orderInput = document.createElement('input');
+                orderInput.type = 'hidden';
+                orderInput.name = 'orders'; // Django: request.POST.getlist("orders")
+                orderInput.value = img.order;
+                orderInput.classList.add('dynamic-image-input');
+
+                // primary input
+                const primaryInput = document.createElement('input');
+                primaryInput.type = 'hidden';
+                primaryInput.name = 'primary'; // Django: request.POST.getlist("primary")
+                primaryInput.value = img.isPrimary ? '1' : '0';
+                primaryInput.classList.add('dynamic-image-input');
+
+                form.appendChild(fileInput);
+                form.appendChild(orderInput);
+                form.appendChild(primaryInput);
+            });
+        });
+    </script>
+</body>
+
+</html>
