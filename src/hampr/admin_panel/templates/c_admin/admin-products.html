@@ -208,7 +208,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
+                    <a class="nav-link" href="{% url 'cadmin:user_management' %}">
                         <i class="fas fa-users"></i>
                         Customers
                     </a>
@@ -271,7 +271,8 @@
 
             <!-- Decorations -->
             <div class="col-md-4">
-                <div class="category-card p-4 text-center" onclick="window.location.href='#'">
+                <div class="category-card p-4 text-center"
+                    onclick="window.location.href='{% url 'cadmin:decoration_manage' %}'">
                     <div class="d-flex justify-content-center">
                         <div class="cat-icon">
                             <i class="fas fa-ribbon"></i>

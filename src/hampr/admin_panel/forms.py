@@ -1,4 +1,4 @@
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxSize,ProductCategory,Product,ProductVariant,Color,Size
+from catalog.models import BoxCategory,BoxType,HamperBox,BoxSize,ProductCategory,Product,ProductVariant,Color,Size,Decoration
 from django import forms
 import re
 from django.core.exceptions import ValidationError
@@ -473,4 +473,59 @@ class SizeForm(forms.ModelForm):
         
         
         return sort_order
+    
+class DecorationForm(forms.ModelForm):
+    
+    class Meta:
+        model = Decoration
+        fields = ['name','height','width','depth','cost','price','stock','is_active','description','is_outside','is_inside']
         
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if not re.match(r"^[A-Za-z][A-Za-z\s-]*[A-Za-z]$"
+, name):
+            raise forms.ValidationError("Decorater name may only contain letters, spaces, or hyphens.")
+        return name
+    def clean_cost(self):
+        cost = self.cleaned_data.get('cost')
+        if float(cost) < 0:
+            raise ValidationError('cost must be greater than 0 ')
+        
+        return cost
+    
+    def clean_stock(self):
+        stock = self.cleaned_data.get('stock')
+        if int(stock) < 0:
+            raise ValidationError('stock must be greater than 0 ')
+        if not float(stock).is_integer():
+            raise ValidationError('Stock Must Be Whole Number')
+        return stock
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        if float(price) < 0:
+            raise ValidationError('price must be greater than 0 ')
+        
+        return price
+    def clean_height(self):
+        height = self.cleaned_data.get('height')
+        
+        if float(height) < 0:
+            raise ValidationError('height must be greater than 0 ')
+        
+        return height
+    
+    def clean_width(self):
+        width = self.cleaned_data.get('width')
+        
+        if float(width) < 0:
+            raise ValidationError('width must be greater than 0 ')
+        
+        return width
+    
+    def clean_depth(self):
+        depth = self.cleaned_data.get('depth')
+        
+        if float(depth) < 0:
+            raise ValidationError('depth must be greater than 0 ')
+        
+        return depth

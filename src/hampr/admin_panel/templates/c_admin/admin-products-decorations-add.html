@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
@@ -23,7 +24,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{%%}">
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
 
     <style>
         /* Dashboard Specific Styles */
@@ -259,13 +260,36 @@
             <h2 class="fw-bold">Add New Decoration</h2>
             <p class="text-muted mb-0">Add a new decorative item to your catalog</p>
         </div>
-
+        {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="row g-4">
             <!-- Form Section -->
             <div class="col-lg-8">
                 <div class="card form-card p-4">
-                    <form id="addDecorationForm" method="POST" action="/api/decorations/add"
-                        onsubmit="return validateForm(event)">
+                    <form id="addDecorationForm" method="POST" action="" onsubmit="return validateForm(event)"
+                        enctype="multipart/form-data">
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+
+                        <!-- Errors from color form -->
+                        {% for error in color_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+
+                        <!-- Errors from size form -->
+                        {% for error in size_form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                        {% csrf_token %}
                         <div class="row g-3">
                             <!-- Basic Details -->
                             <div class="col-12">
@@ -276,16 +300,18 @@
                             <div class="col-12">
                                 <label class="form-label">Name <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" name="name" id="name"
-                                    placeholder="e.g. Red Silk Ribbon" required oninput="updatePreview()">
+                                    placeholder="e.g. Red Silk Ribbon" required oninput="updatePreview()"
+                                    value="{% if form.name.value %}{{form.name.value}}{% endif %}">
                             </div>
-
+                            {{form.name.errors}}
                             <!-- Cost & Price -->
                             <div class="col-md-6">
                                 <label class="form-label">Cost <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">₹</span>
                                     <input type="number" class="form-control" name="cost" id="cost" placeholder="0.00"
-                                        min="0" step="0.01" required>
+                                        min="0" step="0.01" required value="{{form.cost.value}}">
+                                    {{form.cost.errors}}
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -293,7 +319,9 @@
                                 <div class="input-group">
                                     <span class="input-group-text">₹</span>
                                     <input type="number" class="form-control" name="price" id="price" placeholder="0.00"
-                                        min="0" step="0.01" required oninput="updatePreview()">
+                                        min="0" step="0.01" required oninput="updatePreview()"
+                                        value="{{form.price.value}}">
+                                    {{form.price.errors}}
                                 </div>
                             </div>
 
@@ -301,7 +329,8 @@
                             <div class="col-md-6">
                                 <label class="form-label">Stock <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" name="stock" id="stock" placeholder="0"
-                                    min="0" required>
+                                    min="0" required value="{{form.stock.value}}">
+                                {{form.stock.errors}}
                             </div>
 
                             <!-- Dimensions -->
@@ -311,20 +340,23 @@
                             <div class="col-md-4">
                                 <label class="form-label">Height <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" name="height" placeholder="0.00" min="0"
-                                    step="0.01" required>
+                                    step="0.01" required value="{{form.height.value}}">
+                                {{form.height.errors}}
                                 <div class="form-text">Unit: cm</div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Width <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" name="width" placeholder="0.00" min="0"
-                                    step="0.01" required>
+                                    step="0.01" required value="{{form.width.value}}">
+                                {{form.width.errors}}
                                 <div class="form-text">Unit: cm</div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Depth <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" name="depth" placeholder="0.00" min="0"
-                                    step="0.01" required>
+                                    step="0.01" required value="{{form.depth.value}}">
                                 <div class="form-text">Unit: cm</div>
+                                {{form.depth.errors}}
                             </div>
 
                             <!-- Settings -->
@@ -383,7 +415,7 @@
                             <div class="col-12 mt-5">
                                 <hr>
                                 <button type="submit" class="btn btn-success px-4 py-2 me-2">Save Decoration</button>
-                                <a href="admin-products-decorations.html" class="btn btn-secondary px-4 py-2">Cancel</a>
+                                <!-- <a href="admin-products-decorations.html" class="btn btn-secondary px-4 py-2">Cancel</a> -->
                             </div>
                         </div>
                     </form>
@@ -441,10 +473,11 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-
     <script>
         let cropper;
         let imageCount = 0;
+        let uploadedFiles = []; // {id:..., file: File}
+
         const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
         const cropImage = document.getElementById('cropImage');
 
@@ -453,13 +486,15 @@
         }
 
         function updatePreview() {
-            const name = document.getElementById('name').value;
-            const price = document.getElementById('price').value;
-            const desc = document.getElementById('description').value;
+            document.getElementById('previewName').textContent =
+                document.getElementById('name').value || 'Product Name';
 
-            document.getElementById('previewName').textContent = name || 'Product Name';
-            document.getElementById('previewPrice').textContent = price ? '₹' + parseFloat(price).toFixed(2) : '₹0.00';
-            document.getElementById('previewDesc').textContent = desc || 'Product description will appear here...';
+            const price = document.getElementById('price') ? document.getElementById('price').value : '';
+            document.getElementById('previewPrice').textContent =
+                price ? `₹${parseFloat(price).toFixed(2)}` : '₹0.00';
+
+            document.getElementById('previewDesc').textContent =
+                document.getElementById('description').value || 'Product description will appear here...';
         }
 
         function handleImageSelect(input) {
@@ -469,101 +504,115 @@
                     cropImage.src = e.target.result;
                     cropModal.show();
 
-                    // Destroy previous cropper if exists
-                    if (cropper) {
-                        cropper.destroy();
-                    }
+                    if (cropper) cropper.destroy();
 
-                    // Wait for modal to open then init cropper
                     setTimeout(() => {
                         cropper = new Cropper(cropImage, {
-                            aspectRatio: 1, // Square crop for products
+                            aspectRatio: 1,
                             viewMode: 1,
                         });
                     }, 200);
-                }
+                };
                 reader.readAsDataURL(input.files[0]);
             }
-            // Reset input so same file can be selected again
             input.value = '';
         }
 
         function cropAndAdd() {
             if (!cropper) return;
 
-            // Get cropped canvas
-            const canvas = cropper.getCroppedCanvas({
+            cropper.getCroppedCanvas({
                 width: 600,
                 height: 600
-            });
+            }).toBlob((blob) => {
+                const id = Date.now() + Math.random();
+                const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
+                const previewURL = URL.createObjectURL(file);
 
-            const base64Image = canvas.toDataURL('image/jpeg');
-            addImageToList(base64Image);
+                addImageToList(file, previewURL, id);
+            }, "image/jpeg", 0.9);
 
             cropModal.hide();
         }
 
-        function addImageToList(base64Data) {
+        function addImageToList(file, previewURL, id) {
             imageCount++;
+
+            uploadedFiles.push({ id: String(id), file });
+
             const list = document.getElementById('imageList');
             const div = document.createElement('div');
             div.className = 'image-list-item';
             div.id = `image-item-${imageCount}`;
 
-            // Default first image to primary if none exist
             const isFirst = list.children.length === 0;
             const checked = isFirst ? 'checked' : '';
 
             div.innerHTML = `
-                <img src="${base64Data}" class="image-list-thumb">
-                <div class="flex-grow-1">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-auto">
-                            <label class="small text-muted d-block">Order</label>
-                            <input type="number" class="form-control form-control-sm" style="width: 70px" 
-                                name="images[${imageCount}][order]" value="${list.children.length + 1}" min="1" required>
-                        </div>
-                        <div class="col-auto">
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="radio" name="primary_image" 
-                                    value="${imageCount}" ${checked} onchange="updatePrimaryPreview('${base64Data}')">
-                                <label class="form-check-label small">Primary</label>
-                            </div>
+            <img src="${previewURL}" class="image-list-thumb">
+            <div class="flex-grow-1">
+                <div class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <label class="small text-muted d-block">Order</label>
+                        <input type="number" class="form-control form-control-sm image-order"
+                               value="${list.children.length + 1}" min="1" required>
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-check mt-3">
+                            <input class="form-check-input primary-radio" type="radio"
+                                name="primary_image" value="${list.children.length + 1}" ${checked}>
+                            <label class="form-check-label small">Primary</label>
                         </div>
                     </div>
-                    <!-- Hidden input for the actual image data -->
-                    <input type="hidden" name="images[${imageCount}][data]" value="${base64Data}">
                 </div>
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage(${imageCount})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
+                <input type="hidden" class="hidden-file-id" value="${id}">
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage('${id}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
 
             list.appendChild(div);
 
-            if (isFirst) {
-                updatePrimaryPreview(base64Data);
-            }
+            if (isFirst) updatePrimaryPreview(previewURL);
         }
 
         function removeImage(id) {
-            const item = document.getElementById(`image-item-${id}`);
-            const wasPrimary = item.querySelector('input[type="radio"]').checked;
-            item.remove();
+            // find DOM item with hidden-file-id == id
+            const items = Array.from(document.querySelectorAll('.image-list-item'));
+            let removedWasPrimary = false;
+            for (const item of items) {
+                const hidden = item.querySelector('.hidden-file-id');
+                if (hidden && hidden.value === String(id)) {
+                    const radio = item.querySelector('.primary-radio');
+                    if (radio && radio.checked) removedWasPrimary = true;
+                    item.remove();
+                    break;
+                }
+            }
 
-            // If we removed the primary image, set the first available one as primary
-            if (wasPrimary) {
-                const firstItem = document.getElementById('imageList').firstElementChild;
-                if (firstItem) {
-                    const radio = firstItem.querySelector('input[type="radio"]');
-                    radio.checked = true;
-                    // Trigger preview update
-                    const img = firstItem.querySelector('img').src;
-                    updatePrimaryPreview(img);
+            // remove from uploadedFiles
+            uploadedFiles = uploadedFiles.filter(f => f.id !== String(id));
+
+            // re-normalize order inputs to be sequential (1..n)
+            const orderInputs = Array.from(document.querySelectorAll('.image-order'));
+            orderInputs.forEach((input, idx) => input.value = idx + 1);
+
+            // restore primary if needed
+            if (removedWasPrimary) {
+                const first = document.querySelector('.image-list-item');
+                if (first) {
+                    const radio = first.querySelector('.primary-radio');
+                    if (radio) {
+                        radio.checked = true;
+                        updatePrimaryPreview(first.querySelector('img').src);
+                    }
                 } else {
-                    // No images left
-                    document.getElementById('previewImg').style.display = 'none';
-                    document.getElementById('previewIcon').style.display = 'block';
+                    // no images left
+                    const previewImg = document.getElementById('previewImg');
+                    const previewIcon = document.getElementById('previewIcon');
+                    previewImg.style.display = 'none';
+                    previewIcon.style.display = 'block';
                 }
             }
         }
@@ -577,59 +626,111 @@
             previewIcon.style.display = 'none';
         }
 
+        // Main submit handler: validate inside/outside, create dynamic file inputs + meta
         function validateForm(event) {
-            const imageList = document.getElementById('imageList');
-            const errorDiv = document.getElementById('imageError');
+            const form = document.getElementById('addDecorationForm');
 
-            // 1. Check if at least one image exists (since user said "all fields mandatory exclude image", 
-            // actually this implies image is OPTIONAL? "exclude image". 
-            // But usually products need images. I'll make it optional based on "exclude image" text, 
-            // BUT the sequential validation implies if images ARE present, they must be valid.)
+            // Validate inside/outside
+            const inside = document.getElementById("is_inside").checked;
+            const outside = document.getElementById("is_outside").checked;
+            if (!inside && !outside) {
+                // show inline error if desired; simple alert for now
+                alert("Please select at least one: Is Inside or Is Outside.");
+                event.preventDefault();
+                return false;
+            }
 
-            if (imageList.children.length > 0) {
-                // 2. Validate Sequential Order
-                const orderInputs = Array.from(imageList.querySelectorAll('input[name$="[order]"]'));
-                const orders = orderInputs.map(input => parseInt(input.value)).sort((a, b) => a - b);
+            // Remove previous dynamic inputs (from earlier submits)
+            form.querySelectorAll('.dyn-file').forEach(el => el.remove());
+            form.querySelectorAll('.dyn-meta').forEach(el => el.remove());
 
-                // Check for duplicates
-                const hasDuplicates = new Set(orders).size !== orders.length;
-                if (hasDuplicates) {
-                    errorDiv.textContent = "Image order numbers must be unique.";
-                    errorDiv.classList.remove('d-none');
-                    event.preventDefault();
-                    return false;
-                }
+            // Normalize order inputs (make sequential starting from 1)
+            const items = Array.from(document.querySelectorAll('.image-list-item'));
+            // Build array of {elem, order, id, file} using the DOM order values
+            let orderArray = items.map((elem, idx) => {
+                const orderInput = elem.querySelector('.image-order');
+                // if order input missing, fallback to idx+1
+                const orderVal = orderInput ? parseInt(orderInput.value) || (idx + 1) : (idx + 1);
+                const hiddenId = elem.querySelector('.hidden-file-id') ? elem.querySelector('.hidden-file-id').value : null;
+                return { elem, order: orderVal, id: String(hiddenId) };
+            });
 
-                // Check sequence (1, 2, 3...)
-                for (let i = 0; i < orders.length; i++) {
-                    if (orders[i] !== i + 1) {
-                        errorDiv.textContent = `Image orders must be sequential starting from 1. Found: ${orders.join(', ')}`;
-                        errorDiv.classList.remove('d-none');
-                        event.preventDefault();
-                        return false;
-                    }
-                }
+            // To ensure consistent numbering (1..n), sort by current order and then reassign 1..n
+            orderArray.sort((a, b) => a.order - b.order);
+            orderArray.forEach((o, idx) => {
+                o.order = idx + 1;
+                const orderInput = o.elem.querySelector('.image-order');
+                if (orderInput) orderInput.value = o.order;
 
-                // 3. Validate Primary Image
-                const primary = imageList.querySelector('input[name="primary_image"]:checked');
-                if (!primary) {
-                    errorDiv.textContent = "Please select a primary image.";
-                    errorDiv.classList.remove('d-none');
-                    event.preventDefault();
-                    return false;
+                // Also update the corresponding radio value so server and UI align
+                const radio = o.elem.querySelector('.primary-radio');
+                if (radio) radio.value = o.order;
+            });
+
+            // Now append hidden meta inputs in the same sorted order, and append file inputs in that order
+            // For each ordered item, find file in uploadedFiles by id and append file input
+            for (const o of orderArray) {
+                // hidden order
+                const hiddenOrder = document.createElement('input');
+                hiddenOrder.type = 'hidden';
+                hiddenOrder.name = 'image_order';
+                hiddenOrder.value = String(o.order);
+                hiddenOrder.classList.add('dyn-meta');
+                form.appendChild(hiddenOrder);
+
+                // find file by id
+                const found = uploadedFiles.find(f => f.id === o.id);
+                if (found && found.file) {
+                    const dt = new DataTransfer();
+                    dt.items.add(found.file);
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.name = 'images';
+                    fileInput.files = dt.files;
+                    fileInput.classList.add('dyn-file');
+                    fileInput.style.display = 'none';
+                    form.appendChild(fileInput);
                 }
             }
 
-            errorDiv.classList.add('d-none');
+            // Primary image: find checked primary-radio and use its (normalized) value
+            const primaryRadio = document.querySelector('.primary-radio:checked');
+            if (primaryRadio) {
+                const hiddenPrimary = document.createElement('input');
+                hiddenPrimary.type = 'hidden';
+                hiddenPrimary.name = 'primary_image';
+                hiddenPrimary.value = primaryRadio.value; // this is the normalized order value
+                hiddenPrimary.classList.add('dyn-meta');
+                form.appendChild(hiddenPrimary);
+            } else {
+                // If images exist but no radio checked, force the first as primary (defensive)
+                if (orderArray.length > 0) {
+                    const hiddenPrimary = document.createElement('input');
+                    hiddenPrimary.type = 'hidden';
+                    hiddenPrimary.name = 'primary_image';
+                    hiddenPrimary.value = '1';
+                    hiddenPrimary.classList.add('dyn-meta');
+                    form.appendChild(hiddenPrimary);
+                }
+            }
 
-            // Form is valid, allow submission
-            // In a real app, this would submit to the server.
-            // For this demo, we'll just alert.
-            alert('Form validated successfully! Submitting data...');
-            // event.preventDefault(); // Uncomment this to stop actual submission during dev
+            // All done — allow submit to continue
             return true;
         }
+
+        // Attach validateForm to the form's submit event
+        document.getElementById('addDecorationForm').addEventListener('submit', function (e) {
+            return validateForm(e);
+        });
+
+        // Ensure pageshow bfcache safety
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) location.reload();
+        });
     </script>
+
+
 </body>
 
 </html>

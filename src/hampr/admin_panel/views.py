@@ -16,8 +16,8 @@ from django.db import transaction
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
-from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage
+from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm,DecorationForm
+from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage,DecorationImages,Decoration
 
 
 
@@ -558,4 +558,48 @@ def cancel_add_product(req):
     
 class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
-        return render(request,'c_admin/')
+        form = DecorationForm()
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
+    
+    def post(self,request,*args, **kwargs):
+        print(request.POST)
+        print(request.FILES)
+        files = request.FILES.getlist('images')
+        orders = request.POST.getlist('image_order')
+        primary = request.POST.getlist('primary_image')
+        
+        form = DecorationForm(request.POST)
+        if len(orders) != len(primary) or len(orders) != len(files):
+            form.add_error(None, 'Image Upload has some issue')
+            return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
+        if form.is_valid():
+            obj = form.save()
+            try:
+                for i in range(len(files)):
+                    img_obj = DecorationImages(product=obj,display_order=int(orders[i]),is_thumbnail=True if primary[i] == '1' else False,image=files[i] )
+                    img_obj.save()
+                
+            except Exception as e:
+                print(e)
+                messages.error(request, "Something went wrong. Please try again.")
+            
+            return HttpResponse('hello')
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
+    
+    
+class AdminDecortionManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
+    template_name = 'c_admin/admin-products-decorations.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        decoration = Decoration.objects.all()
+        data = [
+            
+        ]
+        for i in range(len(decoration)):
+            data.append({
+                'product':decoration[i],
+                'image':DecorationImages.objects.filter(product=decoration[i],is_thumbnail=True).first()
+            })
+        context['data'] = data
+        return context

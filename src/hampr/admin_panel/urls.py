@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage
 
 
 
@@ -37,7 +37,11 @@ urlpatterns = [
     path('products_varients_add_extra/',AdminProductVarientAdd.as_view(),name='products_varients_add_extra'),
     path('varients_finshed/',varients_finshed,name='varients_finshed'),
     path('interior_product_manage/',AdminProductManage.as_view(),name='interior_product_manage'),
-    path('cancel_add_product/',cancel_add_product,name='cancel_add_product')
+    path('cancel_add_product/',cancel_add_product,name='cancel_add_product'),
+    
+    
+    path('decoration_add/',AdminDecorationAdd.as_view(),name='decoration_add'),
+    path('decoration_manage/',AdminDecortionManage.as_view(),name='decoration_manage'),
     
     
     

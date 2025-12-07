@@ -1,12 +1,11 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interior Products | Admin Dashboard</title>
+    <title>Decorations | Admin Dashboard</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,45 +109,46 @@
             color: #842029;
         }
 
-        /* Category Badges */
-        .badge-cat {
+        /* Decoration Type Badges */
+        .badge-dec {
             font-weight: 500;
             padding: 5px 10px;
         }
 
-        .cat-choco {
-            background-color: #eaddcf;
-            color: #5a3a22;
-        }
-
-        .cat-flowers {
+        .dec-ribbon {
             background-color: #f8d7da;
             color: #842029;
         }
 
-        .cat-dryfruits {
+        .dec-paper {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .dec-tag {
             background-color: #fff3cd;
             color: #664d03;
         }
 
-        .cat-wine {
-            background-color: #e2d9f3;
-            color: #4c3b71;
+        .dec-bow {
+            background-color: #eaddcf;
+            color: #5a3a22;
         }
 
-        .cat-candles {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
-
-        .cat-toys {
+        .dec-tissue {
             background-color: #cff4fc;
             color: #055160;
         }
 
-        .cat-other {
-            background-color: #e2e3e5;
-            color: #383d41;
+        .dec-sticker {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .dec-other {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
         }
 
         /* Mobile Responsive */
@@ -272,7 +272,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cadmin:user_management' %}">
+                    <a class="nav-link" href="#">
                         <i class="fas fa-users"></i>
                         Customers
                     </a>
@@ -286,10 +286,9 @@
             </ul>
 
             <div class="mt-auto px-3 pt-5">
-
                 <form action="{% url 'core:logout' %}" method="POST">
                     {% csrf_token %}
-                    <button class="btn btn-outline-danger w-100">Logout</button>
+                    <button class="dropdown-item text-danger">Logout</button>
                 </form>
             </div>
         </div>
@@ -301,9 +300,9 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="admin-products.html"
+                    <li class="breadcrumb-item"><a href="{% url 'cadmin:products_manage' %}"
                             class="text-decoration-none text-muted">Products</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Interior Items</li>
+                    <li class="breadcrumb-item active" aria-current="page">Decorations</li>
                 </ol>
             </nav>
             <a href="{% url 'cadmin:products_manage' %}" class="text-decoration-none text-muted small"><i
@@ -313,11 +312,11 @@
         <!-- Header -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
             <div class="mb-3 mb-md-0">
-                <h2 class="fw-bold">Interior Products</h2>
-                <p class="text-muted mb-0">Manage items that go inside the hampers</p>
+                <h2 class="fw-bold">Decorations</h2>
+                <p class="text-muted mb-0">Manage ribbons, wrapping paper, and other decorative items</p>
             </div>
-            <a href="{% url 'cadmin:product_add' %}" class="btn btn-success px-4 py-2">
-                <i class="fas fa-plus me-2"></i> Add New Interior Product
+            <a href="{% url 'cadmin:decoration_add' %}" class="btn btn-success px-4 py-2">
+                <i class="fas fa-plus me-2"></i> Add New Decoration
             </a>
         </div>
 
@@ -333,17 +332,15 @@
                 </div>
                 <div class="col-md-4">
                     <select class="form-select bg-light border-0">
-                        <option selected>All Categories</option>
-                        <option>Chocolates</option>
-                        <option>Flowers</option>
-                        <option>Dry Fruits</option>
-                        <option>Cookies</option>
-                        <option>Wine</option>
-                        <option>Cosmetics</option>
-                        <option>Candles</option>
-                        <option>Cards</option>
-                        <option>Toys</option>
-                        <option>Others</option>
+                        <option selected>All Decorations</option>
+                        <option>Ribbons</option>
+                        <option>Wrapping Paper</option>
+                        <option>Gift Tags</option>
+                        <option>Bows</option>
+                        <option>Tissue Paper</option>
+                        <option>Shredded Paper</option>
+                        <option>Stickers</option>
+                        <option>Other</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -364,7 +361,7 @@
                         <tr>
                             <th class="border-0 rounded-start" style="width: 80px;">Image</th>
                             <th class="border-0">Product Name</th>
-                            <th class="border-0">Category</th>
+                            <th class="border-0">Type</th>
                             <th class="border-0">Cost</th>
                             <th class="border-0">Price</th>
                             <th class="border-0">Stock</th>
@@ -378,19 +375,25 @@
                             <td data-label="Image">
                                 <img src="{{i.image.image.url}}" class="product-img-thumb" alt="Product">
                             </td>
-                            <td data-label="Product Name" class="fw-bold">{{i.varient.product.name}}</td>
-                            <td data-label="Category"><span
-                                    class="badge badge-cat cat-choco">{{i.varient.product.category}}</span></td>
-                            <td data-label="Price" class="fw-bold">{{i.varient.cost}}</td>
-                            <td data-label="Price" class="fw-bold">{{i.varient.price}}</td>
-                            <td data-label="Stock">{{i.varient.stock}}</td>
-                            <td data-label="Status">
-                                {% if i.varient.is_active %}
-                                <span class="status-badge status-active">Active</span>
-                                {% else %}
-                                <span class="status-badge status-inactive">Inactive</span>
+                            <td data-label="Product Name" class="fw-bold">{{i.product.name}}</td>
+                            <td data-label="Type">
+                                {% if i.product.is_outside %}
+                                <span class="badge badge-dec dec-ribbon">Outside</span>
+                                {% endif %}
+                                {% if i.product.is_inside %}
+                                <span class="badge badge-dec dec-ribbon">Inside</span>
                                 {% endif %}
                             </td>
+                            <td data-label="Price" class="fw-bold">{{i.product.cost}}</td>
+                            <td data-label="Price" class="fw-bold">{{i.product.price}}</td>
+                            <td data-label="Stock">200</td>
+                            <td data-label="Status">
+                                {% if i.product.is_active %}
+                                <span class="status-badge status-active">Active</span>
+                            </td>
+                            {% else %}
+                            <span class="status-badge status-inactive">Inactive</span>
+                            {% endif %}
                             <td data-label="Actions" class="text-end">
                                 <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
                                 <button class="btn btn-sm btn-light text-danger"
@@ -406,7 +409,7 @@
 
             <!-- Pagination -->
             <!-- <div class="d-flex justify-content-between align-items-center mt-4">
-                <p class="text-muted small mb-0">Showing 1 to 20 of 128 entries</p>
+                <p class="text-muted small mb-0">Showing 1 to 20 of 85 entries</p>
                 <nav>
                     <ul class="pagination mb-0">
                         <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
