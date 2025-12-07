@@ -16,8 +16,8 @@ from django.db import transaction
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
-from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product
+from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm
+from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage
 
 
 
@@ -343,8 +343,219 @@ class AdminProductCategoryManage(NeverCacheMixin,StaffRequiredMixin,TemplateView
         return context
         
         
+class AdminProductManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
+    template_name = 'c_admin/admin-products-interior.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product_varients = ProductVariant.objects.all()
+        data = [
+            
+        ]
+        for i in range(len(product_varients)):
+            data.append({
+                'varient':product_varients[i],
+                'image':ProductImage.objects.filter(product=product_varients[i],is_thumbnail=True).first()
+            })
+        context['data'] = data
+        return context
+        
+        
 class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
-        
-        return render(request,'admin-products-interior-add.html')
+        categories = ProductCategory.objects.all()
+        form = ProductForm()
+        return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
     
+    def post(self,request,*args, **kwargs):
+        data = request.POST
+        
+        form = ProductForm(data)
+        if form.is_valid():
+            
+            obj = form.save()
+            request.session['pending_product_add_id'] = obj.id
+            return redirect('cadmin:varient_or_not')
+            
+        else:
+            categories = ProductCategory.objects.all()
+            return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
+        
+        
+class AdminProductSimpleVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        if not request.session.get('pending_product_add_id'):
+            return redirect('cadmin:product_add')
+        form = ProductSimpleVairentForm()
+        return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form})
+    def post(self,request,*args, **kwargs):
+        pending_id =  request.session.get('pending_product_add_id')
+        if not pending_id:
+            return redirect('cadmin:product_add')
+        
+        try:
+            product = Product.objects.get(id=pending_id)
+        except:
+            pass  ## add 404 error 
+        form = ProductSimpleVairentForm(request.POST)
+        files = request.FILES.getlist('images')
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        if len(orders) != len(primary) or len(orders) != len(files):
+            form.add_error(None, 'Image Upload has some issue')
+            return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form})
+        print(request.POST)
+        if form.is_valid():
+            commit_form = form.save(commit=False)
+            commit_form.product = product
+            commit_form.is_default = True
+            
+            commit_form.save()
+            variant_id = commit_form.id
+            variant_obj = ProductVariant.objects.get(id=variant_id)
+            
+            try:
+                for i in range(len(files)):
+                    img_obj = ProductImage(product=variant_obj,display_order=int(orders[i]),is_thumbnail=True if primary[i] == '1' else False,image=files[i] )
+                    img_obj.save()
+                
+            except Exception as e:
+                print(e)
+            del request.session['pending_product_add_id']
+            return redirect('cadmin:interior_product_manage')
+        else:
+            print(form.errors)                
+            return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form})
+
+    
+
+class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        if not request.session.get('pending_product_add_id'):
+            return redirect('cadmin:product_add')
+        form = ProductSimpleVairentForm()
+        color = ColorForm()
+        size_form = SizeForm()
+        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color,'size_form':size_form})
+    def post(self,request,*args, **kwargs):
+        pending_id =  request.session.get('pending_product_add_id')
+        if not pending_id:
+            return redirect('cadmin:product_add')
+        print(request.POST)
+        print(request.FILES)
+        
+        data = request.POST
+        form = ProductSimpleVairentForm(request.POST)
+        if request.POST.get('variant_type_variant-1') == 'Color':
+            colorhex = request.POST.get('variant_color_code_variant-1') 
+            color_name = request.POST.get('variant_color_variant-1')
+            color_form = ColorForm(data={'hex':colorhex,'name':color_name})
+            product = Product.objects.filter(id=pending_id).first()
+            if ProductVariant.objects.filter(product=product,color__name__iexact=color_name).exists():
+                        messages.error(request,'The Color Already added')
+                        return redirect('cadmin:products_varients_add_extra')
+            try:
+                with transaction.atomic():
+                    if color_form.is_valid():
+                        color = color_form.save()
+                        response =  self.updating_data(request=request,pending_id=pending_id,color=color,color_form=color_form)
+                        return response
+                    else:
+                                    
+                        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form})
+            except Exception as e:
+                 print("Error:", e)
+                 messages.error(request, "Something went wrong. Please try again.")
+                 return redirect('cadmin:products_varients_add_extra')
+        else:
+            try:
+                with transaction.atomic():
+                    size_form = SizeForm(data={
+                        'name':request.POST.get('size'),
+                        'sort_order':int(request.POST.get('sort_order'))
+                        
+                    })
+                    product = Product.objects.filter(id=pending_id).first()
+                    if ProductVariant.objects.filter(product=product,size__name__iexact=request.POST.get('size')).exists():
+                        messages.error(request,'The Size Already added')
+                        return redirect('cadmin:products_varients_add_extra')
+                    if size_form.is_valid():
+                        size_obj = size_form.save()
+                        response = self.updating_data(request=request,pending_id=pending_id,size=size_obj,size_form=size_form)
+                        return response 
+                    else:
+                         return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'size_form':size_form})
+            except Exception as e:
+                 print("Error:", e)
+                 messages.error(request, "Something went wrong. Please try again.")
+                 return redirect('cadmin:products_varients_add_extra')
+            
+            
+    def updating_data(self,request,pending_id,color=None,size=None,color_form=None,size_form=None):
+        
+        try:
+            product = Product.objects.get(id=pending_id)
+        except:
+            print('inside going ')
+            messages.error(request, "Something went wrong. Please try again.")
+            return redirect('cadmin:products_varients_add_extra')
+        form = ProductSimpleVairentForm(request.POST)
+        files = request.FILES.getlist('images')
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        if len(orders) != len(primary) or len(orders) != len(files):
+            form.add_error(None, 'Image Upload has some issue')
+            return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form})
+        print(request.POST)
+        if form.is_valid():
+            commit_form = form.save(commit=False)
+            commit_form.product = product
+            commit_form.is_default = True
+            if color:
+                commit_form.color = color
+            elif size:
+                commit_form.size = size
+            commit_form.save()
+            variant_id = commit_form.id
+            variant_obj = ProductVariant.objects.get(id=variant_id)
+                
+            try:
+                for i in range(len(files)):
+                    img_obj = ProductImage(product=variant_obj,display_order=int(orders[i]),is_thumbnail=True if primary[i] == '1' else False,image=files[i] )
+                    img_obj.save()
+                
+            except Exception as e:
+                print(e)
+                messages.error(request, "Something went wrong. Please try again.")
+            
+            return redirect('cadmin:products_varients_add_extra') 
+        
+    
+    
+
+def varient_or_not(request):
+    if not request.session.get('pending_product_add_id'):
+            return redirect('cadmin:product_add')
+    return render(request,'c_admin/admin-products-interior-variant-selection.html')
+
+def varients_finshed(request):
+    penidng_id = request.session['pending_product_add_id']
+    product = Product.objects.filter(id=penidng_id).first()
+    if not ProductVariant.objects.filter(product=product).exists():
+        messages.error(request,"Minimum One Varient is mandatory")
+        return redirect('cadmin:products_varients_add_extra')
+    del request.session['pending_product_add_id']
+    return redirect('cadmin:products_manage')
+           
+def cancel_add_product(req):
+    if req.method == 'POST':
+        pending_id = req.session.get('pending_product_add_id')
+        product = Product.objects.filter(id=pending_id).first()
+        del product
+        return redirect('cadmin:interior_product_manage')
+    
+    
+    
+class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        return render(request,'c_admin/')

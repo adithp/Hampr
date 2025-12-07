@@ -83,7 +83,7 @@ class BoxImage(models.Model):
     
     
 class Color(models.Model):
-    name = models.CharField(max_length=64, unique=True)
+    name = models.CharField(max_length=64)
     hex = models.CharField(max_length=7, blank=True, null=True)
     
     
@@ -123,7 +123,7 @@ class Product(models.Model):
     
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
-    sku = models.CharField(max_length=64, blank=True, null=True, db_index=True)
+    # sku = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     
     cost = models.DecimalField(max_digits=10,decimal_places=2)
     color = models.ForeignKey(Color, null=True, blank=True, on_delete=models.SET_NULL)
@@ -150,9 +150,30 @@ class ProductImage(models.Model):
     product = models.ForeignKey(ProductVariant,on_delete=models.CASCADE) 
     
     
+    
+class Decoration(models.Model):
+    name = models.CharField(max_length=100)
+    height = models.DecimalField(max_digits=5, decimal_places=2, help_text="unit is cm")
+    width = models.DecimalField(max_digits=5, decimal_places=2, help_text="unit is cm")
+    depth = models.DecimalField(max_digits=5, decimal_places=2, help_text="unit is cm")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    cost = models.DecimalField(max_digits=10,decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)  
+    stock = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    description = models.TextField()
+    slug = AutoSlugField(populate_from='name',unique=True)
+    is_outside = models.BooleanField(default=False)
+    is_inside = models.BooleanField(default=False)
 
-    
-    
+
+class DecorationImages(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    display_order = models.IntegerField()
+    image = models.ImageField(upload_to='decoration_image/')
+    is_thumbnail = models.BooleanField(default=False)
+    product = models.ForeignKey(Decoration,on_delete=models.CASCADE) 
     
     
     

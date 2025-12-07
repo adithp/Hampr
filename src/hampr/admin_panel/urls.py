@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product
 
 
 
@@ -30,5 +30,17 @@ urlpatterns = [
     
     path('add_product_category/',AdminProductAddCategory.as_view(),name='add_product_category'),
     path('products_category_list/',AdminProductCategoryManage.as_view(),name='products_category_list'),
+    
+    path('product_add/',AdminProductAdd.as_view(),name='product_add'),
+    path('varient_or_not/',varient_or_not,name='varient_or_not'),
+    path('product_varients_add/',AdminProductSimpleVarientAdd.as_view(),name='product_varients_add'),
+    path('products_varients_add_extra/',AdminProductVarientAdd.as_view(),name='products_varients_add_extra'),
+    path('varients_finshed/',varients_finshed,name='varients_finshed'),
+    path('interior_product_manage/',AdminProductManage.as_view(),name='interior_product_manage'),
+    path('cancel_add_product/',cancel_add_product,name='cancel_add_product')
+    
+    
+    
+    
     
 ]
