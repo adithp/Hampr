@@ -13,6 +13,7 @@ urlpatterns = [
     path('custom_admin/',include('admin_panel.urls')),
     path('accounts/', include('allauth.urls')),
     path('',include('core.urls')),
+    path('shop/', include('catalog.urls')),
     
     
 

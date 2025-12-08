@@ -75,7 +75,7 @@
                     <a href="{% url 'accounts:login' %}"
                         class="btn btn-outline-gold rounded-pill px-4 btn-sm d-none d-lg-block">Sign In</a>
                     {% endif %}
-                    <a href="{% url 'accounts:signup' %}"
+                    <a href="{% url 'shop:box_list' %}"
                         class="btn btn-primary rounded-pill px-4 btn-sm hover-ripple">Start Building</a>
                 </div>
             </div>
@@ -108,10 +108,10 @@
                             Create bespoke gift hampers tailored to perfection. Premium selections. Personal touch.
                         </p>
                         <div class="animate-scale-in delay-1200">
-                            <button
+                            <a href="{% url 'shop:box_list' %}"
                                 class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-lg hover-scale-up position-relative overflow-hidden btn-loader">
                                 <span class="position-relative z-1">Start Creating Your Hamper</span>
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

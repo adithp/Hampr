@@ -72,6 +72,9 @@ class BoxSize(models.Model):
     
     class Meta:
         unique_together = ('hamper_box', 'size_label')
+            
+    def __str__(self):
+        return self.size_label
 
     
 class BoxImage(models.Model):

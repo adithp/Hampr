@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Box | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+    <link rel="stylesheet" href=" {% static 'catalog/css/shop-boxes.css' %}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top py-3 transition-all">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3" href="{% url 'core:landing_page' %}">
+                <span class="text-gold">HAM</span><span class="text-dark">PR.</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                </ul>
+
+                {% if request.user.is_authenticated %}
+
+                <div class="d-flex align-items-center gap-3">
+                    <a href="#" class="text-dark hover-rotate-icon fs-5"><i class="far fa-user"></i></a>
+                    <a href="#" class="text-dark hover-rotate-icon fs-5 position-relative">
+                        <i class="far fa-heart"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-gold"
+                            id="wishlist-count" style="font-size: 0.6rem; display: none;">0</span>
+                    </a>
+                    <a href="#" class="text-dark hover-rotate-icon fs-5 position-relative">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-gold"
+                            style="font-size: 0.6rem;">0</span>
+                    </a>
+                </div>
+                {% else %}
+
+                <a href="{% url 'accounts:login' %}" class="auth-btn-solid">Log In</a>
+
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header & Breadcrumbs -->
+    <section class="bg-light py-5 mt-5">
+        <div class="container mt-4">
+            <nav aria-label="breadcrumb" class="mb-3" data-aos="fade-right">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../index.html" class="text-decoration-none text-muted">Home</a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Shop</a></li>
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Hamper Builder</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Select Box</li>
+                </ol>
+            </nav>
+            <div class="row align-items-end" data-aos="fade-up">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-2 font-heading">Choose Your Hamper Box</h1>
+                    <p class="lead text-muted mb-0">Select the perfect container for your personalized hamper gift</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
+                        Step 1 of 3 - Choose Your Box
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Mobile Filter Toggle -->
+                <div class="col-12 d-lg-none mb-4">
+                    <button class="btn btn-outline-dark w-100 d-flex justify-content-between align-items-center"
+                        type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+                        <span><i class="fas fa-filter me-2"></i> Filters</span>
+                        <span class="badge bg-dark rounded-pill" id="mobile-active-filters-count"
+                            style="display: none;">0</span>
+                    </button>
+                    <!-- Search Bar Mobile -->
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i
+                                    class="fas fa-search text-muted"></i></span>
+                            <input type="text" class="form-control border-start-0" id="mobile-search-input"
+                                placeholder="Search boxes...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Filters (Desktop) -->
+                <div class="col-lg-3 d-none d-lg-block">
+                    <div class="sticky-top" style="top: 100px; z-index: 900;">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="fw-bold mb-0">Filter Boxes</h5>
+                                    <a href="#" class="text-muted text-decoration-none small"
+                                        id="clear-all-filters">Clear All</a>
+                                </div>
+
+                                <!-- Search -->
+                                <div class="mb-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i
+                                                class="fas fa-search text-muted"></i></span>
+                                        <input type="text" class="form-control border-start-0" id="desktop-search-input"
+                                            placeholder="Search boxes...">
+                                    </div>
+                                </div>
+
+                                <!-- Filter: Box Type -->
+                                <div class="filter-section mb-4">
+                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
+                                        data-bs-toggle="collapse" data-bs-target="#filterType">
+                                        Box Type <i class="fas fa-chevron-down small"></i>
+                                    </h6>
+                                    <div class="collapse show" id="filterType">
+                                        {% for box_type in box_types %}
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input type-filter" type="checkbox"
+                                                value="Standard Box" id="type-standard">
+                                            <label class="form-check-label" for="type-standard">
+                                                {{box_type.name}}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Occasion -->
+                                <div class="filter-section mb-4">
+                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
+                                        data-bs-toggle="collapse" data-bs-target="#filterOccasion">
+                                        Occasion <i class="fas fa-chevron-down small"></i>
+                                    </h6>
+                                    <div class="collapse show" id="filterOccasion">
+                                        <div class="filter-options" id="occasion-filters">
+                                            {% for category in box_categories %}
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input occasion-filter" type="checkbox"
+                                                    value="Birthday" id="occasion-birthday">
+                                                <label class="form-check-label" for="occasion-birthday">
+                                                    {{category.name}}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Size Availability -->
+                                <div class="filter-section mb-4">
+                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
+                                        data-bs-toggle="collapse" data-bs-target="#filterSize">
+                                        Size Availability <i class="fas fa-chevron-down small"></i>
+                                    </h6>
+                                    <div class="collapse show" id="filterSize">
+                                        <div class="filter-options" id="size-filters">
+                                            {% for size in size_list %}
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input sizes-filter" type="checkbox"
+                                                    value="Extra Large" id="size-xl">
+                                                <label class="form-check-label d-flex justify-content-between w-100"
+                                                    for="size-xl">
+                                                    <span>{{size.1}}</span>
+                                                    <span class="text-muted small">(1)</span>
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Price -->
+                                <div class="filter-section mb-4">
+                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
+                                        data-bs-toggle="collapse" data-bs-target="#filterPrice">
+                                        Price Range <i class="fas fa-chevron-down small"></i>
+                                    </h6>
+                                    <div class="collapse show" id="filterPrice">
+                                        <label for="priceRange" class="form-label small text-muted">Max Price: ₹<span
+                                                id="priceValue">10000</span></label>
+                                        <input type="range" class="form-range" id="priceRange" min="500" max="10000"
+                                            step="100" value="10000">
+                                        <div class="d-flex justify-content-between small text-muted">
+                                            <span>₹500</span>
+                                            <span>₹10000+</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Material -->
+                                <div class="filter-section mb-4">
+                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
+                                        data-bs-toggle="collapse" data-bs-target="#filterMaterial">
+                                        Material <i class="fas fa-chevron-down small"></i>
+                                    </h6>
+                                    <div class="collapse show" id="filterMaterial">
+                                        <div class="filter-options" id="material-filters">
+                                            <!-- Populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Availability -->
+                                <div class="filter-section">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="inStockOnly"
+                                            checked>
+                                        <label class="form-check-label" for="inStockOnly">
+                                            In Stock Only
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Grid -->
+                <div class="col-lg-9">
+                    <!-- Top Bar -->
+                    <div
+                        class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+                        <div class="mb-3 mb-md-0">
+                            <span class="text-muted">Showing <span class="fw-bold text-dark" id="results-count">0</span>
+                                boxes</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex align-items-center">
+                                <label class="me-2 text-muted small text-nowrap">Sort by:</label>
+                                <select class="form-select form-select-sm border-0 bg-light" id="sortSelect">
+                                    <option value="newest">Newest</option>
+                                    <option value="priceLow">Price: Low to High</option>
+                                    <option value="priceHigh">Price: High to Low</option>
+                                    <option value="popular">Most Popular</option>
+                                    <option value="rating">Best Rated</option>
+                                    <option value="name">A-Z Name</option>
+                                </select>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-light active" id="viewGrid"><i
+                                        class="fas fa-th-large"></i></button>
+                                <button type="button" class="btn btn-sm btn-light" id="viewList"><i
+                                        class="fas fa-list"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Filters Display -->
+                    <div class="d-flex flex-wrap gap-2 mb-4" id="active-filters-container">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Products Grid -->
+                    <div class="row g-4" id="products-grid">
+                        {% for box in boxes %}
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="box-card">
+                                <div class="box-image-wrapper">
+                                    <img src="{{box.image.image.url}}" class="box-image"
+                                        alt="Premium Magnetic Gift Box">
+                                </div>
+                                <div class="box-card-body">
+                                    <div class="box-badges">
+                                        <!-- <span class="box-badge"></span> -->
+                                        <span class="box-badge" style="background-color:#fff0f3;color:#d63384;">
+                                            {{box.box.category}}
+                                        </span>
+                                    </div>
+                                    <h5 class="fw-bold mb-2 text-truncate">{{box.box.name}}</h5>
+                                    <div class="box-details">
+                                        <div><i class="fas fa-ruler-combined"></i>
+                                            {% for boxsize in box.box_vareint %}{{boxsize}} ,{% endfor %}</div>
+                                        <div><i class="fas fa-layer-group"></i> {{box.box.category.box_type}}</div>
+                                    </div>
+                                    <div class="box-price-section">
+                                        <span class="fw-bold text-primary fs-5">₹{{box.size.price}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Empty State (Hidden by default) -->
+                    <div id="empty-state" class="text-center py-5 d-none">
+                        <div class="mb-3">
+                            <i class="fas fa-box-open fa-4x text-muted opacity-25"></i>
+                        </div>
+                        <h4 class="fw-bold">No boxes found</h4>
+                        <p class="text-muted">Try adjusting your filters or search terms</p>
+                        <button class="btn btn-primary mt-2" id="reset-filters-btn">Clear All Filters</button>
+                    </div>
+
+                    <!-- Load More -->
+                    <div class="text-center mt-5" id="load-more-container">
+                        <button class="btn btn-outline-dark px-5 py-2 rounded-pill" id="load-more-btn">
+                            Load More Boxes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sticky Bottom Bar (Hidden by default, shown when box selected or for cart summary) -->
+    <div class="fixed-bottom bg-white border-top shadow-lg p-3 d-none" id="sticky-bottom-bar" style="z-index: 1000;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="" id="sticky-box-img" class="rounded object-fit-cover" width="50" height="50"
+                        alt="Selected Box">
+                    <div>
+                        <h6 class="mb-0 fw-bold" id="sticky-box-name">Box Name</h6>
+                        <small class="text-muted" id="sticky-box-price">₹0</small>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="continue-btn">Continue to Decorations</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offcanvas Filter (Mobile) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title fw-bold" id="filterOffcanvasLabel">Filters</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Mobile Filter Content -->
+            <div id="mobile-filter-container">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+        <div class="offcanvas-footer p-3 border-top">
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-outline-secondary w-100" id="mobile-clear-filters">Clear All</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-primary w-100" data-bs-dismiss="offcanvas">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick View Modal -->
+    <div class="modal fade" id="quickViewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-0">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="row g-0">
+                        <div class="col-md-6 bg-light">
+                            <div class="p-4 h-100 d-flex align-items-center justify-content-center">
+                                <img src="" class="img-fluid rounded shadow-sm" id="qv-img" alt="Product">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 h-100 overflow-y-auto" style="max-height: 80vh;">
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark border me-1" id="qv-type">Type</span>
+                                    <span class="badge bg-light text-dark border" id="qv-occasion">Occasion</span>
+                                </div>
+                                <h3 class="fw-bold mb-2" id="qv-title">Box Name</h3>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="text-warning small me-2" id="qv-rating">
+                                        <!-- Stars -->
+                                    </div>
+                                    <span class="text-muted small" id="qv-reviews">(0 reviews)</span>
+                                </div>
+
+                                <p class="text-muted small mb-4" id="qv-desc">Description...</p>
+
+                                <h5 class="fw-bold mb-3">Available Sizes</h5>
+                                <div class="d-flex flex-column gap-2 mb-4" id="qv-sizes">
+                                    <!-- Size options populated by JS -->
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between mb-4 mt-auto">
+                                    <div>
+                                        <small class="text-muted d-block">Starting from</small>
+                                        <h3 class="text-primary fw-bold mb-0" id="qv-price">₹0</h3>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary w-100 py-2" id="qv-add-btn">
+                                    Choose This Box
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="{% static 'accounts/js/utils.js' %}"></script>
+    <script src="{% static 'accounts/js/main.js' %}"></script>
+    <script src="{% static 'catalog/js/shop-boxes.js' %}"></script>
+</body>
+
+</html>

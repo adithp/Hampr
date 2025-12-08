@@ -371,6 +371,7 @@ class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
         data = request.POST
         
         form = ProductForm(data)
+        print(data)
         if form.is_valid():
             
             obj = form.save()
@@ -379,6 +380,7 @@ class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
             
         else:
             categories = ProductCategory.objects.all()
+            print(form.errors)
             return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
         
         

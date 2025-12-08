@@ -150,9 +150,12 @@
         </ul>
 
         <div class="px-3 pt-5">
-            <a href="{% url 'core:logout' %}" class="btn btn-outline-danger w-100">
-                <i class="fas fa-sign-out-alt me-2"></i> Logout
-            </a>
+            <form action="{% url 'core:logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
+            </form>
         </div>
     </nav>
 
