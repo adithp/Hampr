@@ -353,10 +353,13 @@
                             <td data-label="Status"><span class="status-badge status-active">Inactive</span></td>
                             {% endif %}
                             <td data-label="Actions" class="text-end">
-                                <button class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"
-                                    onclick="confirm('Are you sure you want to delete this product?')"><i
-                                        class="fas fa-trash"></i></button>
+                                <form action="{% url 'cadmin:box_delete' size.id %}" method='POST'>
+                                    {% csrf_token %}
+                                    <a href="admin-products-box-types-add.html" class="btn btn-sm btn-light me-1"
+                                        title="Edit"><i class="fas fa-edit"></i></a>
+                                    <button class="btn btn-sm btn-light text-danger" type="submit" title="Delete"><i
+                                            class="fas fa-trash"></i></button>
+                                </form>
                             </td>
                         </tr>
                         {% endfor %}

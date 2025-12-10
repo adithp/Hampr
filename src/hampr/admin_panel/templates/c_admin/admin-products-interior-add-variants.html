@@ -236,7 +236,7 @@
                         <!-- Cost -->
                         <div class="col-md-6">
                             <label class="form-label small text-muted">Cost Price (₹)</label>
-                            <input name="cost_variant-1" value="{{ form.cost.value|default:'' }}" type="number"
+                            <input name="cost" value="{{ form.cost.value|default:'' }}" type="number"
                                 class="form-control">
                             {% if form.cost.errors %}
                             <div class="text-danger small">{{ form.cost.errors }}</div>
@@ -246,7 +246,7 @@
                         <!-- Selling Price -->
                         <div class="col-md-6">
                             <label class="form-label small text-muted">Selling Price (₹)</label>
-                            <input name="price_variant-1" type="number" value="{{ form.price.value|default:'' }}"
+                            <input name="price" type="number" value="{{ form.price.value|default:'' }}"
                                 class="form-control">
                             {% if form.price.errors %}
                             <div class="text-danger small">{{ form.price.errors }}</div>
@@ -256,7 +256,7 @@
                         <!-- Stock -->
                         <div class="col-md-6">
                             <label class="form-label small text-muted">Stock</label>
-                            <input name="stock_variant-1" type="number" value="{{ form.stock.value|default:'' }}"
+                            <input name="stock" type="number" value="{{ form.stock.value|default:'' }}"
                                 class="form-control">
                             {% if form.stock.errors %}
                             <div class="text-danger small">{{ form.stock.errors }}</div>
@@ -268,15 +268,15 @@
                             <label class="form-label small text-muted">Dimensions (cm)</label>
                             <div class="input-group">
                                 <span class="input-group-text">H</span>
-                                <input name="height_variant-1" type="number" value="{{ form.height.value|default:'' }}"
+                                <input name="height" type="number" value="{{ form.height.value|default:'' }}"
                                     class="form-control">
 
                                 <span class="input-group-text">W</span>
-                                <input name="width_variant-1" type="number" value="{{ form.width.value|default:'' }}"
+                                <input name="width" type="number" value="{{ form.width.value|default:'' }}"
                                     class="form-control">
 
                                 <span class="input-group-text">D</span>
-                                <input name="depth_variant-1" type="number" value="{{ form.depth.value|default:'' }}"
+                                <input name="depth" type="number" value="{{ form.depth.value|default:'' }}"
                                     class="form-control">
                             </div>
                             {% if form.height.errors %}
@@ -394,9 +394,9 @@
             } else {
                 container.innerHTML = `
                     <label class="form-label small text-muted">Value</label>
-                    <input type="text" name="size_${variantKey}" class="form-control" placeholder="Small">
+                    <input type="text" name="size" class="form-control" placeholder="Small">
                     <label class="form-label small text-muted mt-3">Sort Order</label>
-                    <input type="text" name="sort_order_${variantKey}" class="form-control" placeholder="1">
+                    <input type="text" name="sort_order" class="form-control" placeholder="1">
                 `;
             }
         }

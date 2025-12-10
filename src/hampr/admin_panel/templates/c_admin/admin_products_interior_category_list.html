@@ -197,7 +197,7 @@
                 </li>
             </ul>
             <hr>
-            <a href="{% url 'cadmin:box_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
+            <a href="{% url 'cadmin:interior_product_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
                 <i class="fas fa-arrow-left me-2"></i>Back to Products
             </a>
         </div>
@@ -286,10 +286,13 @@
                             <td data-label="Status"><span class="status-badge status-inactive">Inactive</span></td>
                             {% endif %}
                             <td data-label="Actions" class="text-end">
-                                <a href="admin-products-box-categories-add.html" class="btn btn-sm btn-light me-1"
-                                    title="Edit"><i class="fas fa-edit"></i></a>
-                                <button class="btn btn-sm btn-light text-danger" onclick="confirmDelete()"
-                                    title="Delete"><i class="fas fa-trash"></i></button>
+                                <form action="{% url 'cadmin:product_category_delete' category.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <a href="" class="btn btn-sm btn-light me-1" title="Edit"><i
+                                            class="fas fa-edit"></i></a>
+                                    <button class="btn btn-sm btn-light text-danger" title="Delete"><i
+                                            class="fas fa-trash"></i></button>
+                                </form>
                             </td>
                         </tr>
                         {% endfor %}

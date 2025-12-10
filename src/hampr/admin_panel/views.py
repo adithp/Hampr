@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView,DeleteView
 from django.views import View
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -585,7 +585,7 @@ class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
                 print(e)
                 messages.error(request, "Something went wrong. Please try again.")
             
-            return HttpResponse('hello')
+            return redirect('cadmin:decoration_manage')
         return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
     
     
@@ -605,3 +605,56 @@ class AdminDecortionManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
             })
         context['data'] = data
         return context
+    
+    
+class AdminBoxTypeDelete(DeleteView):
+    model = BoxType
+    success_url = reverse_lazy('cadmin:box_type_manage')
+    
+    
+    
+class AdminBoxCategoryDelete(DeleteView):
+    model = BoxCategory 
+    success_url = reverse_lazy('cadmin:box_category_manage')
+    
+class AdminBoxDelete(DeleteView):
+    model = BoxSize
+    success_url = reverse_lazy('cadmin:box_manage')
+    
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        if ProductVariant.objects.filter(product=obj.product).count() == 1:
+            product = obj.product
+            product.delete()
+            return redirect(reverse_lazy('cadmin:box_manage'))
+            
+
+        return super().delete(request, *args, **kwargs)
+    
+    
+class AdminProductCategoryDelete(DeleteView):
+    model = ProductCategory
+    success_url = reverse_lazy('cadmin:products_category_list')
+    
+class AdminProductDelete(DeleteView):
+    model = ProductVariant
+    success_url = reverse_lazy('cadmin:interior_product_manage')
+    
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        if ProductVariant.objects.filter(product=obj.product).count() == 1:
+            product = obj.product
+            product.delete()
+            return redirect(reverse_lazy('cadmin:interior_product_manage'))
+            
+
+        return super().delete(request, *args, **kwargs)
+    
+    
+class AdminDecorationDelete(DeleteView):
+    model = Decoration
+    success_url = reverse_lazy('cadmin:decoration_manage')
+    
+    
