@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Box Category | Admin Dashboard</title>
+    <title>{% if edit_mode %}Edit Box Category{% else %}Add Box Category{% endif %} | Admin Dashboard</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,9 +21,6 @@
 
     <!-- Cropper.js CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-
-    <!-- Custom CSS -->
-    <!-- <link rel="stylesheet" href="}"> -->
 
     <style>
         body {
@@ -238,14 +235,16 @@
                             Box Categories
                         </a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Add New Category</li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if edit_mode %}Edit{% else %}Add New{% endif %}
+                        Category</li>
                 </ol>
             </nav>
         </div>
 
         <!-- Header -->
         <div class="text-center mb-4">
-            <h2 class="fw-bold mb-1">Add New Category</h2>
+            <h2 class="fw-bold mb-1">{% if edit_mode %}Edit Category{% else %}Add New Category{% endif %}</h2>
             <p class="text-muted">Create a purpose or occasion category</p>
         </div>
 
@@ -371,6 +370,41 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
+    <!-- ====================== EDIT MODE INJECTION (FIXED) ====================== -->
+   <!-- ====================== EDIT MODE INJECTION (FIXED) ====================== -->
+<script>
+    let uploadedImages = [];
+
+    // edit mode flag
+    const editMode = {% if edit_mode %}true{% else %}false{% endif %};
+
+    {% if edit_mode %}
+    const existingImages = [
+        {% for img in existing_images %}
+        {
+            id: "{{ img.id }}",
+            src: "{{ img.image.url }}",
+            file: null,
+            order: {{ img.display_order|default:forloop.counter }},
+            isPrimary: {{ img.is_primary|yesno:"true,false" }},
+            isExisting: true
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    uploadedImages.push(...existingImages);
+    {% endif %}
+
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof refreshGallery === "function") {
+            refreshGallery();
+        }
+    });
+</script>
+<!-- ====================== END EDIT MODE INJECTION ====================== -->
+
+    <!-- ====================== END EDIT MODE INJECTION ====================== -->
+
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
@@ -388,7 +422,9 @@
 
         // ---------- Image & Crop Logic ----------
 
-        let uploadedImages = []; // { id, file, src, order, isPrimary }
+        /* NOTE: uploadedImages is defined above (in edit-mode injection) so DO NOT re-declare it here.
+           The array will contain existing images in edit mode (with isExisting: true)
+           and will receive new images when cropping (with file: File and isExisting: false). */
 
         let cropper;
         const imageToCrop = document.getElementById('imageToCrop');
@@ -463,7 +499,8 @@
                     file,
                     src,
                     order,
-                    isPrimary
+                    isPrimary,
+                    isExisting: false
                 });
 
                 refreshGallery();
@@ -536,7 +573,10 @@
         function removeImage(id) {
             const img = uploadedImages.find(i => i.id == id);
             if (img && img.src) {
-                URL.revokeObjectURL(img.src);
+                // revoke object URL only for newly-created PDFs/Files
+                if (img.isExisting === false && img.src && img.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(img.src);
+                }
             }
             uploadedImages = uploadedImages.filter(i => i.id != id);
 
@@ -631,15 +671,26 @@
             uploadedImages.sort((a, b) => a.order - b.order);
 
             uploadedImages.forEach(img => {
-                // file input
-                const dt = new DataTransfer();
-                dt.items.add(img.file);
+                // seq_type: indicates if this position is an existing image or a new upload
+                const seqType = document.createElement('input');
+                seqType.type = 'hidden';
+                seqType.name = 'seq_types';
+                seqType.value = img.isExisting ? 'existing' : 'new';
+                seqType.classList.add('dynamic-image-input');
+                form.appendChild(seqType);
 
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.name = 'images';  // Django: request.FILES.getlist("images")
-                fileInput.files = dt.files;
-                fileInput.classList.add('dynamic-image-input', 'd-none');
+                // For NEW images only → send file input
+                if (!img.isExisting) {
+                    const dt = new DataTransfer();
+                    dt.items.add(img.file);
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.name = 'images';  // Django: request.FILES.getlist("images")
+                    fileInput.files = dt.files;
+                    fileInput.classList.add('dynamic-image-input', 'd-none');
+                    form.appendChild(fileInput);
+                }
 
                 // order input
                 const orderInput = document.createElement('input');
@@ -647,6 +698,7 @@
                 orderInput.name = 'orders'; // Django: request.POST.getlist("orders")
                 orderInput.value = img.order;
                 orderInput.classList.add('dynamic-image-input');
+                form.appendChild(orderInput);
 
                 // primary input
                 const primaryInput = document.createElement('input');
@@ -654,10 +706,17 @@
                 primaryInput.name = 'primary'; // Django: request.POST.getlist("primary")
                 primaryInput.value = img.isPrimary ? '1' : '0';
                 primaryInput.classList.add('dynamic-image-input');
-
-                form.appendChild(fileInput);
-                form.appendChild(orderInput);
                 form.appendChild(primaryInput);
+
+                // If existing image, send its id so backend knows to keep it
+                if (img.isExisting) {
+                    const idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'existing_ids';
+                    idInput.value = img.id;
+                    idInput.classList.add('dynamic-image-input');
+                    form.appendChild(idInput);
+                }
             });
         });
     </script>

@@ -157,7 +157,7 @@ class AdminBoxCategoryItemAdd(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
         
         form = BoxCategoryAdd()
-        return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,})
+        return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':False})
     
     def post(self,request,*args, **kwargs):
         data = request.POST
@@ -658,3 +658,66 @@ class AdminDecorationDelete(DeleteView):
     success_url = reverse_lazy('cadmin:decoration_manage')
     
     
+
+
+
+class AdminBoxCategoryItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        box_category = BoxCategory.objects.get(id=id)
+        form = BoxCategoryAdd(instance=box_category)
+        existing_images = BoxCategoryImage.objects.filter(box_category=box_category)
+        return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+    
+    def post(self,request,id,*args, **kwargs):
+        data = request.POST
+        files = request.FILES.getlist('images')
+        print(data)
+        print(files)
+        
+        orders = data.getlist('orders')
+        primary = data.getlist('primary')
+        seq_types  = data.getlist('seq_types')
+        existing_ids = data.getlist('existing_ids')
+        box_category = BoxCategory.objects.get(id=id)
+        form = BoxCategoryAdd(data=data,instance=box_category)
+        existing_images = BoxCategoryImage.objects.filter(box_category=box_category)
+        if  len(orders)!= len(primary) and len(orders) != len(seq_types):
+            form.add_error(None, "Invalid image order or primary values.")
+            return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+        if form.is_valid():
+            count = 0
+            try:
+                with transaction.atomic():
+                    obj =  form.save()
+                    for i in range(len(orders)):
+                        if seq_types[i] == 'existing':
+                            image_id =existing_ids.pop(0)
+                            try:
+                                image_obj = BoxCategoryImage.objects.get(id=image_id)
+                                
+                            except BoxCategoryImage.DoesNotExist:
+                                continue
+                            image_obj.display_order = orders[i]
+                            image_obj.is_primary = is_primary=True if int(primary[i]) else False
+                            image_obj.save() 
+                        else:  
+                                                    
+                            if files[count].size >  (5*1024*1024):
+                                form.add_error('Image size is under 5mb')
+                                return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+                            
+                            image_obj = BoxCategoryImage(box_category=obj,display_order=orders[i],image=files[count],is_primary=True if int(primary[i]) else False)
+                            image_obj.save()
+                            count+=1
+                    messages.success(request, "Box Category Updated  successfully!")
+                    return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+            except ValidationError as e:
+                form.add_error(None, str(e))
+                return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+
+            except Exception:
+                form.add_error(None, "Something went wrong while saving images.")
+                return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+                    
+        else:
+            return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})

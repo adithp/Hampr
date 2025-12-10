@@ -149,6 +149,51 @@ class BoxCategoryAdd(forms.ModelForm):
         return name
     
     
+class BoxCategoryAdd(forms.ModelForm):
+    
+    class Meta:
+        model = BoxCategory
+        fields = '__all__'
+        widgets = {
+            'box_type':forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'boxType',
+                'required': True,
+                'onchange': 'validateInput(this)',
+            }),
+            'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'categoryName','placeholder':"e.g., Birthday, Wedding",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
+            'description':forms.Textarea(attrs={'class':"form-control",'id':"categoryDescription",'row':'4', 'placeholder':"Describe this category...",'maxlength':'200','oninput':"updateCharCount(this)"}),
+            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus",'checked':True})
+        }
+        
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['box_type'].empty_label = "Select Box Type"
+        
+        
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        
+        if not name:
+            raise ValidationError("Box category  Name Is Required")
+        
+        if len(name) < 3:
+            raise ValidationError("Box category Length Must be under 3 characters")
+        
+        if not re.match(r'^[A-Za-z ]+$', name):
+            raise ValidationError("Box name must contain only alphabets and spaces")
+        
+        
+        qs = BoxCategory.objects.filter(name__iexact=name).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Another category already uses this name")
+
+        return name
+        
+        return name
+    
+    
 class BoxSizeForm(forms.ModelForm):
     
 
