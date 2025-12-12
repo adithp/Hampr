@@ -678,6 +678,7 @@ class AdminBoxCategoryItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
         primary = data.getlist('primary')
         seq_types  = data.getlist('seq_types')
         existing_ids = data.getlist('existing_ids')
+        deleted_ids = data.getlist('deleted_ids')
         box_category = BoxCategory.objects.get(id=id)
         form = BoxCategoryAdd(data=data,instance=box_category)
         existing_images = BoxCategoryImage.objects.filter(box_category=box_category)
@@ -709,6 +710,13 @@ class AdminBoxCategoryItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
                             image_obj = BoxCategoryImage(box_category=obj,display_order=orders[i],image=files[count],is_primary=True if int(primary[i]) else False)
                             image_obj.save()
                             count+=1
+                    for i in deleted_ids:
+                        try:
+                            im_obj = BoxCategoryImage.objects.get(id=i)
+                            
+                        except BoxCategoryImage.DoesNotExist:
+                            print('Delete Object Not Showing')
+                        im_obj.delete()
                     messages.success(request, "Box Category Updated  successfully!")
                     return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
             except ValidationError as e:
@@ -721,3 +729,29 @@ class AdminBoxCategoryItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
                     
         else:
             return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form,'edit_mode':True,'existing_images':existing_images})
+        
+        
+class AdminBoxTypeItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        try:
+            box_type = BoxType.objects.get(id=id)
+        except BoxType.DoesNotExist as e:
+            print(e)
+            
+        form = BoxTypeForm(instance=box_type)
+        return render(request,'c_admin/admin-products-box-types-add.html',{'form':form,})
+    
+    def post(self,request,id,*args, **kwargs):
+        data = request.POST
+        try:
+            box_type = BoxType.objects.get(id=id)
+        except BoxType.DoesNotExist as e:
+            print(e)
+            
+        form = BoxTypeForm(data,instance=box_type)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Box Type Updated successfully!")
+            return redirect('cadmin:box_type_manage')
+        else:
+            return render(request,'c_admin/admin-products-box-types-add.html',{'form':form})

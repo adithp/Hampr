@@ -9,9 +9,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -73,7 +71,6 @@
             border-color: #0056b3;
         }
 
-        /* Image Upload Styles */
         .upload-area {
             border: 2px dashed #0066cc;
             border-radius: 8px;
@@ -146,16 +143,6 @@
             justify-content: space-between;
         }
 
-        /* Crop Modal Styles */
-        .img-container {
-            max-height: 500px;
-        }
-
-        .img-container img {
-            max-width: 100%;
-        }
-
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -188,194 +175,178 @@
 
 <body>
 
-    <!-- Mobile Toggle -->
-    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-    </button>
+<button class="mobile-nav-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
 
-    <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <div class="px-4 mb-4">
-            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
-            <p class="text-muted small">Admin Portal</p>
-        </div>
-        <div class="px-3">
-            <ul class="nav flex-column gap-2">
-                <li class="nav-item">
-                    <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark">
-                        <i class="fas fa-home me-2"></i> Dashboard
-                    </a>
+<nav class="sidebar" id="sidebar">
+    <div class="px-4 mb-4">
+        <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+        <p class="text-muted small">Admin Portal</p>
+    </div>
+    <div class="px-3">
+        <ul class="nav flex-column gap-2">
+            <li class="nav-item">
+                <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark">
+                    <i class="fas fa-home me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'cadmin:products_manage' %}" class="nav-link active text-primary fw-bold bg-light rounded">
+                    <i class="fas fa-box me-2"></i> Products
+                </a>
+            </li>
+        </ul>
+        <hr>
+        <a href="{% url 'cadmin:box_category_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+</nav>
+
+<main class="main-content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'cadmin:products_manage' %}" class="text-decoration-none text-muted">Products</a>
                 </li>
-                <li class="nav-item">
-                    <a href="{% url 'cadmin:products_manage' %}"
-                        class="nav-link active text-primary fw-bold bg-light rounded">
-                        <i class="fas fa-box me-2"></i> Products
-                    </a>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'cadmin:box_category_manage' %}" class="text-decoration-none text-muted">Box Categories</a>
                 </li>
-            </ul>
-            <hr>
-            <a href="{% url 'cadmin:box_category_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
-                <i class="fas fa-arrow-left me-2"></i>Back to List
-            </a>
-        </div>
-    </nav>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {% if edit_mode %}Edit{% else %}Add New{% endif %} Category
+                </li>
+            </ol>
+        </nav>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Breadcrumb -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'cadmin:products_manage' %}"
-                            class="text-decoration-none text-muted">Products</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'cadmin:box_category_manage' %}" class="text-decoration-none text-muted">
-                            Box Categories
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {% if edit_mode %}Edit{% else %}Add New{% endif %}
-                        Category</li>
-                </ol>
-            </nav>
+    <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">{% if edit_mode %}Edit Category{% else %}Add New Category{% endif %}</h2>
+        <p class="text-muted">Create a purpose or occasion category</p>
+    </div>
+{% if messages %}
+<div class="container mb-3">
+    {% for message in messages %}
+        <div 
+            class="alert alert-{{ message.tags }} alert-dismissible fade show" 
+            role="alert"
+        >
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-        <!-- Header -->
-        <div class="text-center mb-4">
-            <h2 class="fw-bold mb-1">{% if edit_mode %}Edit Category{% else %}Add New Category{% endif %}</h2>
-            <p class="text-muted">Create a purpose or occasion category</p>
-        </div>
+    <div class="card form-card p-4 p-md-5">
+        <form id="boxCategoryForm" action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-4">
 
-        <!-- Form Card -->
-        {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <!-- LEFT COLUMN -->
+                <div class="col-md-6">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Box Type <span class="text-danger">*</span></label>
+                        {{ form.box_type }}
+                        {{ form.box_type.errors }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Description</label>
+                        {{ form.description }}
+                        {{ form.description.errors }}
+                        <div class="d-flex justify-content-end mt-1">
+                            <small class="text-muted" id="charCount">0/200</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            
+                            {{ form.is_active.errors }}
+                            <label class="form-check-label fw-bold" for="id_is_active">Active</label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-bold mb-2">Category Images</label>
+
+                    <div class="upload-area mb-3" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt text-primary fs-2 mb-2"></i>
+                        <p class="mb-0 fw-medium">Click to Upload & Crop</p>
+                        <small class="text-muted">JPG, PNG, WebP (Max 5MB, up to 5 images)</small>
+                        <input type="file" id="fileInput" class="d-none" accept="image/*" onchange="handleFileSelect(this)">
+                    </div>
+
+                    <div class="row g-2" id="imageGallery">
+                        <div class="col-12 text-center py-3 text-muted small" id="emptyState">
+                            No images uploaded yet.
+                        </div>
+                    </div>
+
+                    <div id="orderError" class="text-danger fw-bold mt-2" style="display:none;"></div>
+
+                </div>
             </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        <div class="card form-card p-4 p-md-5">
-            <form id="boxCategoryForm" action="" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row g-4">
-                    <!-- Left Column: Basic Info -->
-                    <div class="col-md-6">
-                        <!-- Box Type Selection -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Box Type <span class="text-danger">*</span></label>
-                            {{ form.box_type }}
-                            {{form.box_type.errors}}
-                            <div class="invalid-feedback">Please select a box type.</div>
-                        </div>
 
-                        <!-- Name -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
-                            {{ form.name }}
-                            {{form.name.errors}}
-                            <div class="invalid-feedback">Please enter a category name.</div>
-                        </div>
+            <div class="d-flex gap-2 pt-3 border-top mt-4">
+                <a href="{% url 'cadmin:box_category_manage' %}" class="btn btn-light border flex-grow-1">Cancel</a>
+                <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
+            </div>
 
-                        <!-- Description -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Description</label>
-                            {{ form.description }}
-                            {{form.description.errors}}
-                            <div class="d-flex justify-content-end mt-1">
-                                <small class="text-muted" id="charCount">0/200</small>
-                            </div>
-                        </div>
+            <div class="text-center mt-3 d-none" id="deleteContainer">
+                <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-1"></i> Delete Category
+                </button>
+            </div>
 
-                        <!-- Status -->
-                        <div class="mb-4">
-                            <div class="form-check form-switch">
-                                {{ form.is_active }}
-                                {{form.is_active.errors}}
-                                <label class="form-check-label fw-bold" for="id_is_active">Active</label>
-                            </div>
-                        </div>
-                    </div>
+        </form>
+    </div>
+</main>
 
-                    <!-- Right Column: Images -->
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold mb-2">Category Images</label>
-
-                        <!-- Upload Area -->
-                        <div class="upload-area mb-3" id="dropZone"
-                            onclick="document.getElementById('fileInput').click()">
-                            <i class="fas fa-cloud-upload-alt text-primary fs-2 mb-2"></i>
-                            <p class="mb-0 fw-medium">Click to Upload & Crop</p>
-                            <small class="text-muted">JPG, PNG, WebP (Max 5MB, up to 5 images)</small>
-                            <input type="file" id="fileInput" class="d-none" accept="image/*"
-                                onchange="handleFileSelect(this)">
-                        </div>
-
-                        <!-- Image Gallery -->
-                        <div class="row g-2" id="imageGallery">
-                            <div class="col-12 text-center py-3 text-muted small" id="emptyState">
-                                No images uploaded yet.
-                            </div>
-                        </div>
-
-                        <!-- Order Error Message -->
-                        <div id="orderError" class="text-danger fw-bold mt-2" style="display:none;"></div>
-                    </div>
+<!-- Crop Modal -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Crop Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="img-container">
+                    <img id="imageToCrop" src="" alt="Picture to crop">
                 </div>
-
-                <!-- Actions -->
-                <div class="d-flex gap-2 pt-3 border-top mt-4">
-                    <a href="{% url 'cadmin:box_category_manage' %}" class="btn btn-light border flex-grow-1">Cancel</a>
-                    <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Category</button>
-                </div>
-
-                <!-- Delete Button (hidden in add mode, can show in edit mode) -->
-                <div class="text-center mt-3 d-none" id="deleteContainer">
-                    <button type="button" class="btn btn-link text-danger text-decoration-none btn-sm"
-                        onclick="confirmDelete()">
-                        <i class="fas fa-trash me-1"></i> Delete Category
-                    </button>
-                </div>
-            </form>
-        </div>
-    </main>
-
-    <!-- Crop Modal -->
-    <div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Crop Image</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="img-container">
-                        <img id="imageToCrop" src="" alt="Picture to crop">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="cropAndSave()">Crop & Save</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="cropAndSave()">Crop & Save</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Scripts at bottom -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<!-- REQUIRED SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-    <!-- ====================== EDIT MODE INJECTION (FIXED) ====================== -->
-   <!-- ====================== EDIT MODE INJECTION (FIXED) ====================== -->
+<!-- ================= EDIT MODE INJECTION ================= -->
 <script>
     let uploadedImages = [];
 
-    // edit mode flag
     const editMode = {% if edit_mode %}true{% else %}false{% endif %};
 
     {% if edit_mode %}
@@ -396,330 +367,353 @@
     {% endif %}
 
     document.addEventListener("DOMContentLoaded", function () {
-        if (typeof refreshGallery === "function") {
-            refreshGallery();
-        }
+        if (typeof refreshGallery === "function") refreshGallery();
     });
 </script>
-<!-- ====================== END EDIT MODE INJECTION ====================== -->
+<!-- =============== END EDIT MODE INJECTION =============== -->
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+    }
 
-    <!-- ====================== END EDIT MODE INJECTION ====================== -->
-
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
+    // Description character counter
+    document.addEventListener('input', function (e) {
+        if (e.target.matches('textarea[name="description"]')) {
+            const max = e.target.getAttribute('maxlength') || 200;
+            const current = e.target.value.length;
+            const counter = document.getElementById('charCount');
+            if (counter) counter.textContent = `${current}/${max}`;
         }
+    });
 
-        // Description char counter – assumes textarea name="description"
-        document.addEventListener('input', function (e) {
-            if (e.target.matches('textarea[name="description"]')) {
-                const max = e.target.getAttribute('maxlength') || 200;
-                const current = e.target.value.length;
-                const counter = document.getElementById('charCount');
-                if (counter) counter.textContent = `${current}/${max}`;
-            }
-        });
+    // ========== Image + Crop Logic ==========
+    let cropper;
+    const imageToCrop = document.getElementById('imageToCrop');
+    const cropModalEl = document.getElementById('cropModal');
+    const cropModal = new bootstrap.Modal(cropModalEl);
 
-        // ---------- Image & Crop Logic ----------
+    function handleFileSelect(input) {
+        if (!input.files || !input.files[0]) return;
 
-        /* NOTE: uploadedImages is defined above (in edit-mode injection) so DO NOT re-declare it here.
-           The array will contain existing images in edit mode (with isExisting: true)
-           and will receive new images when cropping (with file: File and isExisting: false). */
+        const file = input.files[0];
 
-        let cropper;
-        const imageToCrop = document.getElementById('imageToCrop');
-        const cropModalEl = document.getElementById('cropModal');
-        const cropModal = new bootstrap.Modal(cropModalEl);
-
-        function handleFileSelect(input) {
-            if (!input.files || !input.files[0]) return;
-
-            const file = input.files[0];
-
-            if (uploadedImages.length >= 5) {
-                alert('Maximum 5 images allowed.');
-                input.value = '';
-                return;
-            }
-
-            if (!file.type.startsWith('image/')) {
-                alert('Please upload a valid image file.');
-                input.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imageToCrop.src = e.target.result;
-                cropModal.show();
-            };
-            reader.readAsDataURL(file);
-
-            // Clear so user can reselect the same file if needed
+        if (uploadedImages.length >= 5) {
+            alert('Maximum 5 images allowed.');
             input.value = '';
+            return;
         }
 
-        cropModalEl.addEventListener('shown.bs.modal', function () {
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(imageToCrop, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 1
-            });
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload a valid image file.');
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imageToCrop.src = e.target.result;
+            cropModal.show();
+        };
+        reader.readAsDataURL(file);
+
+        input.value = '';
+    }
+
+    cropModalEl.addEventListener('shown.bs.modal', function () {
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(imageToCrop, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 1
         });
+    });
 
-        cropModalEl.addEventListener('hidden.bs.modal', function () {
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-        });
-
-        function cropAndSave() {
-            if (!cropper) return;
-
-            cropper.getCroppedCanvas({
-                width: 500,
-                height: 500
-            }).toBlob((blob) => {
-                if (!blob) return;
-
-                const id = Date.now() + Math.random();
-                const order = uploadedImages.length + 1;
-                const isPrimary = uploadedImages.length === 0;
-
-                const file = new File([blob], `category_${id}.jpg`, {
-                    type: 'image/jpeg'
-                });
-
-                const src = URL.createObjectURL(file);
-
-                uploadedImages.push({
-                    id,
-                    file,
-                    src,
-                    order,
-                    isPrimary,
-                    isExisting: false
-                });
-
-                refreshGallery();
-                cropModal.hide();
-            }, 'image/jpeg', 0.9);
+    cropModalEl.addEventListener('hidden.bs.modal', function () {
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
         }
+    });
 
-        function refreshGallery() {
-            const gallery = document.getElementById('imageGallery');
-            gallery.innerHTML = '';
+    function cropAndSave() {
+        if (!cropper) return;
 
-            if (uploadedImages.length === 0) {
-                gallery.innerHTML = `
-                    <div class="col-12 text-center py-3 text-muted small" id="emptyState">
-                        No images uploaded yet.
-                    </div>`;
-                // also clear error
-                const errorBox = document.getElementById("orderError");
-                if (errorBox) {
-                    errorBox.style.display = "none";
-                    errorBox.textContent = "";
-                }
-                return;
-            }
+        cropper.getCroppedCanvas({
+            width: 500,
+            height: 500
+        }).toBlob((blob) => {
+            if (!blob) return;
 
-            uploadedImages.sort((a, b) => a.order - b.order);
+            const id = Date.now() + Math.random();
+            const order = uploadedImages.length + 1;
+            const isPrimary = uploadedImages.length === 0;
 
-            uploadedImages.forEach(img => {
-                const col = document.createElement('div');
-                col.className = 'col-6';
-                col.innerHTML = `
-                    <div class="image-card">
-                        <img src="${img.src}" alt="Category Image">
-                        ${img.isPrimary ? '<span class="badge-primary-img">Primary</span>' : ''}
-                        <div class="image-overlay">
-                            <button type="button" class="btn btn-sm btn-light rounded-circle"
-                                onclick="setPrimary('${img.id}')" title="Set as Primary">
-                                <i class="fas fa-star text-warning"></i>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-light rounded-circle text-danger"
-                                onclick="removeImage('${img.id}')" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                        <div class="order-input-container">
-                            <small class="text-muted fw-bold" style="font-size: 0.7rem;">Order:</small>
-                            <input type="number"
-                                class="form-control form-control-sm w-50 text-center p-1"
-                                value="${img.order}"
-                                min="1"
-                                max="10"
-                                onchange="updateOrder('${img.id}', this.value)">
-                        </div>
-                    </div>
-                `;
-                gallery.appendChild(col);
+            const file = new File([blob], `category_${id}.jpg`, {
+                type: 'image/jpeg'
             });
 
-            // run validation after redraw
-            validateOrders();
-        }
+            const src = URL.createObjectURL(file);
 
-        function setPrimary(id) {
-            uploadedImages.forEach(img => {
-                img.isPrimary = (img.id == id);
+            uploadedImages.push({
+                id,
+                file,
+                src,
+                order,
+                isPrimary,
+                isExisting: false
             });
-            refreshGallery();
-        }
-
-        function removeImage(id) {
-            const img = uploadedImages.find(i => i.id == id);
-            if (img && img.src) {
-                // revoke object URL only for newly-created PDFs/Files
-                if (img.isExisting === false && img.src && img.src.startsWith('blob:')) {
-                    URL.revokeObjectURL(img.src);
-                }
-            }
-            uploadedImages = uploadedImages.filter(i => i.id != id);
-
-            // Re-normalize orders
-            uploadedImages.forEach((img, index) => {
-                img.order = index + 1;
-            });
-
-            // Ensure at least one primary if images exist
-            if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isPrimary)) {
-                uploadedImages[0].isPrimary = true;
-            }
 
             refreshGallery();
-        }
+            cropModal.hide();
+        }, 'image/jpeg', 0.9);
+    }
 
-        // ---- Order validation (1–10, sequential, no gaps) ----
-        function validateOrders() {
+    // ========== Refresh Gallery ==========
+    function refreshGallery() {
+        const gallery = document.getElementById('imageGallery');
+        gallery.innerHTML = '';
+
+        if (uploadedImages.length === 0) {
+            gallery.innerHTML = `
+                <div class="col-12 text-center py-3 text-muted small" id="emptyState">
+                    No images uploaded yet.
+                </div>`;
             const errorBox = document.getElementById("orderError");
-            if (!errorBox) return true;
-
-            errorBox.style.display = "none";
-            errorBox.textContent = "";
-
-            if (uploadedImages.length === 0) {
-                // no images, no order to validate
-                return true;
+            if (errorBox) {
+                errorBox.style.display = "none";
+                errorBox.textContent = "";
             }
+            return;
+        }
 
-            const orders = uploadedImages.map(img => parseInt(img.order) || 0);
+        uploadedImages.sort((a, b) => a.order - b.order);
 
-            // 1. must be between 1 and 10
-            if (orders.some(o => o < 1 || o > 10)) {
+        uploadedImages.forEach(img => {
+            const col = document.createElement('div');
+            col.className = 'col-6';
+            col.innerHTML = `
+                <div class="image-card">
+                    <img src="${img.src}" alt="Category Image">
+                    ${img.isPrimary ? '<span class="badge-primary-img">Primary</span>' : ''}
+                    <div class="image-overlay">
+                        <button type="button" class="btn btn-sm btn-light rounded-circle"
+                            onclick="setPrimary('${img.id}')" title="Set as Primary">
+                            <i class="fas fa-star text-warning"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light rounded-circle text-danger"
+                            onclick="removeImage('${img.id}')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="order-input-container">
+                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">Order:</small>
+                        <input type="number"
+                            class="form-control form-control-sm w-50 text-center p-1"
+                            value="${img.order}"
+                            min="1"
+                            max="10"
+                            onchange="updateOrder('${img.id}', this.value)">
+                    </div>
+                </div>
+            `;
+            gallery.appendChild(col);
+        });
+
+        validateOrders();
+    }
+
+    // Set primary image
+    function setPrimary(id) {
+        uploadedImages.forEach(img => {
+            img.isPrimary = (img.id == id);
+        });
+        refreshGallery();
+    }
+
+    // Remove image (delete-id logic added in PART 3)
+    function removeImage(id) {
+        const img = uploadedImages.find(i => i.id == id);
+
+        // Part 3 will add handling for deleted existing images
+
+        if (img && img.src && img.isExisting === false && img.src.startsWith('blob:')) {
+            URL.revokeObjectURL(img.src);
+        }
+
+        uploadedImages = uploadedImages.filter(i => i.id != id);
+
+        uploadedImages.forEach((img, index) => {
+            img.order = index + 1;
+        });
+
+        if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isPrimary)) {
+            uploadedImages[0].isPrimary = true;
+        }
+
+        refreshGallery();
+    }
+
+    // Validate Orders
+    function validateOrders() {
+        const errorBox = document.getElementById("orderError");
+        if (!errorBox) return true;
+
+        errorBox.style.display = "none";
+        errorBox.textContent = "";
+
+        if (uploadedImages.length === 0) return true;
+
+        const orders = uploadedImages.map(img => parseInt(img.order) || 0);
+
+        if (orders.some(o => o < 1 || o > 10)) {
+            errorBox.style.display = "block";
+            errorBox.textContent = "Order number must be between 1 and 10.";
+            return false;
+        }
+
+        const sorted = [...orders].sort((a, b) => a - b);
+        for (let i = 0; i < sorted.length; i++) {
+            if (sorted[i] !== i + 1) {
                 errorBox.style.display = "block";
-                errorBox.textContent = "Order number must be between 1 and 10.";
+                errorBox.textContent =
+                    "Order must be sequential (1, 2, 3, ...). Do not skip numbers.";
                 return false;
             }
-
-            // 2. must be sequential without gaps: 1..N
-            const sorted = [...orders].sort((a, b) => a - b);
-            for (let i = 0; i < sorted.length; i++) {
-                if (sorted[i] !== i + 1) {
-                    errorBox.style.display = "block";
-                    errorBox.textContent =
-                        "Order must be sequential (1, 2, 3, ...). Do not skip numbers.";
-                    return false;
-                }
-            }
-
-            return true;
         }
 
-        function updateOrder(id, newOrder) {
-            const img = uploadedImages.find(i => i.id == id);
-            if (!img) return;
+        return true;
+    }
 
-            const orderVal = parseInt(newOrder) || 1;
-            img.order = orderVal;
+    function updateOrder(id, newOrder) {
+        const img = uploadedImages.find(i => i.id == id);
+        if (!img) return;
 
-            refreshGallery();
-            validateOrders();
+        const orderVal = parseInt(newOrder) || 1;
+        img.order = orderVal;
+
+        refreshGallery();
+        validateOrders();
+    }
+
+    function confirmDelete() {
+        if (confirm('Are you sure? This will affect products in this category.')) {
+            alert('Category deleted (front-end demo).');
+        }
+    }
+</script>
+<script>
+    // ================== DELETE-ID ARRAY ==================
+    let deletedIds = [];
+
+    // Updated removeImage with deletedIds push
+    function removeImage(id) {
+        const img = uploadedImages.find(i => i.id == id);
+
+        // If it's an existing image → store ID for backend delete
+        if (img && img.isExisting === true) {
+            deletedIds.push(id);
         }
 
-        function confirmDelete() {
-            if (confirm('Are you sure? This will affect products in this category.')) {
-                // Hook to Django delete view if needed
-                alert('Category deleted (front-end demo).');
-            }
+        // Revoke object URL only for new files
+        if (img && img.src && img.isExisting === false && img.src.startsWith('blob:')) {
+            URL.revokeObjectURL(img.src);
         }
 
-        // ---------- Attach files + meta before submit ----------
-        document.getElementById('boxCategoryForm').addEventListener('submit', function (e) {
-            const form = this;
+        uploadedImages = uploadedImages.filter(i => i.id != id);
 
-            // Validate orders before actually submitting
-            if (!validateOrders()) {
-                e.preventDefault();
-                alert("Please fix the image order before submitting.");
-                return;
-            }
-
-            // Remove old dynamic inputs (if user resubmits)
-            form.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
-
-            // If you want to enforce at least one image, uncomment:
-            // if (uploadedImages.length === 0) {
-            //     e.preventDefault();
-            //     alert('Please upload at least one image.');
-            //     return;
-            // }
-
-            uploadedImages.sort((a, b) => a.order - b.order);
-
-            uploadedImages.forEach(img => {
-                // seq_type: indicates if this position is an existing image or a new upload
-                const seqType = document.createElement('input');
-                seqType.type = 'hidden';
-                seqType.name = 'seq_types';
-                seqType.value = img.isExisting ? 'existing' : 'new';
-                seqType.classList.add('dynamic-image-input');
-                form.appendChild(seqType);
-
-                // For NEW images only → send file input
-                if (!img.isExisting) {
-                    const dt = new DataTransfer();
-                    dt.items.add(img.file);
-
-                    const fileInput = document.createElement('input');
-                    fileInput.type = 'file';
-                    fileInput.name = 'images';  // Django: request.FILES.getlist("images")
-                    fileInput.files = dt.files;
-                    fileInput.classList.add('dynamic-image-input', 'd-none');
-                    form.appendChild(fileInput);
-                }
-
-                // order input
-                const orderInput = document.createElement('input');
-                orderInput.type = 'hidden';
-                orderInput.name = 'orders'; // Django: request.POST.getlist("orders")
-                orderInput.value = img.order;
-                orderInput.classList.add('dynamic-image-input');
-                form.appendChild(orderInput);
-
-                // primary input
-                const primaryInput = document.createElement('input');
-                primaryInput.type = 'hidden';
-                primaryInput.name = 'primary'; // Django: request.POST.getlist("primary")
-                primaryInput.value = img.isPrimary ? '1' : '0';
-                primaryInput.classList.add('dynamic-image-input');
-                form.appendChild(primaryInput);
-
-                // If existing image, send its id so backend knows to keep it
-                if (img.isExisting) {
-                    const idInput = document.createElement('input');
-                    idInput.type = 'hidden';
-                    idInput.name = 'existing_ids';
-                    idInput.value = img.id;
-                    idInput.classList.add('dynamic-image-input');
-                    form.appendChild(idInput);
-                }
-            });
+        // Normalize order
+        uploadedImages.forEach((img, index) => {
+            img.order = index + 1;
         });
-    </script>
-</body>
 
+        // Ensure a primary image always exists
+        if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isPrimary)) {
+            uploadedImages[0].isPrimary = true;
+        }
+
+        refreshGallery();
+    }
+
+    // ================== SUBMIT HANDLER ==================
+    document.getElementById('boxCategoryForm').addEventListener('submit', function (e) {
+        const form = this;
+
+        // Validate orders before submitting
+        if (!validateOrders()) {
+            e.preventDefault();
+            alert("Please fix the image order before submitting.");
+            return;
+        }
+
+        // Remove old dynamic inputs
+        form.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
+
+        // Sort by order
+        uploadedImages.sort((a, b) => a.order - b.order);
+
+        // ================== Append Image Inputs ==================
+        uploadedImages.forEach(img => {
+
+            // seq type
+            const seqType = document.createElement('input');
+            seqType.type = 'hidden';
+            seqType.name = 'seq_types';
+            seqType.value = img.isExisting ? 'existing' : 'new';
+            seqType.classList.add('dynamic-image-input');
+            form.appendChild(seqType);
+
+            // For NEW images → append File input
+            if (!img.isExisting) {
+                const dt = new DataTransfer();
+                dt.items.add(img.file);
+
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'images';
+                fileInput.files = dt.files;
+                fileInput.classList.add('dynamic-image-input', 'd-none');
+                form.appendChild(fileInput);
+            }
+
+            // Order
+            const orderInput = document.createElement('input');
+            orderInput.type = 'hidden';
+            orderInput.name = 'orders';
+            orderInput.value = img.order;
+            orderInput.classList.add('dynamic-image-input');
+            form.appendChild(orderInput);
+
+            // Primary
+            const primaryInput = document.createElement('input');
+            primaryInput.type = 'hidden';
+            primaryInput.name = 'primary';
+            primaryInput.value = img.isPrimary ? '1' : '0';
+            primaryInput.classList.add('dynamic-image-input');
+            form.appendChild(primaryInput);
+
+            // Existing image ID
+            if (img.isExisting) {
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'existing_ids';
+                idInput.value = img.id;
+                idInput.classList.add('dynamic-image-input');
+                form.appendChild(idInput);
+            }
+        });
+
+        // ================== Append Deleted IDs ==================
+        deletedIds.forEach(id => {
+            const delInput = document.createElement('input');
+            delInput.type = 'hidden';
+            delInput.name = 'deleted_ids';
+            delInput.value = id;
+            delInput.classList.add('dynamic-image-input');
+            form.appendChild(delInput);
+        });
+
+    });
+</script>
+
+</body>
 </html>

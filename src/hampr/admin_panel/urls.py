@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit
 
 
 
@@ -18,9 +18,13 @@ urlpatterns = [
     
     path('box_manage/',AdminBoxProductsMainPage.as_view(),name='box_manage'),
     path('box_delete/<pk>/',AdminBoxDelete.as_view(),name='box_delete'),
+    
     path('box_type_manage/',AdminBoxTypeManage.as_view(),name='box_type_manage'),
     path('box_type_add/',AdminBoxTypeItemAdd.as_view(),name='box_type_add'),
     path('box_type_delete/<pk>/',AdminBoxTypeDelete.as_view(),name='box_type_delete'),
+    path('box_type_edit/<uuid:id>/',AdminBoxTypeItemEdit.as_view(),name='box_type_edit'),
+    
+    
     path('box_category_manage/',AdminBoxCategoryManage.as_view(),name='box_category_manage'),
     path('box_category_edit/<uuid:id>/',AdminBoxCategoryItemEdit.as_view(),name='box_category_edit'),
     

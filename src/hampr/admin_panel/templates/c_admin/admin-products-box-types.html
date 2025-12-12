@@ -291,8 +291,8 @@
 
                                 <form action="{% url 'cadmin:box_type_delete' box_type.id %}" method='POST'>
                                     {% csrf_token %}
-                                    <a href="admin-products-box-types-add.html" class="btn btn-sm btn-light me-1"
-                                        title="Edit"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'cadmin:box_type_edit' box_type.id %}"
+                                        class="btn btn-sm btn-light me-1" title="Edit"><i class="fas fa-edit"></i></a>
                                     <button class="btn btn-sm btn-light text-danger" type="submit" title="Delete"><i
                                             class="fas fa-trash"></i></button>
                                 </form>
