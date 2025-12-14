@@ -300,6 +300,9 @@ class AdminBoxProductsAddItemThird(NeverCacheMixin,StaffRequiredMixin,View):
         try:
             with transaction.atomic():
                 for i in range(len(orders)):
+                    if images[i].size >  (5*1024*1024):
+                            messages.error(request,'Image size must Under 5mb')
+                            return render(request,'c_admin/admin-products-boxes-add-step3.html')
                     obj = BoxImage(display_order=orders[i],image=images[i],is_thumbnail= True if primary[i] == '1' else False,box_id=hamper_box)
                     obj.save()
         except ValidationError as e:
@@ -348,14 +351,15 @@ class AdminProductManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product_varients = ProductVariant.objects.all()
+        
+        products = Product.objects.all()
         data = [
             
         ]
-        for i in range(len(product_varients)):
-            data.append({
-                'varient':product_varients[i],
-                'image':ProductImage.objects.filter(product=product_varients[i],is_thumbnail=True).first()
+        for i in products:
+            data.append({   
+                'product':i,
+                'varients':[{'varient':j,'image':ProductImage.objects.filter(product=j,is_thumbnail=True).first()} for j in ProductVariant.objects.filter(product=i)] 
             })
         context['data'] = data
         return context
@@ -486,7 +490,8 @@ class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
                         response = self.updating_data(request=request,pending_id=pending_id,size=size_obj,size_form=size_form)
                         return response 
                     else:
-                         return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'size_form':size_form})
+                        print(size_form.errors)
+                        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'size_form':size_form})
             except Exception as e:
                  print("Error:", e)
                  messages.error(request, "Something went wrong. Please try again.")
@@ -617,6 +622,10 @@ class AdminBoxCategoryDelete(DeleteView):
     model = BoxCategory 
     success_url = reverse_lazy('cadmin:box_category_manage')
     
+class AdminMainProductDelete(DeleteView):
+    model = HamperBox
+    success_url = reverse_lazy('cadmin:box_manage')
+    
 class AdminBoxDelete(DeleteView):
     model = BoxSize
     success_url = reverse_lazy('cadmin:box_manage')
@@ -637,20 +646,15 @@ class AdminProductCategoryDelete(DeleteView):
     model = ProductCategory
     success_url = reverse_lazy('cadmin:products_category_list')
     
-class AdminProductDelete(DeleteView):
+class AdminProductVarientDelete(DeleteView):
     model = ProductVariant
     success_url = reverse_lazy('cadmin:interior_product_manage')
     
-    def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-
-        if ProductVariant.objects.filter(product=obj.product).count() == 1:
-            product = obj.product
-            product.delete()
-            return redirect(reverse_lazy('cadmin:interior_product_manage'))
-            
-
-        return super().delete(request, *args, **kwargs)
+class AdminProductDelete(DeleteView):
+    model = Product
+    success_url = reverse_lazy('cadmin:interior_product_manage')
+    
+    
     
     
 class AdminDecorationDelete(DeleteView):
@@ -751,7 +755,182 @@ class AdminBoxTypeItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
         form = BoxTypeForm(data,instance=box_type)
         if form.is_valid():
             form.save()
-            messages.success(request, "Box Type Updated successfully!")
+            
             return redirect('cadmin:box_type_manage')
         else:
             return render(request,'c_admin/admin-products-box-types-add.html',{'form':form})
+        
+        
+        
+    
+class AdminBoxProductsEditItem(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        
+        try:
+            hamper_box = HamperBox.objects.get(id=id)
+        except HamperBox.DoesNotExist as e:
+            print(e)
+            
+        form = HamperBoxForm(instance=hamper_box)
+        return render(request,'c_admin/admin-products-boxes-add-step1.html',{'form':form,'edit':True})
+    
+    def post(self,request,id,*args, **kwargs):
+        try:
+            hamper_box = HamperBox.objects.get(id=id)
+        except HamperBox.DoesNotExist as e:
+            print(e)
+        form = HamperBoxForm(request.POST,instance=hamper_box)
+        print(form.is_valid())
+        if form.is_valid():
+            obj = form.save()
+            
+            return redirect('cadmin:box_manage')
+        
+        
+        else:
+            return render(request,'c_admin/admin-products-boxes-add-step1.html',{'form':form,'edit':True})
+
+        
+        
+class AdminBoxProductsEditItemSecond(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        box_size = BoxSize.objects.get(id=id)
+        form = BoxSizeForm(instance=box_size)
+        return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,'edit':True})
+    
+    def post(self,request,id,*args, **kwargs):
+        box_size = BoxSize.objects.get(id=id)
+        form = BoxSizeForm(request.POST,instance=box_size)
+        
+        if form.is_valid():
+            size_label = form.cleaned_data.get('size_label')
+            if BoxSize.objects.filter(hamper_box=box_size.hamper_box,size_label=size_label).exclude(id=box_size.id).exists():
+                form.add_error('size_label','this size already added')
+                return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,})
+            form.save()
+            
+            return redirect('cadmin:box_manage')
+        return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,'edit':True})
+    
+    
+    
+    
+class AdminBoxProductsEditItemThird(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        images = BoxImage.objects.filter(box_id=id)
+        context = {
+            'edit':True,
+            'existing_images':images
+        }
+        
+        return render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
+    
+    def post(self,request,id,*args, **kwargs):
+    
+        context = {
+            'edit':True,
+            'existing_images':BoxImage.objects.filter(box_id=id)
+        }
+        print(request.POST,request.FILES)
+        try:
+            hamper_box = HamperBox.objects.get(id=id)
+        except HamperBox.DoesNotExist as e:
+            print(e)
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        images = request.FILES.getlist('images')
+        seq_types = request.POST.getlist('seq_types')
+        existing_ids = request.POST.getlist('existing_ids')
+        deleted_ids = request.POST.getlist('deleted_ids',[])
+        
+        if  len(orders)!= len(primary) and len(orders) != len(seq_types):
+            messages.error(request, "Invalid image order or primary values.")
+            return render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
+        
+        try:
+            with transaction.atomic():
+                count = 0
+                for i in range(len(seq_types)):
+                    if seq_types[i] == 'existing':
+                        ex_image_obj = BoxImage.objects.get(id=existing_ids[i])
+                        ex_image_obj.display_order = orders[i]
+                        ex_image_obj.is_thumbnail = True if primary[i] == '1' else False
+                    else: 
+                        if images[count].size >  (5*1024*1024):
+                            messages.error(request,'Image size must Under 5mb')
+                            return render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
+                        obj = BoxImage(display_order=orders[i],image=images[count],is_thumbnail= True if primary[i] == '1' else False,box_id=hamper_box)
+                        obj.save()
+                        count += 1
+                for i in deleted_ids:
+                    del_img = BoxImage.objects.get(id=i)
+                    del_img.delete()
+                
+                    
+        
+        except ValidationError as e:
+            messages.error(request,'smothing happen when image upload')
+            return render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
+       
+        except Exception:
+            messages.error(request,'smothing happen when image upload')
+            return render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
+            
+        messages.success(request,'Update succsessfully')
+        return  render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
+    
+    
+    
+class AdminProductEditCategory(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,slug,*args, **kwargs):
+        try:
+            instance = ProductCategory.objects.get(slug=slug)
+        except ProductCategory.DoesNotExist as e:
+            print(e)
+        form = ProductCategoryForm(instance=instance)
+        return render(request,'c_admin/admin_products_interior_category_add.html',{'form':form,'edit':True})
+    
+    def post(self,request,slug,*args, **kwargs):
+        try:
+            instance = ProductCategory.objects.get(slug=slug)
+        except ProductCategory.DoesNotExist as e:
+            print(e)
+        form = ProductCategoryForm(request.POST,instance=instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request,'product category updated')
+            
+        
+        return render(request,'c_admin/admin_products_interior_category_add.html',{'form':form,'edit':True})  
+    
+    
+class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        categories = ProductCategory.objects.all()
+        try:
+            instance = Product.objects.get(id=id)
+        except Product.DoesNotExist as e:
+            print(e)
+        form = ProductForm(instance=instance)
+        return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
+    
+    def post(self,request,*args, **kwargs):
+        try:
+            instance = Product.objects.get(id=id)
+        except Product.DoesNotExist as e:
+            print(e)
+        data = request.POST
+        
+        form = ProductForm(data,instance=instance)
+        
+        if form.is_valid():
+            
+            obj = form.save()
+            
+            return redirect('cadmin:varient_or_not')
+            
+        else:
+            categories = ProductCategory.objects.all()
+            
+            return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
+

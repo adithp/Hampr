@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory
 
 
 
@@ -8,7 +8,9 @@ app_name = 'cadmin'
 
 urlpatterns = [
     path('login/',AdminLoginView.as_view(),name='admin_login'),
+    
     path('dashboard/',AdminDashboardView.as_view(),name='admin_dashboard'),
+    
     path('user_management/',AdminUserManagement.as_view(),name='user_management'),
     path('user_block/<int:id>/',AdminBlockUser.as_view(),name='user_block'),
     
@@ -17,7 +19,9 @@ urlpatterns = [
     
     
     path('box_manage/',AdminBoxProductsMainPage.as_view(),name='box_manage'),
+    path('box_full_delete/<pk>/',AdminMainProductDelete.as_view(),name='box_full_delete'),
     path('box_delete/<pk>/',AdminBoxDelete.as_view(),name='box_delete'),
+    
     
     path('box_type_manage/',AdminBoxTypeManage.as_view(),name='box_type_manage'),
     path('box_type_add/',AdminBoxTypeItemAdd.as_view(),name='box_type_add'),
@@ -27,19 +31,24 @@ urlpatterns = [
     
     path('box_category_manage/',AdminBoxCategoryManage.as_view(),name='box_category_manage'),
     path('box_category_edit/<uuid:id>/',AdminBoxCategoryItemEdit.as_view(),name='box_category_edit'),
-    
     path('box_category_add/',AdminBoxCategoryItemAdd.as_view(),name='box_category_add'),
     path('box_category_delete/<pk>/',AdminBoxCategoryDelete.as_view(),name='box_category_delete'),
     
     
     path('add_box_first/',AdminBoxProductsAddItem.as_view(),name='add_box_first_phase'),
+    path('edit_box_first/<uuid:id>/',AdminBoxProductsEditItem.as_view(),name='edit_box_first'),
+    
     path('add_box_second/',AdminBoxProductsAddItemSecond.as_view(),name='add_box_second'),
+    path('edit_box_second/<uuid:id>/',AdminBoxProductsEditItemSecond.as_view(),name='edit_box_second'),
+
     path('add_box_third/',AdminBoxProductsAddItemThird.as_view(),name='add_box_third'),
+    path('edit_box_third/<uuid:id>/',AdminBoxProductsEditItemThird.as_view(),name='edit_box_third'),
     
     path('second_to_third_redirect/',redirect_to_image_upload_box,name='second_third_redirect'),
     path('box_product_adding_cancel/',productBox_adding_cancel,name='box_product_adding_cancel'),
     
     path('add_product_category/',AdminProductAddCategory.as_view(),name='add_product_category'),
+    path('edit_product_category/<slug:slug>/',AdminProductEditCategory.as_view(),name='edit_product_category'),
     path('products_category_list/',AdminProductCategoryManage.as_view(),name='products_category_list'),
     path('product_category_delete/<pk>/',AdminProductCategoryDelete.as_view(),name='product_category_delete'),
     
@@ -50,6 +59,7 @@ urlpatterns = [
     path('varients_finshed/',varients_finshed,name='varients_finshed'),
     path('interior_product_manage/',AdminProductManage.as_view(),name='interior_product_manage'),
     path('cancel_add_product/',cancel_add_product,name='cancel_add_product'),
+    path('product_varient_delete/<pk>/',AdminProductVarientDelete.as_view(),name='product_varient_delete'),
     path('product_delete/<pk>/',AdminProductDelete.as_view(),name='product_delete'),
     
     path('decoration_add/',AdminDecorationAdd.as_view(),name='decoration_add'),

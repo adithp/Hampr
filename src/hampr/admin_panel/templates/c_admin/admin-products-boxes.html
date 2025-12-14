@@ -313,64 +313,140 @@
         <!-- Products Table -->
         <div class="card table-card p-4">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="border-0 rounded-start" style="width: 80px;">Image</th>
-                            <th class="border-0">Product Name</th>
-                            <th class="border-0">Box Type</th>
-                            <th class="border-0">Size</th>
-                            <th class="border-0">Category</th>
-                            <th class="border-0">Price</th>
-                            <th class="border-0">Stock</th>
-                            <th class="border-0">Status</th>
-                            <th class="border-0 rounded-end text-end">Actions</th>
-                        </tr>
-                    </thead>
+                <table class="table align-middle mb-0">
                     <tbody>
-                        {% for data in datas %}
-                        {% for size in data.sizes %}
-                        <tr>
-                            <td data-label="Image">
-                                {% if data.image %}
 
-                                <img src="{{data.image.image.url}}" class="product-img-thumb" alt="Product">
+                        {% for data in datas %}
+
+                        <!-- ===============================
+                     MAIN PRODUCT (BOX)
+                ================================ -->
+                        <tr class="bg-primary bg-opacity-10">
+                            <!-- Image -->
+                            <td style="width:80px;">
+                                {% if data.image %}
+                                <img src="{{ data.image.image.url }}" class="product-img-thumb" alt="Product">
                                 {% else %}
                                 <img src="https://placehold.co/100x100/D4AF37/FFFFFF?text=B" class="product-img-thumb"
                                     alt="Product">
                                 {% endif %}
                             </td>
-                            <td data-label="Product Name" class="fw-bold">{{data.box.name}}</td>
-                            <td data-label="Box Type"><span
-                                    class="badge badge-type">{{data.box.category.box_type}}</span></td>
-                            <td data-label="Price" class="fw-bold">{{size.size_label}}</td>
-                            <td data-label="Category"><span class="badge badge-cat">{{data.box.category}}</span></td>
-                            <td data-label="Price" class="fw-bold">{{size.price}}</td>
-                            <td data-label="Stock">{{size.stock}}</td>
-                            {% if size.is_active %}
-                            <td data-label="Status"><span class="status-badge status-active">Active</span></td>
-                            {% else %}
-                            <td data-label="Status"><span class="status-badge status-active">Inactive</span></td>
-                            {% endif %}
-                            <td data-label="Actions" class="text-end">
-                                <form action="{% url 'cadmin:box_delete' size.id %}" method='POST'>
+
+                            <!-- Product info -->
+                            <td>
+                                <div class="fw-bold fs-5">{{ data.box.name }}</div>
+                                <div class="small text-muted">
+                                    {{ data.box.category.box_type }} • {{ data.box.category }}
+                                </div>
+                            </td>
+
+                            <!-- Status -->
+                            <td style="width:120px;">
+                                {% if data.box.is_active %}
+                                <span class="status-badge status-active">Active</span>
+                                {% else %}
+                                <span class="status-badge status-inactive">Inactive</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="text-end" style="width:220px;">
+
+                                <!-- Edit Product (Step 1) -->
+                                <a href="{% url 'cadmin:edit_box_first' data.box.id %}"
+                                    class="btn btn-sm btn-light me-1" title="Edit Product">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+
+                                <!-- Edit Images (Step 3) -->
+                                <a href="{% url 'cadmin:edit_box_third' data.box.id %}"
+                                    class="btn btn-sm btn-light me-1" title="Edit Images">
+                                    <i class="fas fa-image"></i>
+                                </a>
+
+                                <!-- Delete Product -->
+                                <form action="{% url 'cadmin:box_full_delete' data.box.id %}" method="POST"
+                                    class="d-inline">
                                     {% csrf_token %}
-                                    <a href="admin-products-box-types-add.html" class="btn btn-sm btn-light me-1"
-                                        title="Edit"><i class="fas fa-edit"></i></a>
-                                    <button class="btn btn-sm btn-light text-danger" type="submit" title="Delete"><i
-                                            class="fas fa-trash"></i></button>
+                                    <button class="btn btn-sm btn-light text-danger" title="Delete Product">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </form>
                             </td>
                         </tr>
-                        {% endfor %}
+
+                        <!-- ===============================
+                     VARIANTS (SIZES)
+                ================================ -->
+                        <tr>
+                            <td colspan="4" class="p-0">
+                                <table class="table table-bordered mb-3 bg-white">
+                                    <thead class="bg-light small">
+                                        <tr>
+                                            <th style="width:150px;">Size</th>
+                                            <th style="width:150px;">Price</th>
+                                            <th style="width:150px;">Stock</th>
+                                            <th style="width:120px;">Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for size in data.sizes %}
+                                        <tr>
+                                            <td>{{ size.size_label }}</td>
+                                            <td class="fw-bold">₹{{ size.price }}</td>
+                                            <td>{{ size.stock }}</td>
+
+                                            <td>
+                                                {% if size.is_active %}
+                                                <span class="status-badge status-active">Active</span>
+                                                {% else %}
+                                                <span class="status-badge status-inactive">Inactive</span>
+                                                {% endif %}
+                                            </td>
+
+                                            <!-- Variant Actions -->
+                                            <td class="text-end">
+                                                <!-- Edit Variant (Step 2) -->
+                                                <a href="{% url 'cadmin:edit_box_second' size.id %}"
+                                                    class="btn btn-sm btn-outline-primary me-1" title="Edit Variant">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+
+                                                <!-- Delete Variant -->
+                                                <form action="{% url 'cadmin:box_delete' size.id %}" method="POST"
+                                                    class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        title="Delete Variant">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-3">
+                                                No variants added yet
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+
                         {% endfor %}
 
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- Pagination -->
-            <!-- <div class="d-flex justify-content-between align-items-center mt-4">
+
+        <!-- Pagination -->
+        <!-- <div class="d-flex justify-content-between align-items-center mt-4">
                 <p class="text-muted small mb-0">Showing 1 to 20 of 45 entries</p>
                 <nav>
                     <ul class="pagination mb-0">

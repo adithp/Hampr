@@ -288,8 +288,8 @@
                             <td data-label="Actions" class="text-end">
                                 <form action="{% url 'cadmin:product_category_delete' category.id %}" method="POST">
                                     {% csrf_token %}
-                                    <a href="" class="btn btn-sm btn-light me-1" title="Edit"><i
-                                            class="fas fa-edit"></i></a>
+                                    <a href="{% url 'cadmin:edit_product_category' category.slug %}"
+                                        class="btn btn-sm btn-light me-1" title="Edit"><i class="fas fa-edit"></i></a>
                                     <button class="btn btn-sm btn-light text-danger" title="Delete"><i
                                             class="fas fa-trash"></i></button>
                                 </form>

@@ -129,12 +129,14 @@
         <div class="px-3">
             <ul class="nav flex-column gap-2">
                 <li class="nav-item">
-                    <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark"><i class="fas fa-home me-2"></i>
+                    <a href="{% url 'cadmin:admin_dashboard' %}" class="nav-link text-dark"><i
+                            class="fas fa-home me-2"></i>
                         Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'cadmin:products_manage' %}" class="nav-link active text-primary fw-bold bg-light rounded"><i
-                            class="fas fa-box me-2"></i> Products</a>
+                    <a href="{% url 'cadmin:products_manage' %}"
+                        class="nav-link active text-primary fw-bold bg-light rounded"><i class="fas fa-box me-2"></i>
+                        Products</a>
                 </li>
             </ul>
             <hr>
@@ -213,7 +215,7 @@
 
                 <!-- Actions -->
                 <div class="d-flex gap-2 pt-3 border-top">
-                    <a href="" class="btn btn-light border flex-grow-1">Cancel</a>
+                    <a href="{% url 'cadmin:box_type_manage' %}" class="btn btn-light border flex-grow-1">Cancel</a>
                     <button type="submit" class="btn btn-primary-custom flex-grow-1">Save Box Type</button>
                 </div>
             </form>
@@ -270,7 +272,7 @@
             }
         });
     </script>
-    
+
 
 </body>
 

@@ -316,7 +316,7 @@ class ProductCategoryForm(forms.ModelForm):
             
             'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'categoryName','placeholder':"e.g., Dress, Electronics",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
             'description':forms.Textarea(attrs={'class':"form-control",'id':"categoryDescription",'row':'4', 'placeholder':"Describe this category...",'maxlength':'200','oninput':"updateCharCount(this)"}),
-            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus",'checked':True})
+            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus"})
         }
         
     def clean_name(self):
@@ -330,8 +330,12 @@ class ProductCategoryForm(forms.ModelForm):
         
         if not re.match(r'^[A-Za-z ]+$', name):
             raise ValidationError("Product Category name must contain only alphabets and spaces")
-        if ProductCategory.objects.filter(name__iexact=name).exists():
-            raise ValidationError("This product category already exists")
+        if self.instance:
+            if ProductCategory.objects.filter(name__iexact=name).exclude(slug=self.instance.slug).exists():
+                raise ValidationError("This product category already exists")
+        else:
+            if ProductCategory.objects.filter(name__iexact=name).exists():
+                raise ValidationError("This product category already exists")
         
         return name
         
@@ -498,14 +502,7 @@ class SizeForm(forms.ModelForm):
         fields = '__all__'
         
         
-    def clean_name(self):
-        name = self.cleaned_data['name']
-        
-        if not re.match(r"^[A-Za-z][A-Za-z\s-]*[A-Za-z]$"
-, name):
-            raise forms.ValidationError("Size name may only contain letters, spaces, or hyphens.")
-        
-        return name
+    
     
     def clean_sort_order(self):
         sort_order = self.cleaned_data['sort_order']

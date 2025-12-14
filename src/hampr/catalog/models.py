@@ -91,7 +91,7 @@ class Color(models.Model):
     
     
 class Size(models.Model):
-    name = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=32)
     sort_order = models.PositiveSmallIntegerField(default=0) 
     
 

@@ -394,8 +394,10 @@
             } else {
                 container.innerHTML = `
                     <label class="form-label small text-muted">Value</label>
+                    {{size_form.name.errors}}
                     <input type="text" name="size" class="form-control" placeholder="Small">
                     <label class="form-label small text-muted mt-3">Sort Order</label>
+                    {{size_form.sort_order.errors}}
                     <input type="text" name="sort_order" class="form-control" placeholder="1">
                 `;
             }
