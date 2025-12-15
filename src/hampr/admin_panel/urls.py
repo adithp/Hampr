@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory,AdminProductEdit,AdminProductSimpleVarientEdit
 
 
 
@@ -53,8 +53,12 @@ urlpatterns = [
     path('product_category_delete/<pk>/',AdminProductCategoryDelete.as_view(),name='product_category_delete'),
     
     path('product_add/',AdminProductAdd.as_view(),name='product_add'),
+    path('product_edit/<int:id>/',AdminProductEdit.as_view(),name='product_edit'),
     path('varient_or_not/',varient_or_not,name='varient_or_not'),
     path('product_varients_add/',AdminProductSimpleVarientAdd.as_view(),name='product_varients_add'),
+    
+    path('product_varient_edit/<int:id>/',AdminProductSimpleVarientEdit.as_view(),name='product_varient_edit'),
+    
     path('products_varients_add_extra/',AdminProductVarientAdd.as_view(),name='products_varients_add_extra'),
     path('varients_finshed/',varients_finshed,name='varients_finshed'),
     path('interior_product_manage/',AdminProductManage.as_view(),name='interior_product_manage'),
@@ -64,7 +68,7 @@ urlpatterns = [
     
     path('decoration_add/',AdminDecorationAdd.as_view(),name='decoration_add'),
     path('decoration_manage/',AdminDecortionManage.as_view(),name='decoration_manage'),
-    path('decoration_delete/<pk>/',AdminDecorationDelete.as_view(),name='decoration_delete')
+    path('decoration_delete/<pk>/',AdminDecorationDelete.as_view(),name='decoration_delete'),
     
     
     

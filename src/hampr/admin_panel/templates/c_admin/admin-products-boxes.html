@@ -271,18 +271,20 @@
                 </a>
             </div>
         </div>
-
-        <!-- Filters & Search
+        <!-- 
+        Filters & Search -->
         <div class="card table-card p-3 mb-4">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <div class="input-group">
+                    <form class="input-group" method="GET" action="">
                         <span class="input-group-text bg-light border-end-0"><i
                                 class="fas fa-search text-muted"></i></span>
-                        <input type="text" class="form-control border-start-0 bg-light" placeholder="Search by name...">
-                    </div>
+                        <input type="text" name="search" value="{{request.GET.search}}"
+                            class="form-control border-start-0 bg-light" placeholder="Search by name...">
+                        <button type="submit" hidden></button>
+                    </form>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <select class="form-select bg-light border-0">
                         <option selected>All Box Types</option>
                         <option>Standard Box</option>
@@ -306,9 +308,9 @@
                         <option>Active</option>
                         <option>Inactive</option>
                     </select>
-                </div>
+                </div> -->
             </div>
-        </div> -->
+        </div>
 
         <!-- Products Table -->
         <div class="card table-card p-4">
@@ -446,18 +448,29 @@
 
 
         <!-- Pagination -->
-        <!-- <div class="d-flex justify-content-between align-items-center mt-4">
-                <p class="text-muted small mb-0">Showing 1 to 20 of 45 entries</p>
-                <nav>
-                    <ul class="pagination mb-0">
-                        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active"><a class="page-link bg-gold border-gold" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link text-dark" href="#">Next</a></li>
-                    </ul>
-                </nav>
-            </div> -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <p class="text-muted small mb-0">   </p>
+            <nav>
+                <ul class="pagination mb-0" id="pagination">
+
+                    <li class="page-item" data-type="prev">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+
+                    {% for i in total_page_num %}
+                    <li class="page-item" data-page="{{ i }}">
+                        <a class="page-link" href="#">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    <li class="page-item" data-type="next">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+
+                </ul>
+
+            </nav>
+        </div>
         </div>
     </main>
 
@@ -477,6 +490,51 @@
             }
         });
     </script>
+    <script>
+        const pagination = document.getElementById('pagination');
+
+        // Get current page from URL
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(params.get('page')) || 1;
+
+        const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+        const totalPages = pageItems.length;
+
+        // Set active class on load
+        pageItems.forEach(item => {
+            if (parseInt(item.dataset.page) === currentPage) {
+                item.classList.add('active');
+            }
+        });
+
+        pagination.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const li = e.target.closest('.page-item');
+            if (!li) return;
+
+            // Page number click
+            if (li.dataset.page) {
+                goToPage(parseInt(li.dataset.page));
+            }
+
+            // Previous
+            if (li.dataset.type === 'prev' && currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+
+            // Next
+            if (li.dataset.type === 'next' && currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+
+        function goToPage(page) {
+            params.set('page', page);
+            window.location.search = params.toString();
+        }
+    </script>
+
 
 </body>
 

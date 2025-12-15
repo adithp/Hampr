@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.db import transaction
+from django.core.paginator import Paginator
 
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
@@ -104,13 +105,25 @@ class AdminBoxProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        boxes = HamperBox.objects.all()
+        
+        q =  self.request.GET.get('search','')
+        if q:
+            boxess = HamperBox.objects.filter(name__icontains=q)
+        else:
+            boxess = HamperBox.objects.all()
+        paginator = Paginator(boxess,2)
+        page_number = self.request.GET.get('page')
+        boxes = paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+       
         data = []
         for i in range(len(boxes)):
             image = BoxImage.objects.filter(is_thumbnail=True,box_id=boxes[i]).first()
             box_sizes = BoxSize.objects.filter(hamper_box=boxes[i])
             data.append({'box':boxes[i],'image':image,'sizes':box_sizes})
         context['datas'] = data
+        context['total_page_num'] = range(1,total_pages+1)
+
         return context
     
 class AdminBoxTypeManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
@@ -904,7 +917,7 @@ class AdminProductEditCategory(NeverCacheMixin,StaffRequiredMixin,View):
         return render(request,'c_admin/admin_products_interior_category_add.html',{'form':form,'edit':True})  
     
     
-class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
+class AdminProductEdit(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         categories = ProductCategory.objects.all()
         try:
@@ -912,9 +925,10 @@ class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
         except Product.DoesNotExist as e:
             print(e)
         form = ProductForm(instance=instance)
-        return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
+        return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form,'edit':True,'product':instance})
     
-    def post(self,request,*args, **kwargs):
+    def post(self,request,id,*args, **kwargs):
+        categories = ProductCategory.objects.all()
         try:
             instance = Product.objects.get(id=id)
         except Product.DoesNotExist as e:
@@ -926,11 +940,90 @@ class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
         if form.is_valid():
             
             obj = form.save()
-            
-            return redirect('cadmin:varient_or_not')
+            messages.success(request,'product Update successfull')
+            return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form,'edit':True,'product':instance})
             
         else:
             categories = ProductCategory.objects.all()
             
-            return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form})
+            return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form,'edit':True,'product':instance})
 
+
+
+        
+class AdminProductSimpleVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        try:
+            instance = ProductVariant.objects.get(id=id)
+        except ProductVariant.DoesNotExist as e:
+            print(e)
+        form = ProductSimpleVairentForm(instance=instance)
+        existing_images = ProductImage.objects.filter(product=instance)
+        return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})
+    def post(self,request,id,*args, **kwargs):
+       
+        try:
+            instance = ProductVariant.objects.get(id=id)
+        except ProductVariant.DoesNotExist as e:
+            print(e)
+        print(request.POST)
+        existing_images = ProductImage.objects.filter(product=instance)
+
+        form = ProductSimpleVairentForm(request.POST,instance=instance)
+        files = request.FILES.getlist('images')
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        existing_images_id = request.POST.getlist('existing_ids')
+        image_types = request.POST.getlist('image_types')
+        deleted_ids = request.POST.getlist('deleted_ids')
+        if len(orders) != len(primary) or len(orders) != len(image_types):
+            form.add_error(None, 'Image Upload has some issue')
+            return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})
+
+        if form.is_valid():
+            
+            try:
+                with transaction.atomic():
+                    form.save()
+                
+            
+                try:
+                    count = 0
+                    acount = 0
+                    for i in range(len(image_types)):
+                        if image_types[i] == 'existing':
+                            try:
+                                
+                                obj = ProductImage.objects.get(id=existing_images_id[count])
+                                count +=1
+                            except ProductImage.DoesNotExist as e:
+                                print(e)
+                            obj.display_order = orders[i]
+                            obj.is_thumbnail = True if primary[i] == '1' else False
+                            
+                        else:
+                            
+                            img_obj = ProductImage(product=instance,display_order = orders[i],is_thumbnail = True if primary[i] == '1' else False,image=files[acount])
+                            acount +=1
+                            img_obj.save()
+                            
+                    for i in deleted_ids:
+                        try:
+                            obj = ProductImage.objects.get(id=i)
+                            obj.delete()
+                        except ProductImage.DoesNotExist as e:
+                            print(e)
+                    messages.success(request,'Update succsessfull')               
+                    return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})
+                    
+                except Exception as e:
+                    print(e)
+                    print('here')
+            except:
+                pass
+            
+                
+                           
+        
+        
+        return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})

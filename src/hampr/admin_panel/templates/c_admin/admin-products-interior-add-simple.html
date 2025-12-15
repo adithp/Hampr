@@ -1,3 +1,5 @@
+
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -177,11 +179,18 @@
             <p class="text-muted small">Admin Portal</p>
         </div>
         <div class="px-3">
+            {% if edit %}
+                <a type="submit" href="{% url 'cadmin:interior_product_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
+                    <i class="fas fa-times me-2"></i>Cancel & Exit
+                </a>
+            {% else %}
             <form action="{% url 'cadmin:cancel_add_product' %}" method="POST">
+                {% csrf_token %}
                 <button type="submit" href="" class="btn btn-outline-secondary w-100 btn-sm">
                     <i class="fas fa-times me-2"></i>Cancel & Exit
                 </button>
             </form>
+            {% endif %}
 
         </div>
     </nav>
@@ -193,7 +202,7 @@
                     <li class="breadcrumb-item"><a class="text-muted" style="text-decoration: none;">Products</a></li>
                     <li class="breadcrumb-item"><a class="text-muted" style="text-decoration: none;">Interior Items</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Add Simple Product</li>
+                    <li class="breadcrumb-item active" aria-current="page">{% if edit %}Edit {% else %}Add {% endif %} Simple Product</li>
                 </ol>
             </nav>
             <!-- <a href="admin-products-interior-variant-selection.html" class="text-decoration-none text-muted small">
@@ -201,8 +210,39 @@
             </a> -->
         </div>
 
-        <h2 class="fw-bold">Add New Interior Product</h2>
+        <h2 class="fw-bold">{% if edit %}Edit {% else %}Add New  {% endif %} Interior Product</h2>
         <p class="text-muted mb-4">Step 2: Inventory & Images (No Variants)</p>
+{% if messages %}
+<div class="mb-3">
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% elif message.tags == 'error' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% elif message.tags == 'warning' %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% else %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 
         <div class="card form-card p-4">
             <form id="productForm" action="" method="POST" enctype="multipart/form-data">
@@ -288,10 +328,13 @@
                     </div>
 
                     <div class="col-12 mt-4 d-flex justify-content-between">
-                        <!-- <a class="btn btn-secondary px-4" href="">
+                        <div>
+                            <a class="btn btn-secondary px-4" href="{% url 'cadmin:interior_product_manage' %}">
                             <i class="fas fa-arrow-left me-2"></i> Back
-                        </a> -->
+                        </a>
                         <button type="submit" class="btn btn-success px-4">Add Product</button>
+                        </div>
+                         
                     </div>
                 </div>
             </form>
@@ -322,208 +365,284 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+/* =====================================================
+   1) EXISTING IMAGES FROM BACKEND (EDIT MODE)
+===================================================== */
+const existingImagesData = [
+    {% if existing_images %}
+    {% for img in existing_images %}
+    {
+        id: "{{ img.id }}",
+        src: "{{ img.image.url }}",
+        order: {{ img.display_order }},
+        isThumbnail: {{ img.is_thumbnail|yesno:"true,false" }},
+        isExisting: true,
+        file: null
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    {% endif %}
+];
 
-    <script>
-        // Shared state
-        let cropper = null;
-        let currentCropInput = null;
-        let currentVariantId = 'single';
-        let uploadedImages = []; // global gallery: [{id,file,src,order,isThumbnail}]
-        const maxImages = 10;
+/* =====================================================
+   2) SHARED STATE
+===================================================== */
+let cropper = null;
+let uploadedImages = [...existingImagesData];
+let deletedIds = [];
+const maxImages = 10;
 
-        const cropModalEl = document.getElementById('cropModal');
-        const cropModal = new bootstrap.Modal(cropModalEl);
-        const cropImage = document.getElementById('cropImage');
+const cropModalEl = document.getElementById('cropModal');
+const cropModal = new bootstrap.Modal(cropModalEl);
+const cropImage = document.getElementById('cropImage');
 
-        // Restore step1 data (if present)
-        document.addEventListener('DOMContentLoaded', () => {
-            const stored = localStorage.getItem('tempInteriorProduct');
-            if (stored) {
-                const data = JSON.parse(stored);
-                document.getElementById('hiddenName').value = data.name || '';
-                document.getElementById('hiddenBrand').value = data.brand || '';
-                document.getElementById('hiddenCategory').value = data.category || '';
-                document.getElementById('hiddenDescription').value = data.description || '';
-                document.getElementById('hiddenFeatured').value = data.featured || '';
-                document.getElementById('hiddenStatus').value = data.status || '';
-            }
-        });
+/* =====================================================
+   3) INIT
+===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    refreshGallery();
+});
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
+/* =====================================================
+   4) SIDEBAR
+===================================================== */
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+}
 
-        // ---------- Crop + add to global gallery ----------
-        function initCrop(input, variantId) {
-            if (!input.files || !input.files[0]) return;
-            currentCropInput = input;
-            // Always single here
-            currentVariantId = 'single';
+/* =====================================================
+   5) IMAGE CROPPER (UNCHANGED)
+===================================================== */
+function initCrop(input) {
+    if (!input.files || !input.files[0]) return;
 
-            const file = input.files[0];
-            if (!file.type.startsWith('image/')) {
-                alert('Please upload an image file.');
-                input.value = '';
-                return;
-            }
+    const file = input.files[0];
 
-            if (uploadedImages.length >= maxImages) { alert('Max ' + maxImages + ' images allowed'); input.value = ''; return; }
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file.');
+        input.value = '';
+        return;
+    }
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                cropImage.src = e.target.result;
-                cropModal.show();
-                if (cropper) { cropper.destroy(); cropper = null; }
-                cropModalEl.addEventListener('shown.bs.modal', () => {
-                    cropper = new Cropper(cropImage, { aspectRatio: 1, viewMode: 1, autoCropArea: 1 });
-                }, { once: true });
-            };
-            reader.readAsDataURL(file);
-            input.value = '';
-        }
+    if (uploadedImages.length >= maxImages) {
+        alert('Max ' + maxImages + ' images allowed');
+        input.value = '';
+        return;
+    }
 
-        document.getElementById('cropBtn').addEventListener('click', () => {
-            if (!cropper) return;
-            cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob((blob) => {
-                if (!blob) return;
-                const id = Date.now() + Math.random();
-                const file = new File([blob], `image_${id}.jpg`, { type: 'image/jpeg' });
-                const src = URL.createObjectURL(file);
+    const reader = new FileReader();
+    reader.onload = e => {
+        cropImage.src = e.target.result;
+        cropModal.show();
 
-                const order = uploadedImages.length + 1;
-                const isFirst = uploadedImages.length === 0;
-                uploadedImages.push({ id, file, src, order, isThumbnail: isFirst });
-                refreshGallery();
+        if (cropper) cropper.destroy();
 
-                cropModal.hide();
-                if (cropper) { cropper.destroy(); cropper = null; }
-            }, 'image/jpeg', 0.9);
-        });
-
-        // Refresh global gallery preview
-        function refreshGallery() {
-            const container = document.getElementById('single-thumbs');
-            container.innerHTML = '';
-            if (!uploadedImages.length) return;
-            uploadedImages.sort((a, b) => a.order - b.order);
-
-            uploadedImages.forEach(img => {
-                const wrap = document.createElement('div');
-                wrap.className = 'variant-img-wrapper text-center';
-
-                const imageEl = document.createElement('img');
-                imageEl.src = img.src;
-                imageEl.className = 'variant-thumb mb-1 rounded border';
-
-                // primary badge
-                if (img.isThumbnail) {
-                    const badge = document.createElement('div');
-                    badge.className = 'primary-badge';
-                    badge.innerText = 'Primary';
-                    wrap.appendChild(badge);
-                }
-
-                // buttons row
-                const btns = document.createElement('div');
-                btns.className = 'd-flex gap-1 justify-content-center mt-1';
-
-                const setPrimary = document.createElement('button');
-                setPrimary.type = 'button';
-                setPrimary.className = 'btn btn-sm btn-light';
-                setPrimary.title = 'Set primary';
-                setPrimary.innerHTML = '<i class="fas fa-image"></i>';
-                setPrimary.onclick = () => { uploadedImages.forEach(i => i.isThumbnail = (i.id === img.id)); refreshGallery(); };
-
-                const del = document.createElement('button');
-                del.type = 'button';
-                del.className = 'btn btn-sm btn-danger';
-                del.title = 'Delete';
-                del.innerHTML = '<i class="fas fa-trash"></i>';
-                del.onclick = () => {
-                    if (img.src) URL.revokeObjectURL(img.src);
-                    uploadedImages = uploadedImages.filter(i => i.id !== img.id);
-                    uploadedImages.forEach((it, idx) => it.order = idx + 1);
-                    if (uploadedImages.length > 0 && !uploadedImages.some(i => i.isThumbnail)) uploadedImages[0].isThumbnail = true;
-                    refreshGallery();
-                };
-
-                btns.appendChild(setPrimary);
-                btns.appendChild(del);
-
-                // order control
-                const orderDiv = document.createElement('div');
-                orderDiv.className = 'order-input-container';
-                const small = document.createElement('small');
-                small.className = 'text-muted fw-bold';
-                small.innerText = 'Order:';
-                const orderInput = document.createElement('input');
-                orderInput.type = 'number';
-                orderInput.className = 'form-control form-control-sm w-50 text-center';
-                orderInput.min = '1';
-                orderInput.max = String(maxImages);
-                orderInput.value = img.order;
-                orderInput.onchange = () => {
-                    let v = parseInt(orderInput.value) || 1;
-                    if (v < 1) v = 1; if (v > maxImages) v = maxImages;
-                    img.order = v;
-                    uploadedImages.sort((a, b) => a.order - b.order);
-                    uploadedImages.forEach((it, idx) => it.order = idx + 1);
-                    refreshGallery();
-                };
-                orderDiv.appendChild(small);
-                orderDiv.appendChild(orderInput);
-
-                wrap.appendChild(imageEl);
-                wrap.appendChild(btns);
-                wrap.appendChild(orderDiv);
-
-                container.appendChild(wrap);
+        cropModalEl.addEventListener('shown.bs.modal', () => {
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1
             });
-        }
+        }, { once: true });
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+}
 
-        // On submit: turn file objects into actual file inputs, include orders + primary flags
-        document.getElementById('productForm').addEventListener('submit', function (e) {
-            // Normalize orders
-            uploadedImages.sort((a, b) => a.order - b.order);
-            uploadedImages.forEach((it, idx) => it.order = idx + 1);
+/* =====================================================
+   6) CROP & SAVE
+===================================================== */
+document.getElementById('cropBtn').addEventListener('click', () => {
+    if (!cropper) return;
 
-            // Remove previously appended dynamic inputs
-            this.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
+    cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob(blob => {
+        const id = Date.now() + Math.random();
+        const file = new File([blob], `image_${id}.jpg`, { type: 'image/jpeg' });
 
-            // Append global images
-            uploadedImages.forEach(img => {
-                const dt = new DataTransfer();
-                dt.items.add(img.file);
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.name = 'images'; // backend: request.FILES.getlist('images')
-                fileInput.files = dt.files;
-                fileInput.classList.add('dynamic-image-input', 'd-none');
-
-                const orderInput = document.createElement('input');
-                orderInput.type = 'hidden';
-                orderInput.name = 'orders';
-                orderInput.value = img.order;
-                orderInput.classList.add('dynamic-image-input');
-
-                const primaryInput = document.createElement('input');
-                primaryInput.type = 'hidden';
-                primaryInput.name = 'primary';
-                primaryInput.value = img.isThumbnail ? '1' : '0';
-                primaryInput.classList.add('dynamic-image-input');
-
-                this.appendChild(fileInput);
-                this.appendChild(orderInput);
-                this.appendChild(primaryInput);
-            });
-
-            // allow normal post to continue
+        uploadedImages.push({
+            id,
+            src: URL.createObjectURL(file),
+            order: uploadedImages.length + 1,
+            isThumbnail: uploadedImages.length === 0,
+            isExisting: false,
+            file
         });
 
-        // bfcache safety
-        window.addEventListener('pageshow', (event) => { if (event.persisted) location.reload(); });
+        cropModal.hide();
+        cropper.destroy();
+        cropper = null;
 
-    </script>
+        refreshGallery();
+    }, 'image/jpeg', 0.9);
+});
+
+/* =====================================================
+   7) GALLERY RENDER
+===================================================== */
+function refreshGallery() {
+    const container = document.getElementById('single-thumbs');
+    container.innerHTML = '';
+
+    if (!uploadedImages.length) return;
+
+    uploadedImages.sort((a, b) => a.order - b.order);
+
+    uploadedImages.forEach(img => {
+        const wrap = document.createElement('div');
+        wrap.className = 'variant-img-wrapper text-center';
+
+        const imageEl = document.createElement('img');
+        imageEl.src = img.src;
+        imageEl.className = 'variant-thumb mb-1 rounded border';
+
+        if (img.isThumbnail) {
+            const badge = document.createElement('div');
+            badge.className = 'primary-badge';
+            badge.innerText = 'Primary';
+            wrap.appendChild(badge);
+        }
+
+        const btns = document.createElement('div');
+        btns.className = 'd-flex gap-1 justify-content-center mt-1';
+
+        const setPrimary = document.createElement('button');
+        setPrimary.type = 'button';
+        setPrimary.className = 'btn btn-sm btn-light';
+        setPrimary.innerHTML = '<i class="fas fa-image"></i>';
+        setPrimary.onclick = () => setThumbnail(img.id);
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'btn btn-sm btn-danger';
+        del.innerHTML = '<i class="fas fa-trash"></i>';
+        del.onclick = () => removeImage(img.id);
+
+        btns.appendChild(setPrimary);
+        btns.appendChild(del);
+
+        const orderDiv = document.createElement('div');
+        orderDiv.className = 'order-input-container';
+
+        const small = document.createElement('small');
+        small.className = 'text-muted fw-bold';
+        small.innerText = 'Order:';
+
+        const orderInput = document.createElement('input');
+        orderInput.type = 'number';
+        orderInput.className = 'form-control form-control-sm w-50 text-center';
+        orderInput.min = 1;
+        orderInput.max = maxImages;
+        orderInput.value = img.order;
+        orderInput.onchange = () => updateOrder(img.id, orderInput.value);
+
+        orderDiv.appendChild(small);
+        orderDiv.appendChild(orderInput);
+
+        wrap.appendChild(imageEl);
+        wrap.appendChild(btns);
+        wrap.appendChild(orderDiv);
+
+        container.appendChild(wrap);
+    });
+}
+
+/* =====================================================
+   8) IMAGE ACTIONS
+===================================================== */
+function setThumbnail(id) {
+    uploadedImages.forEach(i => i.isThumbnail = (i.id === id));
+    refreshGallery();
+}
+
+function updateOrder(id, value) {
+    const img = uploadedImages.find(i => i.id === id);
+    img.order = parseInt(value) || 1;
+
+    uploadedImages.sort((a, b) => a.order - b.order);
+    uploadedImages.forEach((i, idx) => i.order = idx + 1);
+
+    refreshGallery();
+}
+
+function removeImage(id) {
+    const img = uploadedImages.find(i => i.id === id);
+
+    if (img.isExisting) deletedIds.push(img.id);
+
+    if (!img.isExisting && img.src.startsWith('blob:')) {
+        URL.revokeObjectURL(img.src);
+    }
+
+    uploadedImages = uploadedImages.filter(i => i.id !== id);
+
+    if (uploadedImages.length && !uploadedImages.some(i => i.isThumbnail)) {
+        uploadedImages[0].isThumbnail = true;
+    }
+
+    uploadedImages.forEach((i, idx) => i.order = idx + 1);
+    refreshGallery();
+}
+
+/* =====================================================
+   9) FORM SUBMIT (INCLUDES image_types LIST)
+===================================================== */
+document.getElementById('productForm').addEventListener('submit', function () {
+
+    this.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
+
+    uploadedImages.sort((a, b) => a.order - b.order);
+
+    uploadedImages.forEach((img, idx) => {
+
+        // 🔹 image type list (existing / new)
+        addHidden(this, 'image_types', img.isExisting ? 'existing' : 'new');
+
+        // existing image ids
+        if (img.isExisting) {
+            addHidden(this, 'existing_ids', img.id);
+        }
+
+        // new images
+        if (!img.isExisting && img.file) {
+            const dt = new DataTransfer();
+            dt.items.add(img.file);
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.name = 'images';
+            fileInput.files = dt.files;
+            fileInput.classList.add('dynamic-image-input', 'd-none');
+            this.appendChild(fileInput);
+        }
+
+        // order + primary
+        addHidden(this, 'orders', idx + 1);
+        addHidden(this, 'primary', img.isThumbnail ? '1' : '0');
+    });
+
+    // deleted images
+    deletedIds.forEach(id => addHidden(this, 'deleted_ids', id));
+});
+
+/* =====================================================
+   10) HELPER
+===================================================== */
+function addHidden(form, name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    input.classList.add('dynamic-image-input');
+    form.appendChild(input);
+}
+
+/* =====================================================
+   11) BFCache SAFETY
+===================================================== */
+
+</script>
+
+
 </body>
 
 </html>

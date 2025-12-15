@@ -408,7 +408,8 @@
                                 </a>
 
                                 <!-- EDIT PRODUCT -->
-                                <a href="" class="btn btn-sm btn-outline-primary me-1">
+                                <a href="{% url 'cadmin:product_edit' item.product.id %}"
+                                    class="btn btn-sm btn-outline-primary me-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
 
@@ -466,7 +467,8 @@
 
                                             <td class="text-end">
                                                 <!-- EDIT VARIANT -->
-                                                <a href="" class="btn btn-sm btn-outline-primary me-1">
+                                                <a href="{% if v.varient.color or v.varient.size %}#{% else %}{% url 'cadmin:product_varient_edit' v.varient.id %}{% endif %}"
+                                                    class="btn btn-sm btn-outline-primary me-1">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
