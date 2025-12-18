@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.db import transaction
 from django.core.paginator import Paginator
+from itertools import chain
 
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
@@ -73,6 +74,13 @@ class AdminUserManagement(NeverCacheMixin,StaffRequiredMixin,TemplateView):
         query = self.request.GET.get('q',{})
         if query:
             users = users.filter(Q(username__icontains=query) | Q(email__icontains=query))
+        
+        paginator = Paginator(users,8)
+        page_number = self.request.GET.get('page')
+        users =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+            
+        context['total_page_num'] = range(1,total_pages+1)
 
         context['users_list'] = users
         
@@ -92,12 +100,45 @@ class AdminBlockUser(StaffRequiredMixin,View):
         else:
             user.is_active = True
             user.save()
-        return redirect('cadmin:user_management')
-    
+        q = request.GET.get('search','')
+        page = request.GET.get('page','')
+        print(request.GET.urlencode)
+        print(q)
+        return redirect(reverse('cadmin:user_management')+ f"?search={q}&page={page}")
     
     
 class AdminProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/admin-products.html'
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for i in  BoxSize.objects.filter(stock__lt = 6):
+            i.item_type = 'Box'
+            data.append(i)
+        for i in  ProductVariant.objects.filter(stock__lt = 6):
+            i.item_type = 'Interior'
+            data.append(i)
+        for i in Decoration.objects.filter(stock__lt = 6):
+            i.item_type = 'Decor'
+            data.append(i)   
+        print(data)
+        
+        paginator = Paginator(data,2)
+        page_number = self.request.GET.get('pagelow')
+        low_products =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+            
+        context['total_page_num'] = range(1,total_pages+1)
+
+        context['low_products'] = low_products
+        print(low_products)
+        
+        return context
+    
+    
+    
     
     
 class AdminBoxProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
@@ -111,7 +152,7 @@ class AdminBoxProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
             boxess = HamperBox.objects.filter(name__icontains=q)
         else:
             boxess = HamperBox.objects.all()
-        paginator = Paginator(boxess,2)
+        paginator = Paginator(boxess,4)
         page_number = self.request.GET.get('page')
         boxes = paginator.get_page(page_number)
         total_pages = paginator.num_pages
@@ -126,15 +167,25 @@ class AdminBoxProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
 
         return context
     
+    
 class AdminBoxTypeManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/admin-products-box-types.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        box_types = BoxType.objects.all()
-        context['box_types'] = box_types
-        return context
+        q =  self.request.GET.get('search','')
+        if q:
+            box_types = BoxType.objects.filter(name__icontains=q)
+        else:
+            box_types = BoxType.objects.all()
+        paginator = Paginator(box_types,4)
+        page_number = self.request.GET.get('page')
+        box_types = paginator.get_page(page_number)
+        total_pages = paginator.num_pages
     
+        context['box_types'] = box_types
+        context['total_page_num'] = range(1,total_pages+1)
+        return context
     
     
 class AdminBoxCategoryManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
@@ -142,11 +193,18 @@ class AdminBoxCategoryManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        box_categories = BoxCategory.objects.all()
+        q =  self.request.GET.get('search','')
+        if q:
+            box_categories = BoxCategory.objects.filter(name__icontains=q)
+        else:
+            box_categories = BoxCategory.objects.all()
+        paginator = Paginator(box_categories,4)
+        page_number = self.request.GET.get('page')
+        box_categories = paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+        context['total_page_num'] = range(1,total_pages+1)
         context['box_categories'] = box_categories
         return context
-    
-
     
     
 class AdminBoxTypeItemAdd(NeverCacheMixin,StaffRequiredMixin,View):
@@ -208,7 +266,6 @@ class AdminBoxCategoryItemAdd(NeverCacheMixin,StaffRequiredMixin,View):
                     
         else:
             return render(request,'c_admin/admin-products-box-categories-add.html',{'form':form})
-    
     
     
 class AdminBoxProductsAddItem(NeverCacheMixin,StaffRequiredMixin,View):
@@ -283,9 +340,7 @@ def productBox_adding_cancel(request):
     box.delete()
     return redirect('cadmin:box_manage')
 
-
-    
-    
+   
 class AdminBoxProductsAddItemThird(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
         if not request.session.get('product_add_second_stage_id',{}):
@@ -330,8 +385,7 @@ class AdminBoxProductsAddItemThird(NeverCacheMixin,StaffRequiredMixin,View):
         del request.session['product_add_second_stage_id'] 
         return redirect('cadmin:box_manage')
     
-    
-    
+      
 class AdminProductAddCategory(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
         
@@ -354,18 +408,38 @@ class AdminProductCategoryManage(NeverCacheMixin,StaffRequiredMixin,TemplateView
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product_categories = ProductCategory.objects.all()
+        q =  self.request.GET.get('search','')
+        if q:
+            product_categories = ProductCategory.objects.filter(name__icontains=q)
+        else:
+            product_categories = ProductCategory.objects.all()          
+        paginator = Paginator(product_categories,4)
+        page_number = self.request.GET.get('page')
+        product_categories =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+        context['total_page_num'] = range(1,total_pages+1)
         context['product_categories'] = product_categories
         return context
+    
+    
+     
         
-        
+
 class AdminProductManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/admin-products-interior.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        products = Product.objects.all()
+        q =  self.request.GET.get('search','')
+        if q:
+            products = Product.objects.filter(name__icontains=q)
+        else:
+             products = Product.objects.all()
+        paginator = Paginator(products,4)
+        page_number = self.request.GET.get('page')
+        products =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+        context['total_page_num'] = range(1,total_pages+1)
         data = [
             
         ]
@@ -376,6 +450,11 @@ class AdminProductManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
             })
         context['data'] = data
         return context
+    
+            
+        
+        
+      
         
         
 class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
@@ -445,8 +524,7 @@ class AdminProductSimpleVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
         else:
             print(form.errors)                
             return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form})
-
-    
+ 
 
 class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
@@ -552,11 +630,11 @@ class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
         
     
     
-
 def varient_or_not(request):
     if not request.session.get('pending_product_add_id'):
             return redirect('cadmin:product_add')
     return render(request,'c_admin/admin-products-interior-variant-selection.html')
+
 
 def varients_finshed(request):
     penidng_id = request.session['pending_product_add_id']
@@ -565,7 +643,8 @@ def varients_finshed(request):
         messages.error(request,"Minimum One Varient is mandatory")
         return redirect('cadmin:products_varients_add_extra')
     del request.session['pending_product_add_id']
-    return redirect('cadmin:products_manage')
+    return redirect('cadmin:interior_product_manage')
+    
            
 def cancel_add_product(req):
     if req.method == 'POST':
@@ -573,7 +652,6 @@ def cancel_add_product(req):
         product = Product.objects.filter(id=pending_id).first()
         del product
         return redirect('cadmin:interior_product_manage')
-    
     
     
 class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
@@ -585,8 +663,8 @@ class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
         print(request.POST)
         print(request.FILES)
         files = request.FILES.getlist('images')
-        orders = request.POST.getlist('image_order')
-        primary = request.POST.getlist('primary_image')
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
         
         form = DecorationForm(request.POST)
         if len(orders) != len(primary) or len(orders) != len(files):
@@ -612,7 +690,17 @@ class AdminDecortionManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        decoration = Decoration.objects.all()
+        q =  self.request.GET.get('search','')
+        if q:
+            decoration = Decoration.objects.filter(name__icontains=q)
+        else:
+             decoration = Decoration.objects.all()
+        paginator = Paginator(decoration,4)
+        page_number = self.request.GET.get('page')
+        decoration =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+        
+    
         data = [
             
         ]
@@ -622,6 +710,7 @@ class AdminDecortionManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
                 'image':DecorationImages.objects.filter(product=decoration[i],is_thumbnail=True).first()
             })
         context['data'] = data
+        context['total_page_num'] = range(1,total_pages+1)
         return context
     
     
@@ -630,14 +719,15 @@ class AdminBoxTypeDelete(DeleteView):
     success_url = reverse_lazy('cadmin:box_type_manage')
     
     
-    
 class AdminBoxCategoryDelete(DeleteView):
     model = BoxCategory 
     success_url = reverse_lazy('cadmin:box_category_manage')
     
+    
 class AdminMainProductDelete(DeleteView):
     model = HamperBox
     success_url = reverse_lazy('cadmin:box_manage')
+    
     
 class AdminBoxDelete(DeleteView):
     model = BoxSize
@@ -659,25 +749,22 @@ class AdminProductCategoryDelete(DeleteView):
     model = ProductCategory
     success_url = reverse_lazy('cadmin:products_category_list')
     
+    
 class AdminProductVarientDelete(DeleteView):
     model = ProductVariant
     success_url = reverse_lazy('cadmin:interior_product_manage')
+   
     
 class AdminProductDelete(DeleteView):
     model = Product
     success_url = reverse_lazy('cadmin:interior_product_manage')
     
-    
-    
-    
+ 
 class AdminDecorationDelete(DeleteView):
     model = Decoration
     success_url = reverse_lazy('cadmin:decoration_manage')
     
     
-
-
-
 class AdminBoxCategoryItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         box_category = BoxCategory.objects.get(id=id)
@@ -773,9 +860,7 @@ class AdminBoxTypeItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
         else:
             return render(request,'c_admin/admin-products-box-types-add.html',{'form':form})
         
-        
-        
-    
+         
 class AdminBoxProductsEditItem(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         
@@ -793,6 +878,7 @@ class AdminBoxProductsEditItem(NeverCacheMixin,StaffRequiredMixin,View):
         except HamperBox.DoesNotExist as e:
             print(e)
         form = HamperBoxForm(request.POST,instance=hamper_box)
+        print(request.POST,request.FILES)
         print(form.is_valid())
         if form.is_valid():
             obj = form.save()
@@ -803,8 +889,7 @@ class AdminBoxProductsEditItem(NeverCacheMixin,StaffRequiredMixin,View):
         else:
             return render(request,'c_admin/admin-products-boxes-add-step1.html',{'form':form,'edit':True})
 
-        
-        
+             
 class AdminBoxProductsEditItemSecond(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         box_size = BoxSize.objects.get(id=id)
@@ -825,9 +910,7 @@ class AdminBoxProductsEditItemSecond(NeverCacheMixin,StaffRequiredMixin,View):
             return redirect('cadmin:box_manage')
         return render(request,'c_admin/admin-products-boxes-add-step2.html',{'form':form,'edit':True})
     
-    
-    
-    
+     
 class AdminBoxProductsEditItemThird(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         images = BoxImage.objects.filter(box_id=id)
@@ -893,7 +976,6 @@ class AdminBoxProductsEditItemThird(NeverCacheMixin,StaffRequiredMixin,View):
         return  render(request,'c_admin/admin-products-boxes-add-step3.html',context=context)
     
     
-    
 class AdminProductEditCategory(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,slug,*args, **kwargs):
         try:
@@ -949,8 +1031,6 @@ class AdminProductEdit(NeverCacheMixin,StaffRequiredMixin,View):
             return render(request,'c_admin/admin-products-interior-add.html',{'categories':categories,'form':form,'edit':True,'product':instance})
 
 
-
-        
 class AdminProductSimpleVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         try:
@@ -968,7 +1048,6 @@ class AdminProductSimpleVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
             print(e)
         print(request.POST)
         existing_images = ProductImage.objects.filter(product=instance)
-
         form = ProductSimpleVairentForm(request.POST,instance=instance)
         files = request.FILES.getlist('images')
         orders = request.POST.getlist('orders')
@@ -979,14 +1058,10 @@ class AdminProductSimpleVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
         if len(orders) != len(primary) or len(orders) != len(image_types):
             form.add_error(None, 'Image Upload has some issue')
             return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})
-
-        if form.is_valid():
-            
+        if form.is_valid():  
             try:
                 with transaction.atomic():
                     form.save()
-                
-            
                 try:
                     count = 0
                     acount = 0
@@ -999,10 +1074,8 @@ class AdminProductSimpleVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
                             except ProductImage.DoesNotExist as e:
                                 print(e)
                             obj.display_order = orders[i]
-                            obj.is_thumbnail = True if primary[i] == '1' else False
-                            
-                        else:
-                            
+                            obj.is_thumbnail = True if primary[i] == '1' else False 
+                        else: 
                             img_obj = ProductImage(product=instance,display_order = orders[i],is_thumbnail = True if primary[i] == '1' else False,image=files[acount])
                             acount +=1
                             img_obj.save()
@@ -1014,16 +1087,230 @@ class AdminProductSimpleVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
                         except ProductImage.DoesNotExist as e:
                             print(e)
                     messages.success(request,'Update succsessfull')               
-                    return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})
-                    
+                    return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})   
                 except Exception as e:
                     print(e)
                     print('here')
             except:
                 pass
-            
-                
-                           
-        
-        
         return render(request,'c_admin/admin-products-interior-add-simple.html',{'form':form,'existing_images':existing_images,'edit':True})
+
+class AdminProductVarientEdit(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        try:
+            instance = ProductVariant.objects.get(id=id)
+        except ProductVariant.DoesNotExist as e:
+            print(e)
+        color_form = ColorForm()
+        size_form = SizeForm()
+        form = ProductSimpleVairentForm(instance=instance)
+        if instance.color:
+            try:
+                color_form = ColorForm(instance=instance.color)
+            except Color.DoesNotExist as e:
+                print(e)
+        elif instance.size:
+            try:
+                size_form = SizeForm(instance=instance.size)
+            except Size.DoesNotExist as e:
+                print(e)
+        exsiting_images = ProductImage.objects.filter(product=instance)
+                
+        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+    
+    
+    def post(self,request,id,*args, **kwargs):
+        try:
+            instance = ProductVariant.objects.get(id=id)
+        except ProductVariant.DoesNotExist as e:
+            print(e)
+        color_form = ColorForm()
+        size_form = SizeForm()
+        form = ProductSimpleVairentForm(instance=instance)
+        if instance.color:
+            try:
+                color_form = ColorForm(instance=instance.color)
+            except Color.DoesNotExist as e:
+                print(e)
+        elif instance.size:
+            try:
+                size_form = SizeForm(instance=instance.size)
+            except Size.DoesNotExist as e:
+                print(e)
+        exsiting_images = ProductImage.objects.filter(product=instance)
+                
+        
+        
+        print(request.POST)
+        print(request.FILES)
+        
+        # return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+        
+        data = request.POST
+        form = ProductSimpleVairentForm(request.POST,instance=instance)
+        if request.POST.get('variant_type_variant-1') == 'Color':
+            colorhex = request.POST.get('variant_color_code_variant-1') 
+            color_name = request.POST.get('variant_color_variant-1')
+            color_form = ColorForm(data={'hex':colorhex,'name':color_name},instance=instance.color)
+         
+            if ProductVariant.objects.filter(product=instance.product,color__name__iexact=color_name).exclude(id=instance.id).exists():
+                        messages.error(request,'The Color Already added')
+                        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+            try:
+                with transaction.atomic():
+                    if color_form.is_valid():
+                        color = color_form.save()
+                        response =  self.updating_data(request=request,form=form,instance=instance,color=color,color_form=color_form)
+                        if response[0] == False:
+                            return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':response[1],'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+                        elif response[0] == True:
+                            messages.success(request,'update succsessfull')
+                            return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+                    else:
+                                    
+                        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':response,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+            except Exception as e:
+                 print("Error:", e)
+                 messages.error(request, "Something went wrong. Please try again.")
+                 return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+        else:
+            try:
+                with transaction.atomic():
+                    size_form = SizeForm(data={
+                        'name':request.POST.get('variant_size_variant-1'),
+                        'sort_order':int(request.POST.get('variant_size_order_variant-1'))
+                        
+                    },instance=instance.size)
+                    
+                    if ProductVariant.objects.filter(product=instance.product,size__name__iexact=request.POST.get('size')).exclude(id=instance.product.id).exists():
+                        messages.error(request,'The Size Already added')
+                        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+                    if size_form.is_valid():
+                        size_obj = size_form.save()
+                        response = self.updating_data(request=request,form=form,instance=instance,size=size_obj,size_form=size_form)
+                        if response[0] == False:
+                            return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':response[1],'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+                        elif response[0] == True:
+                            messages.success(request,'update succsessfull')
+                            return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True}) 
+                    else:
+                        print(size_form.errors)
+                        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+            except Exception as e:
+                 print("Error:", e)
+                 messages.error(request, "Something went wrong. Please try again.")
+                 return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form,'size_form':size_form,'exsiting_images':exsiting_images,'edit':True})
+            
+            
+    def updating_data(self,request,form,instance,color=None,size=None,color_form=None,size_form=None):
+        
+        
+        files = request.FILES.getlist('images')
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        image_types = request.POST.getlist('image_types')
+        deleted_ids = request.POST.getlist('deleted_ids')
+        existing_images = request.POST.getlist('existing_images')
+        if len(orders) != len(primary) or len(orders) != len(image_types):
+            form.add_error(None, 'Image Upload has some issue')
+            return [False,form]
+        
+        if form.is_valid():
+            form.save()     
+            try:
+                count =0 
+                file_count = 0
+                for i in range(len(image_types)):
+                    order = int(orders[i]) if orders[i] not in [None, ''] else (i + 1)
+                    if image_types[i] =='existing':
+                        try:
+                            img_obj = ProductImage.objects.get(id=existing_images[count])
+                            count+=1
+                        except ProductImage.DoesNotExist as e:
+                            print(e)
+                        img_obj.display_order = order
+                        img_obj.is_thumbnail = False if primary[i] == '0' else True
+                        img_obj.save()
+                    else:
+                        img_obj = ProductImage(product=instance,display_order=order,is_thumbnail=True if primary[i] == '1' else False,image=files[file_count] )
+                        file_count += 1
+                        img_obj.save()
+            except Exception as e:
+                print(e)
+                messages.error(request, "Something went wrong. Please try again.")
+            
+            return [True]
+        
+def redirect_to_add_varient(request,id):
+    request.session['pending_product_add_id'] = id
+    return redirect('cadmin:varient_or_not')
+
+
+class AdminDecorationEdit(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        try:
+            instance = Decoration.objects.get(id=id)
+        except Decoration.DoesNotExist as e:
+            print(e)
+        exsiting_images = DecorationImages.objects.filter(product=instance)
+        form = DecorationForm(instance=instance)
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'exsiting_images':exsiting_images,'edit':True})
+    
+    def post(self,request,id,*args, **kwargs):
+        print(request.POST,request.FILES)
+        try:
+            instance = Decoration.objects.get(id=id)
+        except Decoration.DoesNotExist as e:
+            print(e)
+        exsiting_images = DecorationImages.objects.filter(product=instance)
+        form = DecorationForm(request.POST,instance=instance)
+       
+        print(request.POST)
+        print(request.FILES)
+        files = request.FILES.getlist('images')
+        orders = request.POST.getlist('orders')
+        primary = request.POST.getlist('primary')
+        deleted_ids = request.POST.getlist('deleted_ids')
+        seq_types = request.POST.getlist('seq_types')
+        existing_ids = request.POST.getlist('existing_ids')
+    
+        if len(orders) != len(primary) or len(orders) != len(seq_types):
+            form.add_error(None, 'Image Upload has some issue')
+            return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'exsiting_images':exsiting_images,'edit':True})
+        if form.is_valid():
+            obj = form.save()
+            
+            try:
+                count = 0
+                acount = 0
+                for i in range(len(seq_types)):
+                    if seq_types[i] == 'existing':
+                        try:
+                            img_obj = DecorationImages.objects.get(id=existing_ids[count])
+                        except DecorationImages.DoesNotExist as e:
+                            print(e)
+                        count += 1
+                        img_obj.display_order = orders[i]
+                        img_obj.is_thumbnail = True if primary[i] == '1' else False
+                        img_obj.save()
+                    else:
+                        
+                        img_obj = DecorationImages(product=instance,display_order=int(orders[i]),is_thumbnail=True if primary[i] == '1' else False,image=files[acount] )
+                        
+                        img_obj.save()
+                        acount += 1
+                for i in deleted_ids:
+                    try:
+                        img_obj = DecorationImages.objects.get(id=i)
+                        print(i)
+                        img_obj.delete()
+                    except DecorationImages.DoesNotExist as e:
+                        print(e)
+                        
+                
+            except Exception as e:
+                print(e)
+                messages.error(request, "Something went wrong. Please try again.")
+            
+            return redirect('cadmin:decoration_manage')
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'exsiting_images':exsiting_images,'edit':True})

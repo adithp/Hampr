@@ -145,7 +145,7 @@
             <p class="text-muted small">Admin Portal</p>
         </div>
         <div class="px-3">
-            <form action="{% url 'cadmin:cancel_add_product' %}" method="POST">
+            <form action="{% url 'cadmin:interior_product_manage' %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-secondary w-100 btn-sm">
                     <i class="fas fa-times me-2"></i>Cancel & Exit
@@ -161,12 +161,15 @@
                     <li class="breadcrumb-item"><a style="text-decoration: none;" class="text-muted">Products</a></li>
                     <li class="breadcrumb-item"><a style="text-decoration: none;" class="text-muted">Interior Items</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Add Variants</li>
+                   
+                    
+                    <li class="breadcrumb-item active" aria-current="page"> {% if edit %}Edit{% else %}Add{% endif %} Variants</li>
+                    
                 </ol>
             </nav>
         </div>
 
-        <h2 class="fw-bold">Add New Interior Product</h2>
+        <h2 class="fw-bold">{% if edit %}Edit{% else %}Add New{%  endif %} Interior Product</h2>
         <p class="text-muted mb-4">Step 2: Inventory, Variants & Images</p>
 
         <div class="card form-card p-4">
@@ -203,18 +206,34 @@
                         <!-- Type select: user chooses, we do NOT auto-select on server -->
                         <div class="col-md-4">
                             <label class="form-label small text-muted">Type</label>
-                            <select name="variant_type_variant-1" class="form-select variant-type-select"
-                                onchange="updateVariantInput(this,'variant-1')">
-                                <option value="Color">Color</option>
-                                <option value="Size">Size</option>
-                            </select>
+                            <select name="variant_type_variant-1"
+        class="form-select variant-type-select"
+        id="variantTypeSelect"
+        onchange="updateVariantInput(this,'variant-1')">
+
+    <option value="Color"
+        {% if form.instance.color %}selected{% endif %}>
+        Color
+    </option>
+
+    <option value="Size"
+        {% if form.instance.size %}selected{% endif %}>
+        Size
+    </option>
+</select>
                             {% if form.variant_type.errors %}
                             <div class="text-danger small">{{ form.variant_type.errors }}</div>
                             {% endif %}
                         </div>
 
                         <!-- Value container (default shows Color inputs, JS will switch to Size if selected) -->
-                        <div class="col-md-4" id="variant-value-container-variant-1">
+                        <div class="col-md-4"
+     id="variant-value-container-variant-1"
+    data-size-label="{{ size_form.instance.name|default:'' }}"
+
+     data-size-order="{{ size_form.instance.sort_order|default:'' }}"
+     data-color-name="{{ color_form.instance.name|default:'' }}"
+     data-color-hex="{{ color_form.instance.hex|default:'#000000' }}">
                             <label class="form-label small text-muted">Color Name & Code</label>
                             <div class="input-group">
                                 <span class="input-group-text p-1">
@@ -292,8 +311,14 @@
 
                                 <label class="variant-img-upload-box btn btn-outline-secondary border-dashed">
                                     <!-- single file input; JS will allow adding multiple images via crop -->
-                                    <input type="file" accept="image/*" hidden id="img-input-variant-1"
-                                        class="img-input">
+                                    {% comment %} <input type="file" accept="image/*" hidden id="img-input-variant-1"
+                                        class="img-input"> {% endcomment %}
+                                        <input type="file"
+       accept="image/*"
+       hidden
+       id="img-input-variant-1"
+       onchange="initCrop(this)">
+
                                     <i class="fas fa-plus mb-1"></i>
                                     <small>Add</small>
                                 </label>
@@ -307,11 +332,20 @@
                 </div>
 
                 <div class="col-12 mt-4 d-flex justify-content-between">
+                    {% if edit  %}
+                    <div>
+                        <!-- We only allow one variant at a time (Save to add another) -->
+                        <a class="btn btn-secondary" href="{% url 'cadmin:interior_product_manage' %}">Cancel</a>
+                        <button type="submit" class="btn btn-success px-4">Save Variant</button>
+                        
+                    </div>
+                    {% else %}
                     <div>
                         <!-- We only allow one variant at a time (Save to add another) -->
                         <button type="submit" class="btn btn-success px-4">Save Variant</button>
                         <a class="btn btn-secondary" href="{% url 'cadmin:varients_finshed' %}">Finish</a>
                     </div>
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -343,221 +377,300 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script>
-        /* --------------------
-         PAGE STATE
-        -------------------- */
+
+function updateVariantInput(selectEl, variantKey) {
+    const container = document.getElementById(`variant-value-container-${variantKey}`);
+    if (!container) return;
+
+    if (selectEl.value === 'Size') {
+        container.innerHTML = `
+            <label class="form-label small text-muted">Size Label</label>
+            <input type="text"
+                   name="variant_size_${variantKey}"
+                   class="form-control mb-2"
+                   value="${container.dataset.sizeLabel || ''}"
+                   placeholder="Small">
+
+            <label class="form-label small text-muted">Sort Order</label>
+            <input type="number"
+                   name="variant_size_order_${variantKey}"
+                   class="form-control"
+                   value="${container.dataset.sizeOrder || ''}"
+                   placeholder="1">
+        `;
+    } else {
+        container.innerHTML = `
+            <label class="form-label small text-muted">Color Name & Code</label>
+            <div class="input-group">
+                <span class="input-group-text p-1">
+                    <input type="color"
+                           name="variant_color_code_${variantKey}"
+                           class="form-control form-control-color border-0"
+                           value="${container.dataset.colorHex || '#000000'}">
+                </span>
+                <input type="text"
+                       name="variant_color_${variantKey}"
+                       class="form-control"
+                       value="${container.dataset.colorName || ''}"
+                       placeholder="Red">
+            </div>
+        `;
+    }
+}
+
+  /* =====================================================
+           1) EXISTING VARIANT IMAGES (EDIT MODE)
+        ===================================================== */
+        const existingImagesData = [
+            {% if exsiting_images %}
+        {% for img in exsiting_images %}
+        {
+            id: "{{ img.id }}",
+                src: "{{ img.image.url }}",
+                    order: {{ img.display_order}},
+            isThumbnail: {% if img.is_thumbnail %}true{% else %}false{% endif %},
+            isExisting: true,
+                file: null
+        } {% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        {% endif %}
+];
+
+        /* =====================================================
+           2) SHARED STATE
+        ===================================================== */
         let cropper = null;
-        let currentCropInput = null;
-        let currentVariantKey = 'variant-1';
-        let variantImages = {}; // variant-1 => [{id,file,src,order,isThumbnail}, ...]
-        const maxImages = Number("{{ max_images|default:"10" }}");
+        let uploadedImages = [...existingImagesData];
+        let deletedIds = [];
+        const maxImages = Number("{{ max_images|default:'10' }}");
 
-        const cropModalEl = document.getElementById("cropModal");
+        const cropModalEl = document.getElementById('cropModal');
         const cropModal = new bootstrap.Modal(cropModalEl);
-        const cropImage = document.getElementById("cropImage");
+        const cropImage = document.getElementById('cropImage');
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // initialize array
-            variantImages[currentVariantKey] = [];
+        /* =====================================================
+           3) INIT
+        ===================================================== */
+   document.addEventListener('DOMContentLoaded', () => {
+    refreshGallery();
 
-            // wire up the single file input
-            const input = document.getElementById('img-input-variant-1');
-            if (input) input.addEventListener('change', (ev) => initCrop(input, currentVariantKey));
+    const select = document.getElementById('variantTypeSelect');
+    if (select) {
+        updateVariantInput(select, 'variant-1');
+    }
+});
 
-            // cleanup cropper when modal closes
-            cropModalEl.addEventListener('hidden.bs.modal', () => {
-                if (cropper) {
-                    cropper.destroy();
-                    cropper = null;
-                }
-                cropImage.src = '';
-            });
-        });
 
-        /* --------------------
-         TYPE switch: color <-> size
-        -------------------- */
-        function updateVariantInput(selectEl, variantKey) {
-            const container = document.getElementById(`variant-value-container-${variantKey}`);
-            if (!container) return;
 
-            if (selectEl.value === 'Color') {
-                container.innerHTML = `
-                    <label class="form-label small text-muted">Color Name & Code</label>
-                    <div class="input-group">
-                        <span class="input-group-text p-1">
-                            <input name="variant_color_code_${variantKey}" type="color" class="form-control form-control-color border-0" value="#000000">
-                        </span>
-                        <input name="variant_color_${variantKey}" type="text" class="form-control" placeholder="e.g. Red">
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <label class="form-label small text-muted">Value</label>
-                    {{size_form.name.errors}}
-                    <input type="text" name="size" class="form-control" placeholder="Small">
-                    <label class="form-label small text-muted mt-3">Sort Order</label>
-                    {{size_form.sort_order.errors}}
-                    <input type="text" name="sort_order" class="form-control" placeholder="1">
-                `;
-            }
+        /* =====================================================
+           4) SIDEBAR (OPTIONAL)
+        ===================================================== */
+        function toggleSidebar() {
+            document.getElementById('sidebar')?.classList.toggle('active');
         }
 
-        /* --------------------
-         IMAGE CROP + PREVIEW
-        -------------------- */
-        function initCrop(inputEl, variantKey) {
-            if (!inputEl.files || !inputEl.files[0]) return;
-            const file = inputEl.files[0];
+        /* =====================================================
+           5) IMAGE CROPPER
+        ===================================================== */
+        function initCrop(input) {
+            if (!input.files || !input.files[0]) return;
 
-            // basic image check
+            const file = input.files[0];
+
             if (!file.type.startsWith('image/')) {
-                alert('Only image files are allowed.');
-                inputEl.value = '';
+                alert('Please upload an image file.');
+                input.value = '';
                 return;
             }
 
-            // limit
-            if (variantImages[variantKey].length >= maxImages) {
-                alert(`Maximum ${maxImages} images allowed for this variant.`);
-                inputEl.value = '';
+            if (uploadedImages.length >= maxImages) {
+                alert(`Maximum ${maxImages} images allowed`);
+                input.value = '';
                 return;
             }
 
-            currentCropInput = inputEl;
             const reader = new FileReader();
             reader.onload = e => {
                 cropImage.src = e.target.result;
                 cropModal.show();
 
-                cropModalEl.addEventListener("shown.bs.modal", () => {
-                    if (cropper) cropper.destroy();
+                if (cropper) cropper.destroy();
+
+                cropModalEl.addEventListener('shown.bs.modal', () => {
                     cropper = new Cropper(cropImage, {
                         aspectRatio: 1,
                         viewMode: 1,
-                        autoCropArea: 1,
+                        autoCropArea: 1
                     });
                 }, { once: true });
             };
+
             reader.readAsDataURL(file);
-            inputEl.value = '';
+            input.value = '';
         }
 
-        document.getElementById("cropBtn").addEventListener('click', () => {
+        /* =====================================================
+           6) CROP & ADD IMAGE
+        ===================================================== */
+        document.getElementById('cropBtn').addEventListener('click', () => {
             if (!cropper) return;
-            cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob(blob => {
-                const id = Date.now() + Math.floor(Math.random() * 1000);
-                const file = new File([blob], `image_${id}.jpg`, { type: 'image/jpeg' });
-                const src = URL.createObjectURL(file);
 
-                const arr = variantImages[currentVariantKey] || [];
-                arr.push({
-                    id, file, src,
-                    order: arr.length + 1,
-                    isThumbnail: arr.length === 0
-                });
-                variantImages[currentVariantKey] = arr;
+            cropper.getCroppedCanvas({ width: 800, height: 800 })
+                .toBlob(blob => {
+                    const id = Date.now() + Math.random();
+                    const file = new File([blob], `variant_${id}.jpg`, { type: 'image/jpeg' });
 
-                refreshVariantPreview(currentVariantKey);
+                    uploadedImages.push({
+                        id,
+                        src: URL.createObjectURL(file),
+                        order: uploadedImages.length + 1,
+                        isThumbnail: uploadedImages.length === 0,
+                        isExisting: false,
+                        file
+                    });
 
-                cropModal.hide();
-                if (cropper) { cropper.destroy(); cropper = null; }
-                cropImage.src = '';
-            });
+                    cropModal.hide();
+                    cropper.destroy();
+                    cropper = null;
+
+                    refreshGallery();
+                }, 'image/jpeg', 0.9);
         });
 
-        document.getElementById('cropCancelBtn').addEventListener('click', () => {
-            if (cropper) { cropper.destroy(); cropper = null; }
-            cropImage.src = '';
-        });
-
-        function refreshVariantPreview(variantKey) {
-            const thumbsId = `thumbs-${variantKey}`;
-            const container = document.getElementById(thumbsId);
-            if (!container) return;
+        /* =====================================================
+           7) RENDER GALLERY
+        ===================================================== */
+        function refreshGallery() {
+            const container = document.getElementById('thumbs-variant-1');
             container.innerHTML = '';
 
-            const arr = variantImages[variantKey] || [];
-            arr.forEach(img => {
+            if (!uploadedImages.length) return;
+
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
                 const wrap = document.createElement('div');
-                wrap.className = 'variant-img-wrapper';
-                wrap.innerHTML = `
-                    ${img.isThumbnail ? `<div class="primary-badge">Primary</div>` : ''}
-                    <img src="${img.src}" class="variant-thumb border rounded mb-1" />
-                    <div class="d-flex gap-1 justify-content-center">
-                        <button type="button" class="btn btn-sm btn-light" onclick="setPrimary('${variantKey}', ${img.id})"><i class="fas fa-image"></i></button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteImg('${variantKey}', ${img.id})"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
+                wrap.className = 'variant-img-wrapper text-center';
+
+                if (img.isThumbnail) {
+                    const badge = document.createElement('div');
+                    badge.className = 'primary-badge';
+                    badge.innerText = 'Primary';
+                    wrap.appendChild(badge);
+                }
+
+                const imageEl = document.createElement('img');
+                imageEl.src = img.src;
+                imageEl.className = 'variant-thumb border rounded mb-1';
+
+                const btns = document.createElement('div');
+                btns.className = 'd-flex gap-1 justify-content-center';
+
+                const primaryBtn = document.createElement('button');
+                primaryBtn.type = 'button';
+                primaryBtn.className = 'btn btn-sm btn-light';
+                primaryBtn.innerHTML = '<i class="fas fa-image"></i>';
+                primaryBtn.onclick = () => setPrimary(img.id);
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'btn btn-sm btn-danger';
+                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                delBtn.onclick = () => removeImage(img.id);
+
+                btns.appendChild(primaryBtn);
+                btns.appendChild(delBtn);
+
+                wrap.appendChild(imageEl);
+                wrap.appendChild(btns);
                 container.appendChild(wrap);
             });
         }
 
-        function setPrimary(variantKey, imgId) {
-            const arr = variantImages[variantKey] || [];
-            arr.forEach(i => i.isThumbnail = (i.id === imgId));
-            refreshVariantPreview(variantKey);
+        /* =====================================================
+           8) IMAGE ACTIONS
+        ===================================================== */
+        function setPrimary(id) {
+            uploadedImages.forEach(i => i.isThumbnail = (i.id === id));
+            refreshGallery();
         }
 
-        function deleteImg(variantKey, imgId) {
-            const arr = variantImages[variantKey] || [];
-            const remaining = arr.filter(i => i.id !== imgId);
-            const removed = arr.find(i => i.id === imgId);
-            if (removed && removed.src) URL.revokeObjectURL(removed.src);
+        function removeImage(id) {
+            const img = uploadedImages.find(i => i.id === id);
+            if (!img) return;
 
-            if (remaining.length && !remaining.some(i => i.isThumbnail)) remaining[0].isThumbnail = true;
-            variantImages[variantKey] = remaining;
-            refreshVariantPreview(variantKey);
+            if (img.isExisting) deletedIds.push(img.id);
+
+            if (!img.isExisting && img.src.startsWith('blob:')) {
+                URL.revokeObjectURL(img.src);
+            }
+
+            uploadedImages = uploadedImages.filter(i => i.id !== id);
+
+            if (uploadedImages.length && !uploadedImages.some(i => i.isThumbnail)) {
+                uploadedImages[0].isThumbnail = true;
+            }
+
+            uploadedImages.forEach((i, idx) => i.order = idx + 1);
+            refreshGallery();
         }
 
-        /* --------------------
-         FORM SUBMIT: attach files as input elements named exactly as backend expects
-            backend expects: images (list), orders (list), primary (list)
-        -------------------- */
-        document.getElementById("productForm").addEventListener("submit", function (ev) {
-            // remove previously added dynamic inputs
-            this.querySelectorAll(".dynamic-image-input").forEach(n => n.remove());
+        /* =====================================================
+           9) FORM SUBMIT (BACKEND COMPATIBLE)
+        ===================================================== */
+        document.getElementById('productForm').addEventListener('submit', function () {
 
-            const arr = variantImages[currentVariantKey] || [];
-            arr.forEach((img, index) => {
-                const dt = new DataTransfer();
-                dt.items.add(img.file);
+            this.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
 
-                // backend expects plain 'images' field (as you used in updating_data)
-                const f = document.createElement('input');
-                f.type = 'file';
-                f.name = 'images';
-                f.files = dt.files;
-                f.className = 'dynamic-image-input d-none';
+            uploadedImages.sort((a, b) => a.order - b.order);
 
-                const order = document.createElement('input');
-                order.type = 'hidden';
-                order.name = 'orders';
-                order.value = index + 1;
-                order.className = 'dynamic-image-input';
+            uploadedImages.forEach((img, idx) => {
 
-                const primary = document.createElement('input');
-                primary.type = 'hidden';
-                primary.name = 'primary';
-                primary.value = img.isThumbnail ? '1' : '0';
-                primary.className = 'dynamic-image-input';
+                // image type (existing / new)
+                addHidden(this, 'image_types', img.isExisting ? 'existing' : 'new');
 
-                this.appendChild(f);
-                this.appendChild(order);
-                this.appendChild(primary);
+                // existing image ids
+                if (img.isExisting) {
+                    addHidden(this, 'existing_images', img.id);
+                }
+
+                // new images
+                if (!img.isExisting && img.file) {
+                    const dt = new DataTransfer();
+                    dt.items.add(img.file);
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.name = 'images';
+                    fileInput.files = dt.files;
+                    fileInput.className = 'dynamic-image-input d-none';
+                    this.appendChild(fileInput);
+                }
+
+                // order & primary
+                addHidden(this, 'orders', idx + 1);
+                addHidden(this, 'primary', img.isThumbnail ? '1' : '0');
             });
 
-            // allow normal submit to continue
+            // deleted images
+            deletedIds.forEach(id => addHidden(this, 'deleted_ids', id));
         });
 
-        // small helper
-        function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            if (!sb) return;
-            if (sb.style.transform === 'translateX(-100%)') sb.style.transform = '';
-            else sb.style.transform = 'translateX(-100%)';
+        /* =====================================================
+           10) HELPER
+        ===================================================== */
+        function addHidden(form, name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            input.classList.add('dynamic-image-input');
+            form.appendChild(input);
         }
+        
     </script>
+    
+
 </body>
 
 </html>

@@ -32,8 +32,9 @@
         body {
             background-color: #f8f9fa;
         }
-        a{
-            text-decoration:none !important ;
+
+        a {
+            text-decoration: none !important;
         }
 
         .sidebar {
@@ -119,199 +120,288 @@
                 padding: 1rem;
             }
         }
+
+        /* ===============================
+   FORM ERROR STYLES
+   =============================== */
+
+        /* Django error list */
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0;
+        }
+
+        .errorlist li {
+            color: #dc3545;
+            /* Bootstrap danger red */
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Error icon before message */
+        .errorlist li::before {
+            content: "\f06a";
+            /* FontAwesome exclamation-circle */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: #dc3545;
+        }
+
+        /* Input field error highlight */
+        input.is-invalid,
+        textarea.is-invalid,
+        select.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.15);
+        }
+
+        /* Auto style Django fields when error exists */
+        .errorlist+input,
+        .errorlist+textarea,
+        .errorlist+select {
+            border-color: #dc3545 !important;
+        }
+
+        /* Label turns red when error */
+        .form-label.error {
+            color: #dc3545;
+        }
+
+        /* Smooth appearance */
+        .errorlist li {
+            animation: fadeInError 0.3s ease-in-out;
+        }
+
+        @keyframes fadeInError {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        a {
+            text-decoration: none !important;
+        }
     </style>
 </head>
 
 <body>
 
-<button class="mobile-nav-toggle" onclick="toggleSidebar()">
-    <i class="fas fa-bars"></i>
-</button>
+    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
 
-<!-- Sidebar -->
-<nav class="sidebar" id="sidebar">
-    <div class="px-4 mb-4">
-        <h3 class="fw-bold">HAM<span class="text-gold">PR.</span></h3>
-        <p class="text-muted small">Admin Portal</p>
-    </div>
-
-    <div class="sidebar-sticky">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'cadmin:admin_dashboard' %}">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'cadmin:products_manage' %}">
-                    <i class="fas fa-box"></i> Products
-                </a>
-            </li>
-        </ul>
-
-        <div class="mt-auto px-3 pt-5">
-            <form method="POST" action="{% url 'core:logout' %}">
-                {% csrf_token %}
-                <button class="btn btn-outline-danger w-100">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                </button>
-            </form>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="px-4 mb-4">
+            <h3 class="fw-bold">HAM<span class="text-gold">PR.</span></h3>
+            <p class="text-muted small">Admin Portal</p>
         </div>
-    </div>
-</nav>
 
-<!-- Main -->
-<main class="main-content">
+        <div class="sidebar-sticky">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cadmin:admin_dashboard' %}">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'cadmin:interior_product_manage' %}">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                </li>
+            </ul>
 
-    <!-- Breadcrumb -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <nav>
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{% url 'cadmin:products_manage' %}" class="text-muted">Products</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'cadmin:interior_product_manage' %}" class="text-muted">Interior Items</a></li>
-                <li class="breadcrumb-item active">{% if edit %}Edit{% else %}Add{% endif %}</li>
-            </ol>
-        </nav>
+            <div class="mt-auto px-3 pt-5">
+                <form method="POST" action="{% url 'core:logout' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger w-100">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
 
-        <a href="{% url 'cadmin:interior_product_manage' %}" class="text-muted small">
-            <i class="fas fa-arrow-left me-1"></i> Back to Interior Products
-        </a>
-    </div>
+    <!-- Main -->
+    <main class="main-content">
 
-    <!-- Header -->
-    <h2 class="fw-bold">
-        {% if edit %}Update Interior Product{% else %}Add New Interior Product{% endif %}
-    </h2>
-    <p class="text-muted">
-        {% if edit %}Update existing interior product details{% else %}Add a new item to your interior products catalog{% endif %}
-    </p>
-{% if messages %}
-<div class="mb-3">
-    {% for message in messages %}
-        {% if message.tags == 'success' %}
+        <!-- Breadcrumb -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <nav>
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a style="text-decoration:none;"
+                            href="{% url 'cadmin:products_manage' %}" class="text-muted">Products</a></li>
+                    <li class="breadcrumb-item"><a style="text-decoration: none !important;"
+                            href="{% url 'cadmin:interior_product_manage' %}" class="text-muted">Interior Items</a></li>
+                    <li class="breadcrumb-item active">{% if edit %}Edit{% else %}Add{% endif %}</li>
+                </ol>
+            </nav>
+
+            <a href="{% url 'cadmin:interior_product_manage' %}" class="text-muted small">
+                <i class="fas fa-arrow-left me-1"></i> Back to Interior Products
+            </a>
+        </div>
+
+        <!-- Header -->
+        <h2 class="fw-bold">
+            {% if edit %}Update Interior Product{% else %}Add New Interior Product{% endif %}
+        </h2>
+        <p class="text-muted">
+            {% if edit %}Update existing interior product details{% else %}Add a new item to your interior products
+            catalog{% endif %}
+        </p>
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            {% if message.tags == 'success' %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle me-2"></i>
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        {% elif message.tags == 'error' %}
+            {% elif message.tags == 'error' %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        {% elif message.tags == 'warning' %}
+            {% elif message.tags == 'warning' %}
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-triangle me-2"></i>
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        {% else %}
+            {% else %}
             <div class="alert alert-info alert-dismissible fade show" role="alert">
                 <i class="fas fa-info-circle me-2"></i>
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        {% endif %}
-    {% endfor %}
-</div>
-{% endif %}
-
-    <div class="row g-4">
-
-        <!-- Form -->
-        <div class="col-lg-8">
-            <div class="card form-card p-4">
-                <form method="POST">
-                    {% csrf_token %}
-
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Product Name *</label>
-                            {{ form.name }}
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Brand *</label>
-                            {{ form.brand }}
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Category *</label>
-                            <select class="form-select" id="productCategory" name="category" onchange="updatePreview()" required>
-                                <option value="" disabled>Select Category</option>
-                                {% for i in categories %}
-                                <option value="{{ i.id }}" {% if edit and product and product.category.id == i.id %}selected{% endif %}>
-                                    {{ i.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            {{ form.description }}
-                        </div>
-
-                        <div class="col-12 text-end mt-3">
-                            <button class="btn btn-primary px-4">
-                                {% if edit %}Update & Continue{% else %}Next Step: Variants{% endif %}
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
+            {% endif %}
+            {% endfor %}
         </div>
+        {% endif %}
 
-        <!-- Preview -->
-        <div class="col-lg-4">
-            <div class="card preview-card">
-                <div class="card-body">
-                    <h5 class="fw-bold">Live Preview</h5>
-                    <div class="preview-img-container mb-3">
-                        <i class="fas fa-image preview-placeholder"></i>
-                    </div>
+        <div class="row g-4">
 
-                    <h5 id="previewName">
-                        {% if edit and product %}{{ product.name }}{% else %}Product Name{% endif %}
-                    </h5>
+            <!-- Form -->
+            <div class="col-lg-8">
+                <div class="card form-card p-4">
+                    <form method="POST">
+                        {% csrf_token %}
 
-                    <span class="badge bg-light text-dark border" id="previewCategory">
-                        {% if edit and product %}{{ product.category.name }}{% else %}Category{% endif %}
-                    </span>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Product Name *</label>
+                                {{ form.name }}
+                                {{ form.name.errors }}
+                            </div>
 
-                    <p class="text-muted small mt-2" id="previewDesc">
-                        {% if edit and product %}{{ product.description }}{% else %}Product description will appear here...{% endif %}
-                    </p>
+                            <div class="col-md-6">
+                                <label class="form-label">Brand *</label>
+                                {{ form.brand }}
+                                {{ form.brand.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Category *</label>
+                                <select class="form-select" id="productCategory" name="category"
+                                    onchange="updatePreview()" required>
+                                    <option value="" disabled>Select Category</option>
+                                    {% for i in categories %}
+                                    <option value="{{ i.id }}"
+                                     {% if edit and product and product.category.id == i.id %}selected{% endif %}>
+                                        {{ i.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                {{ form.description }}
+                                {{ form.description.errors }}
+                            </div>
+
+                            <div class="col-12 text-end mt-3">
+                                <button class="btn btn-primary px-4">
+                                    {% if edit %}Update & Continue{% else %}Next Step: Variants{% endif %}
+                                    <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
                 </div>
             </div>
+
+            <!-- Preview -->
+            <div class="col-lg-4">
+                <div class="card preview-card">
+                    <div class="card-body">
+                        <h5 class="fw-bold">Live Preview</h5>
+                        <div class="preview-img-container mb-3">
+                            <i class="fas fa-image preview-placeholder"></i>
+                        </div>
+
+                        <h5 id="previewName">
+                            {% if edit and product %}{{ product.name }}{% else %}Product Name{% endif %}
+                        </h5>
+
+                        <span class="badge bg-light text-dark border" id="previewCategory">
+                            {% if edit and product %}{{ product.category.name }}{% else %}Category{% endif %}
+                        </span>
+
+                        <p class="text-muted small mt-2" id="previewDesc">
+                            {% if edit and product %}{{ product.description }}{% else %}Product description will appear
+                            here...{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
         </div>
+    </main>
 
-    </div>
-</main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updatePreview() {
+            const nameInput = document.getElementById("id_name");
+            const categorySelect = document.getElementById("productCategory");
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            if (nameInput?.value) {
+                document.getElementById("previewName").innerText = nameInput.value;
+            }
+
+            if (categorySelect?.selectedOptions.length) {
+                document.getElementById("previewCategory").innerText =
+                    categorySelect.selectedOptions[0].text;
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+    </script>
 <script>
-function updatePreview() {
-    const nameInput = document.getElementById("id_name");
-    const categorySelect = document.getElementById("productCategory");
-
-    if (nameInput?.value) {
-        document.getElementById("previewName").innerText = nameInput.value;
-    }
-
-    if (categorySelect?.selectedOptions.length) {
-        document.getElementById("previewCategory").innerText =
-            categorySelect.selectedOptions[0].text;
-    }
-}
-
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('active');
-}
-</script>
-
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
 </body>
+
 </html>

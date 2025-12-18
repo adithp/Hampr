@@ -57,6 +57,9 @@ class CustomUser(AbstractUser):
     # two_factor_enabled = models.BooleanField(default=False)
     # google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     # newsletter_subscribed = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-date_joined']
 
     
     

@@ -191,50 +191,28 @@
     </button>
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <nav class="sidebar">
         <div class="px-4 mb-4">
-            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+            <h3 class="fw-bold">HAM<span class="text-gold">PR.</span></h3>
             <p class="text-muted small">Admin Portal</p>
         </div>
-        <div class="sidebar-sticky">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="admin-dashboard.html">
-                        <i class="fas fa-home"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="admin-products.html">
-                        <i class="fas fa-box"></i>
-                        Products
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-shopping-cart"></i>
-                        Orders
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-users"></i>
-                        Customers
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-cog"></i>
-                        Settings
-                    </a>
-                </li>
-            </ul>
 
-            <div class="mt-auto px-3 pt-5">
-                <a href="admin-login.html" class="btn btn-outline-danger w-100">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout
-                </a>
+        <div class="px-3">
+            <div class="alert alert-light border">
+                <small class="text-muted">Current Task</small>
+                <div class="fw-bold text-primary mt-1">
+                    <i class="fas fa-box me-2"></i>
+                    {% if edit %}
+                    Editing Decoration
+                    {% else %}
+                    Add Decoration 
+                    {% endif %}
+                </div>
             </div>
+
+            <a href="{% url 'cadmin:decoration_manage' %}" class="btn btn-outline-secondary w-100 btn-sm">
+                <i class="fas fa-times me-2"></i>Cancel & Exit
+            </a>
         </div>
     </nav>
 
@@ -251,8 +229,7 @@
                     <li class="breadcrumb-item active" aria-current="page">Add</li>
                 </ol>
             </nav>
-            <a href="admin-products-decorations.html" class="text-decoration-none text-muted small"><i
-                    class="fas fa-arrow-left me-1"></i> Back to Decorations</a>
+            <a href="admin-products-decorations.html" class="text-decoration-none text-muted small"></a>
         </div>
 
         <!-- Header -->
@@ -373,13 +350,14 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_inside" id="is_inside">
-                                    <label class="form-check-label" for="is_inside">Is Inside</label>
+                                    <input class="form-check-input" type="checkbox" name="is_inside" id="is_inside" {% if form.is_inside.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_inside" >Is Inside</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_outside" id="is_outside">
+                                    <input class="form-check-input" type="checkbox"
+                                      name="is_outside" id="is_outside"  {% if form.is_outside.value %}checked{% endif %} >
                                     <label class="form-check-label" for="is_outside">Is Outside</label>
                                 </div>
                             </div>
@@ -387,9 +365,10 @@
                             <!-- Description -->
                             <div class="col-12 mt-3">
                                 <label class="form-label">Description <span class="text-danger">*</span></label>
-                                <textarea class="form-control" name="description" id="description" rows="4"
-                                    placeholder="Enter product description..." required
-                                    oninput="updatePreview()"></textarea>
+                               <textarea class="form-control" name="description" id="description"
+    oninput="updatePreview()" placeholder="Enter product description..." rows='5'
+    required>{{ form.description.value|default_if_none:"" }}</textarea>
+
                             </div>
 
                             <!-- Image Upload Section -->
@@ -404,12 +383,44 @@
                                         onchange="handleImageSelect(this)">
                                 </div>
 
-                                <!-- Container for added images -->
-                                <div id="imageList" class="mt-3">
-                                    <!-- Images will be added here dynamically -->
-                                </div>
-                                <div id="imageError" class="text-danger small mt-2 d-none"></div>
-                            </div>
+       <div id="imageList" class="mt-3">
+    {% if edit %}
+        {% for img in exsiting_images %}
+        <div class="image-list-item existing-image" data-id="{{ img.id }}">
+
+            <img src="{{ img.image.url }}" class="image-list-thumb">
+
+            <div class="flex-grow-1">
+                <div class="row g-2 align-items-center">
+                    <div class="col-auto">
+                        <input type="number"
+                               class="form-control form-control-sm image-order"
+                               value="{{ img.display_order }}" min="1">
+                    </div>
+
+                    <div class="col-auto">
+                        <input class="form-check-input primary-radio"
+                               type="radio"
+                               name="primary_image"
+                               {% if img.is_thumbnail %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <input type="hidden" class="seq-type" value="existing">
+                <input type="hidden" class="hidden-file-id" value="{{ img.id }}">
+            </div>
+
+            <button type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="removeExistingImage('{{ img.id }}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+                            
 
                             <!-- Submit Buttons -->
                             <div class="col-12 mt-5">
@@ -472,215 +483,282 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <script>
-        let cropper;
-        let imageCount = 0;
-        let uploadedFiles = []; // {id:..., file: File}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+/* ===================== FULL WORKING IMAGE JS - DROP IN PLACE ===================== */
+/* This script fixes: cropper modal lifecycle, new-image add showing when existing images present,
+   ensures exactly one primary, sends seq_types/orders/primary/existing_ids/deleted_ids and files='images' */
 
-        const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
-        const cropImage = document.getElementById('cropImage');
+/* ADDED: track deleted existing image ids */
+let deletedExistingIds = [];
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
+/* store new uploaded files before submit */
+let uploadedFiles = []; // { id: "...", file: File }
+
+let cropper;
+let imageCount = 0;
+
+const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+const cropModalEl = document.getElementById('cropModal');
+const cropImage = document.getElementById('cropImage');
+
+/* Safety: if crop modal hidden, destroy cropper */
+if (cropModalEl) {
+    cropModalEl.addEventListener('hidden.bs.modal', () => {
+        if (cropper) {
+            try { cropper.destroy(); } catch (e) {}
+            cropper = null;
         }
+    });
+}
 
-        function updatePreview() {
-            document.getElementById('previewName').textContent =
-                document.getElementById('name').value || 'Product Name';
+/* helper to toggle sidebar (kept intact) */
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+}
 
-            const price = document.getElementById('price') ? document.getElementById('price').value : '';
-            document.getElementById('previewPrice').textContent =
-                price ? `₹${parseFloat(price).toFixed(2)}` : '₹0.00';
+/* preview update (kept) */
+function updatePreview() {
+    document.getElementById('previewName').textContent =
+        document.getElementById('name').value || 'Product Name';
 
-            document.getElementById('previewDesc').textContent =
-                document.getElementById('description').value || 'Product description will appear here...';
-        }
+    const price = document.getElementById('price') ? document.getElementById('price').value : '';
+    document.getElementById('previewPrice').textContent =
+        price ? `₹${parseFloat(price).toFixed(2)}` : '₹0.00';
 
-        function handleImageSelect(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    cropImage.src = e.target.result;
-                    cropModal.show();
+    document.getElementById('previewDesc').textContent =
+        document.getElementById('description').value || 'Product description will appear here...';
+}
 
-                    if (cropper) cropper.destroy();
+/* handle file input -> open crop modal, init cropper after modal shown */
+function handleImageSelect(input) {
+    if (!input.files || !input.files[0]) return;
 
-                    setTimeout(() => {
-                        cropper = new Cropper(cropImage, {
-                            aspectRatio: 1,
-                            viewMode: 1,
-                        });
-                    }, 200);
-                };
-                reader.readAsDataURL(input.files[0]);
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        cropImage.src = e.target.result;
+
+        /* ensure cropper initialized only after modal fully shown */
+        cropModal.show();
+
+        function initOnce() {
+            if (cropper) {
+                try { cropper.destroy(); } catch (ex) {}
+                cropper = null;
             }
-            input.value = '';
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+                responsive: true
+            });
+            cropModalEl.removeEventListener('shown.bs.modal', initOnce);
         }
 
-        function cropAndAdd() {
-            if (!cropper) return;
+        cropModalEl.addEventListener('shown.bs.modal', initOnce);
+    };
 
-            cropper.getCroppedCanvas({
-                width: 600,
-                height: 600
-            }).toBlob((blob) => {
-                const id = Date.now() + Math.random();
-                const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
-                const previewURL = URL.createObjectURL(file);
+    reader.readAsDataURL(file);
+    input.value = '';
+}
 
-                addImageToList(file, previewURL, id);
-            }, "image/jpeg", 0.9);
+/* crop and add to DOM and uploadedFiles */
+function cropAndAdd() {
+    if (!cropper) return;
 
-            cropModal.hide();
-        }
+    cropper.getCroppedCanvas({ width: 1200, height: 1200 }).toBlob((blob) => {
+        if (!blob) return;
+        const id = String(Date.now() + Math.floor(Math.random() * 10000));
+        const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
+        const previewURL = URL.createObjectURL(file);
 
-        function addImageToList(file, previewURL, id) {
-            imageCount++;
+        uploadedFiles.push({ id, file }); // keep reference for form submit
+        addImageToList(file, previewURL, id);
+        // release object URL later if needed
+    }, "image/jpeg", 0.9);
 
-            uploadedFiles.push({ id: String(id), file });
+    cropModal.hide();
+}
 
-            const list = document.getElementById('imageList');
-            const div = document.createElement('div');
-            div.className = 'image-list-item';
-            div.id = `image-item-${imageCount}`;
+/* Add a new image DOM block (new image). Does not touch existing image markup. */
+function addImageToList(file, previewURL, id) {
+    imageCount++;
 
-            const isFirst = list.children.length === 0;
-            const checked = isFirst ? 'checked' : '';
-
-            div.innerHTML = `
-            <img src="${previewURL}" class="image-list-thumb">
-            <div class="flex-grow-1">
-                <div class="row g-2 align-items-center">
-                    <div class="col-auto">
-                        <label class="small text-muted d-block">Order</label>
-                        <input type="number" class="form-control form-control-sm image-order"
-                               value="${list.children.length + 1}" min="1" required>
-                    </div>
-                    <div class="col-auto">
-                        <div class="form-check mt-3">
-                            <input class="form-check-input primary-radio" type="radio"
-                                name="primary_image" value="${list.children.length + 1}" ${checked}>
-                            <label class="form-check-label small">Primary</label>
-                        </div>
+    const list = document.getElementById('imageList');
+    const div = document.createElement('div');
+    div.className = 'image-list-item';
+    // mark as new via seq-type hidden (backend will read seq_types)
+    div.innerHTML = `
+        <img src="${previewURL}" class="image-list-thumb">
+        <div class="flex-grow-1">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label class="small text-muted d-block">Order</label>
+                    <input type="number" class="form-control form-control-sm image-order" value="${(list.children.length + 1)}" min="1" required>
+                </div>
+                <div class="col-auto">
+                    <div class="form-check mt-3">
+                        <input class="form-check-input primary-radio" type="radio" name="primary_image">
+                        
                     </div>
                 </div>
-                <input type="hidden" class="hidden-file-id" value="${id}">
             </div>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeImage('${id}')">
-                <i class="fas fa-trash"></i>
-            </button>
-        `;
+            <input type="hidden" class="hidden-file-id" value="${id}">
+            <input type="hidden" class="seq-type" value="new">
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeNewImage('${id}')">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
 
-            list.appendChild(div);
+    list.appendChild(div);
 
-            if (isFirst) updatePrimaryPreview(previewURL);
+    // if no primary selected yet, make this the primary and update preview
+    const noPrimaryYet = !document.querySelector('.primary-radio:checked');
+    if (noPrimaryYet) {
+        const radio = div.querySelector('.primary-radio');
+        if (radio) radio.checked = true;
+        updatePrimaryPreview(previewURL);
+    }
+
+    // ensure order inputs are sequential
+    normalizeOrderInputs();
+}
+
+/* Remove new image (not yet uploaded) */
+function removeNewImage(id) {
+    uploadedFiles = uploadedFiles.filter(f => f.id !== String(id));
+    const hidden = document.querySelector(`.hidden-file-id[value="${id}"]`);
+    if (hidden) {
+        const item = hidden.closest('.image-list-item');
+        if (item) item.remove();
+    }
+    normalizeOrderInputs();
+}
+
+/* Remove existing image (mark for deletion and remove from DOM). */
+function removeExistingImage(id) {
+    deletedExistingIds.push(id);
+    const el = document.querySelector(`.existing-image[data-id="${id}"]`);
+    if (el) el.remove();
+    normalizeOrderInputs();
+}
+
+/* normalize order inputs to 1..n */
+function normalizeOrderInputs() {
+    const inputs = Array.from(document.querySelectorAll('.image-order'));
+    inputs.forEach((input, idx) => input.value = idx + 1);
+}
+
+/* update preview image when primary changed (delegated) */
+document.addEventListener('change', function (e) {
+    if (e.target && e.target.classList.contains('primary-radio')) {
+        const checked = document.querySelector('.primary-radio:checked');
+        if (checked) {
+            const img = checked.closest('.image-list-item')?.querySelector('img');
+            if (img) updatePrimaryPreview(img.src);
+            // ensure only one checked (radios share same name so browser enforces it)
         }
+    }
+});
 
-        function removeImage(id) {
-            // find DOM item with hidden-file-id == id
-            const items = Array.from(document.querySelectorAll('.image-list-item'));
-            let removedWasPrimary = false;
-            for (const item of items) {
-                const hidden = item.querySelector('.hidden-file-id');
-                if (hidden && hidden.value === String(id)) {
-                    const radio = item.querySelector('.primary-radio');
-                    if (radio && radio.checked) removedWasPrimary = true;
-                    item.remove();
-                    break;
-                }
+/* make sure at least one primary exists before submit */
+function ensurePrimaryExists() {
+    const radios = document.querySelectorAll('.primary-radio');
+    if (radios.length === 0) return;
+    const checked = document.querySelector('.primary-radio:checked');
+    if (!checked) {
+        radios[0].checked = true;
+        const img = radios[0].closest('.image-list-item')?.querySelector('img');
+        if (img) updatePrimaryPreview(img.src);
+    }
+}
+
+/* Main validateForm — create dynamic hidden inputs and files for submission */
+function validateForm(event) {
+    const form = document.getElementById('addDecorationForm');
+
+    // require at least one of inside/outside
+    const inside = document.getElementById("is_inside")?.checked;
+    const outside = document.getElementById("is_outside")?.checked;
+    if (!inside && !outside) {
+        alert("Please select at least one: Is Inside or Is Outside.");
+        event.preventDefault();
+        return false;
+    }
+
+    // guarantee a primary exists
+    ensurePrimaryExists();
+
+    // cleanup previous dynamic nodes
+    form.querySelectorAll('.dyn-file').forEach(n => n.remove());
+    form.querySelectorAll('.dyn-meta').forEach(n => n.remove());
+
+    // collect items in the current DOM order
+    const itemElems = Array.from(document.querySelectorAll('.image-list-item'));
+
+    // build orderArray with elem and current order value (take value from input)
+    let orderArray = itemElems.map((elem, idx) => {
+        const orderInput = elem.querySelector('.image-order');
+        const val = orderInput ? parseInt(orderInput.value) || (idx + 1) : (idx + 1);
+        return { elem, order: val };
+    });
+
+    // sort by order and reassign sequential 1..n
+    orderArray.sort((a, b) => a.order - b.order);
+    orderArray.forEach((o, idx) => {
+        o.order = idx + 1;
+        const input = o.elem.querySelector('.image-order');
+        if (input) input.value = o.order;
+        // set radio value to normalized order for server-friendly value
+        const radio = o.elem.querySelector('.primary-radio');
+        if (radio) radio.value = o.order;
+    });
+
+    // For each ordered element, append seq_types, orders, primary and either existing_ids or file input
+    for (const o of orderArray) {
+        const seqType = o.elem.querySelector('.seq-type')?.value || 'existing';
+        const orderHidden = document.createElement('input');
+        orderHidden.type = 'hidden';
+        orderHidden.name = 'orders';
+        orderHidden.value = String(o.order);
+        orderHidden.classList.add('dyn-meta');
+        form.appendChild(orderHidden);
+
+        const seqHidden = document.createElement('input');
+        seqHidden.type = 'hidden';
+        seqHidden.name = 'seq_types';
+        seqHidden.value = seqType;
+        seqHidden.classList.add('dyn-meta');
+        form.appendChild(seqHidden);
+
+        const radio = o.elem.querySelector('.primary-radio');
+        const primaryHidden = document.createElement('input');
+        primaryHidden.type = 'hidden';
+        primaryHidden.name = 'primary';
+        primaryHidden.value = radio && radio.checked ? '1' : '0';
+        primaryHidden.classList.add('dyn-meta');
+        form.appendChild(primaryHidden);
+
+        if (seqType === 'existing') {
+            // existing image expected to have data-id or an .existing-image-id hidden input
+            const existingId = o.elem.getAttribute('data-id') || o.elem.querySelector('.existing-image-id')?.value;
+            if (existingId) {
+                const ex = document.createElement('input');
+                ex.type = 'hidden';
+                ex.name = 'existing_ids';
+                ex.value = existingId;
+                ex.classList.add('dyn-meta');
+                form.appendChild(ex);
             }
-
-            // remove from uploadedFiles
-            uploadedFiles = uploadedFiles.filter(f => f.id !== String(id));
-
-            // re-normalize order inputs to be sequential (1..n)
-            const orderInputs = Array.from(document.querySelectorAll('.image-order'));
-            orderInputs.forEach((input, idx) => input.value = idx + 1);
-
-            // restore primary if needed
-            if (removedWasPrimary) {
-                const first = document.querySelector('.image-list-item');
-                if (first) {
-                    const radio = first.querySelector('.primary-radio');
-                    if (radio) {
-                        radio.checked = true;
-                        updatePrimaryPreview(first.querySelector('img').src);
-                    }
-                } else {
-                    // no images left
-                    const previewImg = document.getElementById('previewImg');
-                    const previewIcon = document.getElementById('previewIcon');
-                    previewImg.style.display = 'none';
-                    previewIcon.style.display = 'block';
-                }
-            }
-        }
-
-        function updatePrimaryPreview(src) {
-            const previewImg = document.getElementById('previewImg');
-            const previewIcon = document.getElementById('previewIcon');
-
-            previewImg.src = src;
-            previewImg.style.display = 'block';
-            previewIcon.style.display = 'none';
-        }
-
-        // Main submit handler: validate inside/outside, create dynamic file inputs + meta
-        function validateForm(event) {
-            const form = document.getElementById('addDecorationForm');
-
-            // Validate inside/outside
-            const inside = document.getElementById("is_inside").checked;
-            const outside = document.getElementById("is_outside").checked;
-            if (!inside && !outside) {
-                // show inline error if desired; simple alert for now
-                alert("Please select at least one: Is Inside or Is Outside.");
-                event.preventDefault();
-                return false;
-            }
-
-            // Remove previous dynamic inputs (from earlier submits)
-            form.querySelectorAll('.dyn-file').forEach(el => el.remove());
-            form.querySelectorAll('.dyn-meta').forEach(el => el.remove());
-
-            // Normalize order inputs (make sequential starting from 1)
-            const items = Array.from(document.querySelectorAll('.image-list-item'));
-            // Build array of {elem, order, id, file} using the DOM order values
-            let orderArray = items.map((elem, idx) => {
-                const orderInput = elem.querySelector('.image-order');
-                // if order input missing, fallback to idx+1
-                const orderVal = orderInput ? parseInt(orderInput.value) || (idx + 1) : (idx + 1);
-                const hiddenId = elem.querySelector('.hidden-file-id') ? elem.querySelector('.hidden-file-id').value : null;
-                return { elem, order: orderVal, id: String(hiddenId) };
-            });
-
-            // To ensure consistent numbering (1..n), sort by current order and then reassign 1..n
-            orderArray.sort((a, b) => a.order - b.order);
-            orderArray.forEach((o, idx) => {
-                o.order = idx + 1;
-                const orderInput = o.elem.querySelector('.image-order');
-                if (orderInput) orderInput.value = o.order;
-
-                // Also update the corresponding radio value so server and UI align
-                const radio = o.elem.querySelector('.primary-radio');
-                if (radio) radio.value = o.order;
-            });
-
-            // Now append hidden meta inputs in the same sorted order, and append file inputs in that order
-            // For each ordered item, find file in uploadedFiles by id and append file input
-            for (const o of orderArray) {
-                // hidden order
-                const hiddenOrder = document.createElement('input');
-                hiddenOrder.type = 'hidden';
-                hiddenOrder.name = 'image_order';
-                hiddenOrder.value = String(o.order);
-                hiddenOrder.classList.add('dyn-meta');
-                form.appendChild(hiddenOrder);
-
-                // find file by id
-                const found = uploadedFiles.find(f => f.id === o.id);
-                if (found && found.file) {
+        } else { // seqType === 'new'
+            // find the hidden-file-id and match to uploadedFiles and attach file input
+            const fid = o.elem.querySelector('.hidden-file-id')?.value;
+            if (fid) {
+                const found = uploadedFiles.find(f => f.id === fid);
+                if (found) {
                     const dt = new DataTransfer();
                     dt.items.add(found.file);
 
@@ -693,42 +771,34 @@
                     form.appendChild(fileInput);
                 }
             }
-
-            // Primary image: find checked primary-radio and use its (normalized) value
-            const primaryRadio = document.querySelector('.primary-radio:checked');
-            if (primaryRadio) {
-                const hiddenPrimary = document.createElement('input');
-                hiddenPrimary.type = 'hidden';
-                hiddenPrimary.name = 'primary_image';
-                hiddenPrimary.value = primaryRadio.value; // this is the normalized order value
-                hiddenPrimary.classList.add('dyn-meta');
-                form.appendChild(hiddenPrimary);
-            } else {
-                // If images exist but no radio checked, force the first as primary (defensive)
-                if (orderArray.length > 0) {
-                    const hiddenPrimary = document.createElement('input');
-                    hiddenPrimary.type = 'hidden';
-                    hiddenPrimary.name = 'primary_image';
-                    hiddenPrimary.value = '1';
-                    hiddenPrimary.classList.add('dyn-meta');
-                    form.appendChild(hiddenPrimary);
-                }
-            }
-
-            // All done — allow submit to continue
-            return true;
         }
+    }
 
-        // Attach validateForm to the form's submit event
-        document.getElementById('addDecorationForm').addEventListener('submit', function (e) {
-            return validateForm(e);
-        });
+    // send deleted existing ids
+    deletedExistingIds.forEach(id => {
+        const del = document.createElement('input');
+        del.type = 'hidden';
+        del.name = 'deleted_ids';
+        del.value = id;
+        del.classList.add('dyn-meta');
+        form.appendChild(del);
+    });
 
-        // Ensure pageshow bfcache safety
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) location.reload();
-        });
-    </script>
+    // allow submit
+    return true;
+}
+
+/* Attach submit handler (kept) */
+document.getElementById('addDecorationForm').addEventListener('submit', function (e) {
+    return validateForm(e);
+});
+
+/* pageshow safety */
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) location.reload();
+});
+/* ===================== END SCRIPT ===================== */
+</script>
 
 
 </body>

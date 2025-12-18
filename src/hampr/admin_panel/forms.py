@@ -76,7 +76,7 @@ class HamperBoxForm(forms.ModelForm):
         if description.isdigit():
             raise ValidationError("Must Conatin Alphabets")
 
-        return description
+        return description.strip()
     
 
     
@@ -106,7 +106,7 @@ class BoxTypeForm(forms.ModelForm):
         if BoxType.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box name already exists")
         
-        return name
+        return name.strip()
     
     
 class BoxCategoryAdd(forms.ModelForm):
@@ -146,7 +146,7 @@ class BoxCategoryAdd(forms.ModelForm):
         if BoxCategory.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box category name already exists")
         
-        return name
+        return name.strip()
     
     
 class BoxCategoryAdd(forms.ModelForm):
@@ -189,9 +189,7 @@ class BoxCategoryAdd(forms.ModelForm):
         if qs.exists():
             raise ValidationError("Another category already uses this name")
 
-        return name
-        
-        return name
+        return name.strip()
     
     
 class BoxSizeForm(forms.ModelForm):
@@ -337,7 +335,7 @@ class ProductCategoryForm(forms.ModelForm):
             if ProductCategory.objects.filter(name__iexact=name).exists():
                 raise ValidationError("This product category already exists")
         
-        return name
+        return name.strip()
         
         
 class ProductForm(forms.ModelForm):
@@ -392,7 +390,7 @@ class ProductForm(forms.ModelForm):
             raise ValidationError("Product name must contain only alphabets and spaces and numbers")
      
         
-        return brand
+        return brand.strip()
     
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -406,7 +404,7 @@ class ProductForm(forms.ModelForm):
         if description.isdigit():
             raise ValidationError("description is not allowed only numbers")
         
-        return description
+        return description.strip()
     
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -419,7 +417,7 @@ class ProductForm(forms.ModelForm):
         
         if name.isdigit():
             raise ValidationError("name is not allowed only numbers")
-        return name
+        return name.strip()
         
         
 class ProductSimpleVairentForm(forms.ModelForm):
@@ -492,7 +490,7 @@ class ColorForm(forms.ModelForm):
         if not re.match(r"^[A-Za-z][A-Za-z\s-]*[A-Za-z]$"
 , name):
             raise forms.ValidationError("Color name may only contain letters, spaces, or hyphens.")
-        return name
+        return name.strip()
     
     
 class SizeForm(forms.ModelForm):

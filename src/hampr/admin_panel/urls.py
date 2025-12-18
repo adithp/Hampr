@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory,AdminProductEdit,AdminProductSimpleVarientEdit
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory,AdminProductEdit,AdminProductSimpleVarientEdit,AdminProductVarientEdit,redirect_to_add_varient,AdminDecorationEdit
 
 
 
@@ -58,17 +58,19 @@ urlpatterns = [
     path('product_varients_add/',AdminProductSimpleVarientAdd.as_view(),name='product_varients_add'),
     
     path('product_varient_edit/<int:id>/',AdminProductSimpleVarientEdit.as_view(),name='product_varient_edit'),
-    
+    path('products_varients_edit_extra/<int:id>/',AdminProductVarientEdit.as_view(),name='products_varients_edit_extra'),
     path('products_varients_add_extra/',AdminProductVarientAdd.as_view(),name='products_varients_add_extra'),
     path('varients_finshed/',varients_finshed,name='varients_finshed'),
     path('interior_product_manage/',AdminProductManage.as_view(),name='interior_product_manage'),
     path('cancel_add_product/',cancel_add_product,name='cancel_add_product'),
     path('product_varient_delete/<pk>/',AdminProductVarientDelete.as_view(),name='product_varient_delete'),
+    path('product_new_varient/<int:id>/',redirect_to_add_varient,name='product_new_varient'),
     path('product_delete/<pk>/',AdminProductDelete.as_view(),name='product_delete'),
     
     path('decoration_add/',AdminDecorationAdd.as_view(),name='decoration_add'),
     path('decoration_manage/',AdminDecortionManage.as_view(),name='decoration_manage'),
     path('decoration_delete/<pk>/',AdminDecorationDelete.as_view(),name='decoration_delete'),
+    path('decoration_edit/<int:id>/',AdminDecorationEdit.as_view(),name='decoration_edit'),
     
     
     

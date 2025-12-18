@@ -223,8 +223,8 @@ class ResetPassword(View):
     
     
 
-def succses(req):
-    return HttpResponse('Hi')
+def not_active_error(req):
+    return render(req,'accounts/user_inactive.html')
 
 
     

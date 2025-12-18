@@ -60,13 +60,14 @@
     </nav>
 
     <!-- MAIN CONTENT -->
-    <main class="main-content">
+    <main class="main-content ">
 
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'cadmin:products_manage' %}" class="text-muted text-decoration-none">Products</a>
+                    <a href="{% url 'cadmin:interior_product_manage' %}"
+                        class="text-muted text-decoration-none">Products</a>
                 </li>
                 <li class="breadcrumb-item">
                     <a href="{% url 'cadmin:box_category_manage' %}" class="text-muted text-decoration-none">Product
@@ -110,46 +111,48 @@
         {% endif %}
 
         <!-- FORM -->
-        <div class="card p-4 shadow-sm">
-            <form action="" method="POST">
-                {% csrf_token %}
+        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;">
+            <div class="card p-4 shadow-sm w-50">
+                <form action="" method="POST">
+                    {% csrf_token %}
 
-                <!-- Category Name -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
-                    {{ form.name }}
-                    {{ form.name.errors }}
-                </div>
+                    <!-- Category Name -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Category Name <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                    </div>
 
-                <!-- Description -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Description</label>
-                    {{ form.description }}
-                    {{ form.description.errors }}
-                </div>
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Description</label>
+                        {{ form.description }}
+                        {{ form.description.errors }}
+                    </div>
 
-                <!-- Active Toggle -->
-                <div class="form-check form-switch mb-4">
-                    {{ form.is_active }}
-                    <label class="form-check-label fw-bold">Active</label>
-                    {{ form.is_active.errors }}
-                </div>
+                    <!-- Active Toggle -->
+                    <div class="form-check form-switch mb-4">
+                        {{ form.is_active }}
+                        <label class="form-check-label fw-bold">Active</label>
+                        {{ form.is_active.errors }}
+                    </div>
 
-                <!-- BUTTONS -->
-                <div class="d-flex gap-2 border-top pt-3">
-                    <a href="{% url 'cadmin:products_category_list' %}" class="btn btn-light border flex-grow-1">
-                        Cancel
-                    </a>
+                    <!-- BUTTONS -->
+                    <div class="d-flex gap-2 border-top pt-3">
+                        <a href="{% url 'cadmin:products_category_list' %}" class="btn btn-light border flex-grow-1">
+                            Cancel
+                        </a>
 
-                    <button type="submit" class="btn btn-primary flex-grow-1">
-                        {% if edit %}Update Category{% else %}Save Category{% endif %}
-                    </button>
-                </div>
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            {% if edit %}Update Category{% else %}Save Category{% endif %}
+                        </button>
+                    </div>
 
-                <!-- DELETE BUTTON (ONLY IN EDIT MODE) -->
+                    <!-- DELETE BUTTON (ONLY IN EDIT MODE) -->
 
 
-            </form>
+                </form>
+            </div>
         </div>
 
     </main>
