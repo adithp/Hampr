@@ -198,15 +198,22 @@
                                     </h6>
                                     <div class="collapse show" id="filterOccasion">
                                         <div class="filter-options" id="occasion-filters">
-                                            {% for category in box_categories %}
+                                          {% for category in box_categories %}
                                             <div class="form-check mb-2">
-                                                <input class="form-check-input occasion-filter" type="checkbox"
-                                                    value="Birthday" id="occasion-birthday">
-                                                <label class="form-check-label" for="occasion-birthday">
-                                                    {{category.name}}
+                                                <input
+                                                    class="form-check-input category-filter"
+                                                    type="checkbox"
+                                                    value="{{ category.name }}"
+                                                    id="category-{{ category.id }}"
+                                                    {% if category.name in selected_categories %}checked{% endif %}
+                                                >
+                                                <label class="form-check-label" for="category-{{ category.id }}">
+                                                    {{ category.name }}
                                                 </label>
                                             </div>
                                             {% endfor %}
+
+
                                         </div>
                                     </div>
                                 </div>
@@ -222,16 +229,20 @@
                                     <div class="collapse show" id="filterSize">
                                         <div class="filter-options" id="size-filters">
                                             {% for size in size_list %}
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input sizes-filter" type="checkbox"
-                                                    value="Extra Large" id="size-xl">
-                                                <label class="form-check-label d-flex justify-content-between w-100"
-                                                    for="size-xl">
-                                                    <span>{{size.1}}</span>
-                                                    <span class="text-muted small">(1)</span>
-                                                </label>
-                                            </div>
-                                            {% endfor %}
+<div class="form-check mb-2">
+    <input
+        class="form-check-input sizes-filter"
+        type="checkbox"
+        value="{{ size.1 }}"
+        id="size-{{ size.0 }}"
+        {% if size.1 in selected_sizes %}checked{% endif %}
+    >
+    <label class="form-check-label" for="size-{{ size.0 }}">
+        {{ size.1 }}
+    </label>
+</div>
+{% endfor %}
+
                                         </div>
                                     </div>
                                 </div>
@@ -239,24 +250,31 @@
                                 <hr class="text-muted opacity-25">
 
                                 <!-- Filter: Price -->
-                                <div class="filter-section mb-4">
-                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
-                                        data-bs-toggle="collapse" data-bs-target="#filterPrice">
-                                        Price Range <i class="fas fa-chevron-down small"></i>
-                                    </h6>
-                                    <div class="collapse show" id="filterPrice">
-                                        <label for="priceRange" class="form-label small text-muted">Max Price:
-                                            ₹<span id="priceValue">10000</span></label>
-                                        <input type="range" class="form-range" id="priceRange" min="500" max="10000"
-                                            step="100" value="10000">
-                                        <div class="d-flex justify-content-between small text-muted">
-                                            <span>₹500</span>
-                                            <span>₹10000+</span>
-                                        </div>
+                                <div class="filter-section mb-4"><label class="form-label small text-muted">
+                                        Price Range: ₹0 – ₹<span id="maxPriceValue">20000</span>
+                                    </label>
+
+                                    <input
+                                        type="range"
+                                        class="form-range"
+                                        id="priceRange"
+                                        min="0"
+                                        max="20000"
+                                        step="10"
+                                        value="{{ request.GET.max_price|default:20000 }}"
+                                    >
+
+                                    <div class="d-flex justify-content-between small text-muted">
+                                        <span>₹0</span>
+                                        <span>₹20000+</span>
                                     </div>
+
+
+                            
+
                                 </div>
 
-                                <hr class="text-muted opacity-25">
+                                {% comment %} <hr class="text-muted opacity-25">
 
                                 <!-- Filter: Material -->
                                 <div class="filter-section mb-4">
@@ -269,12 +287,12 @@
                                             <!-- Populated by JS -->
                                         </div>
                                     </div>
-                                </div>
+                                </div> {% endcomment %}
 
                                 <hr class="text-muted opacity-25">
 
                                 <!-- Filter: Availability -->
-                                <div class="filter-section">
+                                {% comment %} <div class="filter-section">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="" id="inStockOnly"
                                             checked>
@@ -282,7 +300,7 @@
                                             In Stock Only
                                         </label>
                                     </div>
-                                </div>
+                                </div> {% endcomment %}
 
                             </div>
                         </div>
@@ -295,7 +313,7 @@
                     <div
                         class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
                         <div class="mb-3 mb-md-0">
-                            <span class="text-muted">Showing <span class="fw-bold text-dark" id="results-count">0</span>
+                            <span class="text-muted">Showing <span class="fw-bold text-dark" id="results-count">{{count}}</span>
                                 boxes</span>
                         </div>
                         <div class="d-flex align-items-center gap-3">
@@ -305,8 +323,8 @@
                                     <option value="newest">Newest</option>
                                     <option value="priceLow">Price: Low to High</option>
                                     <option value="priceHigh">Price: High to Low</option>
-                                    <option value="popular">Most Popular</option>
-                                    <option value="rating">Best Rated</option>
+                                    {% comment %} <option value="popular">Most Popular</option>
+                                    <option value="rating">Best Rated</option> {% endcomment %}
                                     <option value="name">A-Z Name</option>
                                 </select>
                             </div>
@@ -366,11 +384,34 @@
                     </div>
 
                     <!-- Load More -->
-                    <div class="text-center mt-5" id="load-more-container">
+                    {% comment %} <div class="text-center mt-5" id="load-more-container">
                         <button class="btn btn-outline-dark px-5 py-2 rounded-pill" id="load-more-btn">
                             Load More Boxes
                         </button>
-                    </div>
+                    </div> {% endcomment %}
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+            <p class="text-muted small mb-0"> </p>
+            <nav>
+                <ul class="pagination mb-0" id="pagination">
+
+                    <li class="page-item" data-type="prev">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+
+                    {% for i in total_page_num %}
+                    <li class="page-item" data-page="{{ i }}">
+                        <a class="page-link" href="#">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    <li class="page-item" data-type="next">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+
+                </ul>
+
+            </nav>
+        </div>  
                 </div>
             </div>
         </div>
@@ -476,6 +517,185 @@
     <script src="{% static 'accounts/js/utils.js' %}"></script>
     <script src="{% static 'accounts/js/main.js' %}"></script>
     <!-- <script src="{% static 'catalog/js/shop-boxes.js' %}"></script> -->
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sortSelect = document.getElementById("sortSelect");
+    if (!sortSelect) return;
+
+    const params = new URLSearchParams(window.location.search);
+
+    // 🔹 Keep selected sort on refresh
+    const currentSort = params.get("sort") || "newest";
+    sortSelect.value = currentSort;
+
+    sortSelect.addEventListener("change", function () {
+        const params = new URLSearchParams(window.location.search);
+
+        params.set("sort", this.value);   // add/update sort
+        params.delete("page");            // reset pagination
+
+        window.location.href =
+            `${window.location.pathname}?${params.toString()}`;
+    });
+
+});
+</script>
+ <script>
+        const pagination = document.getElementById('pagination');
+
+        // Get current page from URL
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(params.get('page')) || 1;
+
+        const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+        const totalPages = pageItems.length;
+
+        // Set active class on load
+        pageItems.forEach(item => {
+            if (parseInt(item.dataset.page) === currentPage) {
+                item.classList.add('active');
+            }
+        });
+
+        pagination.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const li = e.target.closest('.page-item');
+            if (!li) return;
+
+            // Page number click
+            if (li.dataset.page) {
+                goToPage(parseInt(li.dataset.page));
+            }
+
+            // Previous
+            if (li.dataset.type === 'prev' && currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+
+            // Next
+            if (li.dataset.type === 'next' && currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+
+        function goToPage(page) {
+            params.set('page', page);
+            window.location.search = params.toString();
+        }
+    </script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const priceRange = document.getElementById("priceRange");
+    const maxPriceValue = document.getElementById("maxPriceValue");
+
+    if (!priceRange || !maxPriceValue) return;
+
+    // 🔹 Set initial value on page load
+    maxPriceValue.innerText = priceRange.value;
+
+    function updatePriceFilter() {
+        const params = new URLSearchParams(window.location.search);
+
+        // ❌ DO NOT send min_price
+        params.delete("max_price");
+
+        // ✅ send only max_price
+        params.set("max_price", priceRange.value);
+
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.location.href = newUrl;
+    }
+
+    // 🔹 Update UI live while sliding
+    priceRange.addEventListener("input", function () {
+        maxPriceValue.innerText = this.value;
+    });
+
+    // 🔹 Apply filter when slider released
+    priceRange.addEventListener("change", updatePriceFilter);
+
+});
+</script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    function updateFilters() {
+        const params = new URLSearchParams(window.location.search);
+
+        // 🔹 remove old filter params only
+        params.delete("box");
+        params.delete("category");
+        params.delete("sizes");
+
+        // 🔹 box filters
+        document.querySelectorAll(".box-filter:checked").forEach(cb => {
+            params.append("box", cb.value);
+        });
+
+        // 🔹 category filters
+        document.querySelectorAll(".category-filter:checked").forEach(cb => {
+            params.append("category", cb.value);
+        });
+
+        // 🔹 size filters
+        document.querySelectorAll(".sizes-filter:checked").forEach(cb => {
+            params.append("sizes", cb.value);
+        });
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.location.href = newUrl;
+    }
+
+    // 🔹 listen to all filter checkbox changes
+    document
+        .querySelectorAll(".box-filter, .category-filter, .sizes-filter")
+        .forEach(cb => cb.addEventListener("change", updateFilters));
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    function updateFilters() {
+        const params = new URLSearchParams(window.location.search);
+
+        // 🔹 Remove only filter-related params
+        params.delete("box");
+        params.delete("category");
+
+        // 🔹 Add selected box filters
+        document.querySelectorAll(".box-filter:checked").forEach(cb => {
+            params.append("box", cb.value);
+        });
+
+        // 🔹 Add selected category filters
+        document.querySelectorAll(".category-filter:checked").forEach(cb => {
+            params.append("category", cb.value);
+        });
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.location.href = newUrl;
+    }
+
+    // 🔹 Attach change listener
+    document.querySelectorAll(".box-filter, .category-filter")
+        .forEach(cb => cb.addEventListener("change", updateFilters));
+
+});
+</script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

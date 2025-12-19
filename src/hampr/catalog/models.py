@@ -22,7 +22,7 @@ class BoxType(models.Model):
     
 class BoxCategory(models.Model):
     id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
-    box_type = models.ForeignKey(BoxType,on_delete=models.CASCADE)
+    box_type = models.ForeignKey(BoxType,on_delete=models.CASCADE) # Set TO Null Check How Real world works
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True,blank=True)
     is_active = models.BooleanField(default=True)

@@ -253,7 +253,7 @@
                     <h4 class="fw-bold mb-2"><a style="text-decoration: none;color:#000;"
                             href="{% url 'cadmin:box_manage'  %}">Box
                             Products</a></h4>
-                    <p class="text-muted mb-0">12 Boxes Available</p>
+                    <p class="text-muted mb-0"> Boxes Available</p>
                 </div>
             </div>
 
@@ -267,7 +267,7 @@
                         </div>
                     </div>
                     <h4 class="fw-bold mb-2">Interior Products</h4>
-                    <p class="text-muted mb-0">45 Products Available</p>
+                    <p class="text-muted mb-0"> Products Available</p>
                 </div>
             </div>
 
@@ -281,7 +281,7 @@
                         </div>
                     </div>
                     <h4 class="fw-bold mb-2">Decorations</h4>
-                    <p class="text-muted mb-0">28 Items Available</p>
+                    <p class="text-muted mb-0"> Items Available</p>
                 </div>
             </div>
         </div>
@@ -321,35 +321,36 @@
                             </thead>
                             <tbody>
                                 {% for item in low_products %}
-                               
+
                                 <tr>
-                                     
+
                                     <td>
                                         <a 
-                                        {% if item.item_type == 'Box' %}href="{% url 'cadmin:edit_box_second' item.id %}"
-                                         {% elif item.item_type == 'Interior'%}
-                                         {% if item.size or item.color %} href="{% url 'cadmin:products_varients_edit_extra' item.id %}"
-                                         {% else %} href="{% url 'cadmin:product_varient_edit' item.id %}"{% endif %}
-{% elif item.item_type == 'Decor' %}href="{% url 'cadmin:decoration_edit' item.id %}"{% endif %}
-                                         style='cursor:pointer;text-decoration:none;color:#000;'>
-                                        <div class="d-flex align-items-center">
-                                            
-                                            {% comment %} <img src="https://placehold.co/40x40/8B6F47/FFFFFF?text=C"
-                                                class="product-img-thumb me-2" alt="Img"> {% endcomment %}
-                                            <span class="fw-medium">
-{% if item.item_type == 'Box' %}{{item.hamper_box.name}}{% elif item.item_type == 'Interior'%}{{item.product.name}}
-{% elif item.item_type == 'Decor' %} {{item.name}}{% endif %}
-</span>
-                                    </div>
-                                    </a> 
+                                        {% if item.item_type == 'Box' %}href="{% url 'cadmin:edit_box_second' item.id %}" 
+                                        {% elif item.item_type == 'Interior' %} {% if item.size or item.color %}
+                                            href="{% url 'cadmin:products_varients_edit_extra' item.id %}" {% else %}
+                                            href="{% url 'cadmin:product_varient_edit' item.id %}" {% endif %}
+                                             {% elif item.item_type == 'Decor' %}href="{% url 'cadmin:decoration_edit' item.id %}"
+                                            {% endif %} style='cursor:pointer;text-decoration:none;color:#000;'>
+                                            <div class="d-flex align-items-center">
+
+                                                {% comment %} <img src="https://placehold.co/40x40/8B6F47/FFFFFF?text=C"
+                                                    class="product-img-thumb me-2" alt="Img"> {% endcomment %}
+                                                <span class="fw-medium">
+                                                    {% if item.item_type == 'Box' %}{{item.hamper_box.name}}{% elif
+                                                    item.item_type == 'Interior'%}{{item.product.name}}
+                                                    {% elif item.item_type == 'Decor' %} {{item.name}}{% endif %}
+                                                </span>
+                                            </div>
+                                        </a>
                                     </td>
                                     <td><span class="badge bg-light text-dark border">{{item.item_type}}</span></td>
                                     <td class="text-end"><span class="text-danger fw-bold">{{item.stock}}</span></td>
-                                   
+
                                 </tr>
-                            
+
                                 {% endfor %}
-                                
+
                             </tbody>
                         </table>
                     </div>
