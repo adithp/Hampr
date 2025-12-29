@@ -2,14 +2,16 @@ from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from django.db.models import Case, When, IntegerField
+from django.views.generic import DetailView
 
 
-from .models import BoxType,BoxCategory,HamperBox,BoxImage,BoxSize
+from .models import BoxMaterial,BoxCategory,HamperBox,BoxImage,BoxSize
 
 class BoxListView(View):
     def get(self,request,*args, **kwargs):
         data = []
-        box_types = BoxType.objects.all()
+        box_types = BoxMaterial.objects.all()
         boxes_all = HamperBox.objects.all().order_by('-created_at')
         selected_boxes = request.GET.getlist('box')
         selected_categories = request.GET.getlist("category")
@@ -51,8 +53,9 @@ class BoxListView(View):
 
         data = []
         size_list = BoxSize._meta.get_field('size_label').choices
+        count = 0
         for i in range(len(boxes_all)):
-            
+            count += 1
             data.append({
                 'box':boxes_all[i],
                 'image':BoxImage.objects.filter(box_id=boxes_all[i],is_thumbnail=True).first(),
@@ -61,7 +64,7 @@ class BoxListView(View):
                 
                 
             })
-        return render(request,'catalog/shop-boxes.html',{'box_types':box_types,'box_categories':box_categories,'boxes':data,'size_list':size_list,'selected_boxes': selected_boxes,'selected_categories':selected_categories,'selected_sizes':selected_sizes,'total_page_num':total_page_num,'count':i+1})
+        return render(request,'catalog/shop-boxes.html',{'box_types':box_types,'box_categories':box_categories,'boxes':data,'size_list':size_list,'selected_boxes': selected_boxes,'selected_categories':selected_categories,'selected_sizes':selected_sizes,'total_page_num':total_page_num,'count':count})
     
     
 def box_search_suggestions(request):
@@ -74,6 +77,45 @@ def box_search_suggestions(request):
         return JsonResponse({"results":list(boxes)})
     
     return JsonResponse({"results": []})
+
+
+class BoxDetailView(DetailView):
+    model = HamperBox
+    template_name = 'catalog/box-detail.html'
+    context_object_name = 'product'
+    
+    slug_field = "slug"
+    slug_url_kwarg = 'slug'
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            
+            product = context.get('product')
+            
+        except HamperBox.DoesNotExist as e:
+            print(e)
+            
+        context['product_images'] = BoxImage.objects.filter(box_id=product).order_by('display_order')
+        sizes = BoxSize.objects.filter(hamper_box=product).order_by(
+        Case(
+            When(size_label='small', then=1),
+            When(size_label='medium', then=2),
+            When(size_label='large', then=3),
+            When(size_label='extra_large', then=4),
+            output_field=IntegerField(),
+        
+    ))
+        
+        for i in sizes:
+            volume = round((i.width * i.height * i.depth) / 1000,2)
+            i.volume = volume
+        
+        context['sizes'] = sizes
+        
+        return context
+
 
 
         

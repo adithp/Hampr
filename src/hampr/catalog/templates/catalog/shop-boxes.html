@@ -32,46 +32,7 @@
 <body>
 
     <!-- Header -->
-    <nav class="navbar navbar-expand-lg fixed-top py-3 transition-all">
-        <div class="container">
-            <a class="navbar-brand fw-bold fs-3" href="{% url 'core:landing_page' %}">
-                <span class="text-gold">HAM</span><span class="text-dark">PR.</span>
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="#">Shop</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                </ul>
-
-                {% if request.user.is_authenticated %}
-
-                <div class="d-flex align-items-center gap-3">
-                    <a href="#" class="text-dark hover-rotate-icon fs-5"><i class="far fa-user"></i></a>
-                    <a href="#" class="text-dark hover-rotate-icon fs-5 position-relative">
-                        <i class="far fa-heart"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-gold"
-                            id="wishlist-count" style="font-size: 0.6rem; display: none;">0</span>
-                    </a>
-                    <a href="#" class="text-dark hover-rotate-icon fs-5 position-relative">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-gold"
-                            style="font-size: 0.6rem;">0</span>
-                    </a>
-                </div>
-                {% else %}
-
-                <a href="{% url 'accounts:login' %}" class="auth-btn-solid">Log In</a>
-
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+    {% include 'catalog/nav-bar.html' %}
 
     <!-- Page Header & Breadcrumbs -->
     <section class="bg-light py-5 mt-5">
@@ -167,14 +128,10 @@
                                     <div class="collapse show" id="filterType">
                                         {% for box_type in box_types %}
                                         <div class="form-check mb-2">
-                                        <input
-    class="form-check-input box-filter"
-    type="checkbox"
-    value="{{ box_type.name }}"
-    id="box-{{ box_type.id }}"
-    {% if box_type.name in selected_boxes %}checked{% endif %}
->   
-<p style="display:none">{{ selected_boxes }}</p>
+                                            <input class="form-check-input box-filter" type="checkbox"
+                                                value="{{ box_type.name }}" id="box-{{ box_type.id }}"
+                                                 {% if box_type.name in selected_boxes %}checked {% endif %} >
+                                            <p style="display:none">{{ selected_boxes }}</p>
 
 
 
@@ -198,15 +155,11 @@
                                     </h6>
                                     <div class="collapse show" id="filterOccasion">
                                         <div class="filter-options" id="occasion-filters">
-                                          {% for category in box_categories %}
+                                            {% for category in box_categories %}
                                             <div class="form-check mb-2">
-                                                <input
-                                                    class="form-check-input category-filter"
-                                                    type="checkbox"
-                                                    value="{{ category.name }}"
-                                                    id="category-{{ category.id }}"
-                                                    {% if category.name in selected_categories %}checked{% endif %}
-                                                >
+                                                <input class="form-check-input category-filter" type="checkbox"
+                                                    value="{{ category.name }}" id="category-{{ category.id }}"
+                                                     {% if category.name in selected_categories %} checked {% endif %}>
                                                 <label class="form-check-label" for="category-{{ category.id }}">
                                                     {{ category.name }}
                                                 </label>
@@ -229,19 +182,15 @@
                                     <div class="collapse show" id="filterSize">
                                         <div class="filter-options" id="size-filters">
                                             {% for size in size_list %}
-<div class="form-check mb-2">
-    <input
-        class="form-check-input sizes-filter"
-        type="checkbox"
-        value="{{ size.1 }}"
-        id="size-{{ size.0 }}"
-        {% if size.1 in selected_sizes %}checked{% endif %}
-    >
-    <label class="form-check-label" for="size-{{ size.0 }}">
-        {{ size.1 }}
-    </label>
-</div>
-{% endfor %}
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input sizes-filter" type="checkbox"
+                                                    value="{{ size.1 }}" id="size-{{ size.0 }}" 
+                                                    {% if size.1 in selected_sizes %}checked{% endif %}>
+                                                <label class="form-check-label" for="size-{{ size.0 }}">
+                                                    {{ size.1 }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
 
                                         </div>
                                     </div>
@@ -254,15 +203,8 @@
                                         Price Range: ₹0 – ₹<span id="maxPriceValue">20000</span>
                                     </label>
 
-                                    <input
-                                        type="range"
-                                        class="form-range"
-                                        id="priceRange"
-                                        min="0"
-                                        max="20000"
-                                        step="10"
-                                        value="{{ request.GET.max_price|default:20000 }}"
-                                    >
+                                    <input type="range" class="form-range" id="priceRange" min="0" max="20000" step="10"
+                                        value="{{ request.GET.max_price|default:20000 }}">
 
                                     <div class="d-flex justify-content-between small text-muted">
                                         <span>₹0</span>
@@ -270,11 +212,12 @@
                                     </div>
 
 
-                            
+
 
                                 </div>
 
-                                {% comment %} <hr class="text-muted opacity-25">
+                                {% comment %}
+                                <hr class="text-muted opacity-25">
 
                                 <!-- Filter: Material -->
                                 <div class="filter-section mb-4">
@@ -313,7 +256,8 @@
                     <div
                         class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
                         <div class="mb-3 mb-md-0">
-                            <span class="text-muted">Showing <span class="fw-bold text-dark" id="results-count">{{count}}</span>
+                            <span class="text-muted">Showing <span class="fw-bold text-dark"
+                                    id="results-count">{{count}}</span>
                                 boxes</span>
                         </div>
                         <div class="d-flex align-items-center gap-3">
@@ -346,7 +290,8 @@
                     <div class="row g-4" id="products-grid">
                         {% for box in boxes %}
                         <div class="col-12 col-md-6 col-lg-4">
-                            <div class="box-card">
+                            <a style="text-decoration:none;" href="{% url 'shop:box_detail' box.box.slug %}">
+                            <div class="box-card" >
                                 <div class="box-image-wrapper">
                                     <img src="{{box.image.image.url}}" class="box-image"
                                         alt="Premium Magnetic Gift Box">
@@ -369,6 +314,7 @@
                                     </div>
                                 </div>
                             </div>
+                        </a>
                         </div>
                         {% endfor %}
                     </div>
@@ -390,28 +336,28 @@
                         </button>
                     </div> {% endcomment %}
                     <div class="d-flex justify-content-between align-items-center mt-4">
-            <p class="text-muted small mb-0"> </p>
-            <nav>
-                <ul class="pagination mb-0" id="pagination">
+                        <p class="text-muted small mb-0"> </p>
+                        <nav>
+                            <ul class="pagination mb-0" id="pagination">
 
-                    <li class="page-item" data-type="prev">
-                        <a class="page-link" href="#">Previous</a>
-                    </li>
+                                <li class="page-item" data-type="prev">
+                                    <a class="page-link" href="#">Previous</a>
+                                </li>
 
-                    {% for i in total_page_num %}
-                    <li class="page-item" data-page="{{ i }}">
-                        <a class="page-link" href="#">{{ i }}</a>
-                    </li>
-                    {% endfor %}
+                                {% for i in total_page_num %}
+                                <li class="page-item" data-page="{{ i }}">
+                                    <a class="page-link" href="#">{{ i }}</a>
+                                </li>
+                                {% endfor %}
 
-                    <li class="page-item" data-type="next">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
+                                <li class="page-item" data-type="next">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
 
-                </ul>
+                            </ul>
 
-            </nav>
-        </div>  
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
@@ -518,30 +464,30 @@
     <script src="{% static 'accounts/js/main.js' %}"></script>
     <!-- <script src="{% static 'catalog/js/shop-boxes.js' %}"></script> -->
     <script>
-document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function () {
 
-    const sortSelect = document.getElementById("sortSelect");
-    if (!sortSelect) return;
+            const sortSelect = document.getElementById("sortSelect");
+            if (!sortSelect) return;
 
-    const params = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams(window.location.search);
 
-    // 🔹 Keep selected sort on refresh
-    const currentSort = params.get("sort") || "newest";
-    sortSelect.value = currentSort;
+            // 🔹 Keep selected sort on refresh
+            const currentSort = params.get("sort") || "newest";
+            sortSelect.value = currentSort;
 
-    sortSelect.addEventListener("change", function () {
-        const params = new URLSearchParams(window.location.search);
+            sortSelect.addEventListener("change", function () {
+                const params = new URLSearchParams(window.location.search);
 
-        params.set("sort", this.value);   // add/update sort
-        params.delete("page");            // reset pagination
+                params.set("sort", this.value);   // add/update sort
+                params.delete("page");            // reset pagination
 
-        window.location.href =
-            `${window.location.pathname}?${params.toString()}`;
-    });
+                window.location.href =
+                    `${window.location.pathname}?${params.toString()}`;
+            });
 
-});
-</script>
- <script>
+        });
+    </script>
+    <script>
         const pagination = document.getElementById('pagination');
 
         // Get current page from URL
@@ -587,115 +533,115 @@ document.addEventListener("DOMContentLoaded", function () {
     </script>
 
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
-    const priceRange = document.getElementById("priceRange");
-    const maxPriceValue = document.getElementById("maxPriceValue");
+            const priceRange = document.getElementById("priceRange");
+            const maxPriceValue = document.getElementById("maxPriceValue");
 
-    if (!priceRange || !maxPriceValue) return;
+            if (!priceRange || !maxPriceValue) return;
 
-    // 🔹 Set initial value on page load
-    maxPriceValue.innerText = priceRange.value;
+            // 🔹 Set initial value on page load
+            maxPriceValue.innerText = priceRange.value;
 
-    function updatePriceFilter() {
-        const params = new URLSearchParams(window.location.search);
+            function updatePriceFilter() {
+                const params = new URLSearchParams(window.location.search);
 
-        // ❌ DO NOT send min_price
-        params.delete("max_price");
+                // ❌ DO NOT send min_price
+                params.delete("max_price");
 
-        // ✅ send only max_price
-        params.set("max_price", priceRange.value);
+                // ✅ send only max_price
+                params.set("max_price", priceRange.value);
 
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
-        window.location.href = newUrl;
-    }
+                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                window.location.href = newUrl;
+            }
 
-    // 🔹 Update UI live while sliding
-    priceRange.addEventListener("input", function () {
-        maxPriceValue.innerText = this.value;
-    });
+            // 🔹 Update UI live while sliding
+            priceRange.addEventListener("input", function () {
+                maxPriceValue.innerText = this.value;
+            });
 
-    // 🔹 Apply filter when slider released
-    priceRange.addEventListener("change", updatePriceFilter);
+            // 🔹 Apply filter when slider released
+            priceRange.addEventListener("change", updatePriceFilter);
 
-});
-</script>
+        });
+    </script>
 
     <script>
-document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function () {
 
-    function updateFilters() {
-        const params = new URLSearchParams(window.location.search);
+            function updateFilters() {
+                const params = new URLSearchParams(window.location.search);
 
-        // 🔹 remove old filter params only
-        params.delete("box");
-        params.delete("category");
-        params.delete("sizes");
+                // 🔹 remove old filter params only
+                params.delete("box");
+                params.delete("category");
+                params.delete("sizes");
 
-        // 🔹 box filters
-        document.querySelectorAll(".box-filter:checked").forEach(cb => {
-            params.append("box", cb.value);
+                // 🔹 box filters
+                document.querySelectorAll(".box-filter:checked").forEach(cb => {
+                    params.append("box", cb.value);
+                });
+
+                // 🔹 category filters
+                document.querySelectorAll(".category-filter:checked").forEach(cb => {
+                    params.append("category", cb.value);
+                });
+
+                // 🔹 size filters
+                document.querySelectorAll(".sizes-filter:checked").forEach(cb => {
+                    params.append("sizes", cb.value);
+                });
+
+                const newUrl = params.toString()
+                    ? `${window.location.pathname}?${params.toString()}`
+                    : window.location.pathname;
+
+                window.location.href = newUrl;
+            }
+
+            // 🔹 listen to all filter checkbox changes
+            document
+                .querySelectorAll(".box-filter, .category-filter, .sizes-filter")
+                .forEach(cb => cb.addEventListener("change", updateFilters));
+
         });
+    </script>
 
-        // 🔹 category filters
-        document.querySelectorAll(".category-filter:checked").forEach(cb => {
-            params.append("category", cb.value);
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            function updateFilters() {
+                const params = new URLSearchParams(window.location.search);
+
+                // 🔹 Remove only filter-related params
+                params.delete("box");
+                params.delete("category");
+
+                // 🔹 Add selected box filters
+                document.querySelectorAll(".box-filter:checked").forEach(cb => {
+                    params.append("box", cb.value);
+                });
+
+                // 🔹 Add selected category filters
+                document.querySelectorAll(".category-filter:checked").forEach(cb => {
+                    params.append("category", cb.value);
+                });
+
+                const newUrl = params.toString()
+                    ? `${window.location.pathname}?${params.toString()}`
+                    : window.location.pathname;
+
+                window.location.href = newUrl;
+            }
+
+            // 🔹 Attach change listener
+            document.querySelectorAll(".box-filter, .category-filter")
+                .forEach(cb => cb.addEventListener("change", updateFilters));
+
         });
-
-        // 🔹 size filters
-        document.querySelectorAll(".sizes-filter:checked").forEach(cb => {
-            params.append("sizes", cb.value);
-        });
-
-        const newUrl = params.toString()
-            ? `${window.location.pathname}?${params.toString()}`
-            : window.location.pathname;
-
-        window.location.href = newUrl;
-    }
-
-    // 🔹 listen to all filter checkbox changes
-    document
-        .querySelectorAll(".box-filter, .category-filter, .sizes-filter")
-        .forEach(cb => cb.addEventListener("change", updateFilters));
-
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    function updateFilters() {
-        const params = new URLSearchParams(window.location.search);
-
-        // 🔹 Remove only filter-related params
-        params.delete("box");
-        params.delete("category");
-
-        // 🔹 Add selected box filters
-        document.querySelectorAll(".box-filter:checked").forEach(cb => {
-            params.append("box", cb.value);
-        });
-
-        // 🔹 Add selected category filters
-        document.querySelectorAll(".category-filter:checked").forEach(cb => {
-            params.append("category", cb.value);
-        });
-
-        const newUrl = params.toString()
-            ? `${window.location.pathname}?${params.toString()}`
-            : window.location.pathname;
-
-        window.location.href = newUrl;
-    }
-
-    // 🔹 Attach change listener
-    document.querySelectorAll(".box-filter, .category-filter")
-        .forEach(cb => cb.addEventListener("change", updateFilters));
-
-});
-</script>
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -741,19 +687,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (e.key === "Enter") {
                         e.preventDefault();
                         const value = input.value.trim();
-                       const params = new URLSearchParams(window.location.search);
+                        const params = new URLSearchParams(window.location.search);
 
-if (value) {
-    params.set("search", value);
-} else {
-    params.delete("search"); // 🔥 THIS LINE FIXES YOUR ISSUE
-}
+                        if (value) {
+                            params.set("search", value);
+                        } else {
+                            params.delete("search"); // 🔥 THIS LINE FIXES YOUR ISSUE
+                        }
 
-const newUrl = params.toString()
-    ? `${window.location.pathname}?${params.toString()}`
-    : window.location.pathname;
+                        const newUrl = params.toString()
+                            ? `${window.location.pathname}?${params.toString()}`
+                            : window.location.pathname;
 
-window.location.href = newUrl;
+                        window.location.href = newUrl;
 
                     }
                 });
@@ -792,8 +738,8 @@ window.location.href = newUrl;
                                     // 🔹 CLICK SUGGESTION → redirect with ?search=
                                     btn.addEventListener("click", () => {
                                         const params = new URLSearchParams(window.location.search);
-params.set("search", item.name);
-window.location.href = `${window.location.pathname}?${params.toString()}`;
+                                        params.set("search", item.name);
+                                        window.location.href = `${window.location.pathname}?${params.toString()}`;
 
                                     });
 

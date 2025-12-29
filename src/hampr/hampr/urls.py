@@ -14,6 +14,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('',include('core.urls')),
     path('shop/', include('catalog.urls')),
+    path('tinymce/', include('tinymce.urls')),
     
     
 

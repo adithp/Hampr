@@ -19,7 +19,7 @@ from itertools import chain
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
 from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm,DecorationForm
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage,DecorationImages,Decoration
+from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage,DecorationImages,Decoration
 
 
 
@@ -127,7 +127,7 @@ class AdminProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
         
         paginator = Paginator(data,2)
         page_number = self.request.GET.get('pagelow')
-        low_products =paginator.get_page(page_number)
+        low_products =paginator.get_page(1000)
         total_pages = paginator.num_pages
             
         context['total_page_num'] = range(1,total_pages+1)
@@ -136,8 +136,6 @@ class AdminProductsMainPage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
         print(low_products)
         
         return context
-    
-    
     
     
     
@@ -175,9 +173,9 @@ class AdminBoxTypeManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
         context = super().get_context_data(**kwargs)
         q =  self.request.GET.get('search','')
         if q:
-            box_types = BoxType.objects.filter(name__icontains=q)
+            box_types = BoxMaterial.objects.filter(name__icontains=q)
         else:
-            box_types = BoxType.objects.all()
+            box_types = BoxMaterial.objects.all()
         paginator = Paginator(box_types,4)
         page_number = self.request.GET.get('page')
         box_types = paginator.get_page(page_number)
@@ -218,7 +216,6 @@ class AdminBoxTypeItemAdd(NeverCacheMixin,StaffRequiredMixin,View):
         form = BoxTypeForm(data)
         if form.is_valid():
             form.save()
-            messages.success(request, "Box Type added successfully!")
             return redirect('cadmin:box_type_manage')
         else:
             return render(request,'c_admin/admin-products-box-types-add.html',{'form':form})
@@ -254,8 +251,7 @@ class AdminBoxCategoryItemAdd(NeverCacheMixin,StaffRequiredMixin,View):
                         
                         
                     
-                messages.success(request, "Box Type added successfully!")
-                return redirect('cadmin:box_category_add')
+                return redirect('cadmin:box_type_manage')
             except ValidationError as e:
                 form.add_error(None, str(e))
                 return render(request, 'c_admin/admin-products-box-categories-add.html', {'form': form})
@@ -452,10 +448,7 @@ class AdminProductManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
         return context
     
             
-        
-        
-      
-        
+
         
 class AdminProductAdd(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
@@ -715,7 +708,7 @@ class AdminDecortionManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     
     
 class AdminBoxTypeDelete(DeleteView):
-    model = BoxType
+    model = BoxMaterial
     success_url = reverse_lazy('cadmin:box_type_manage')
     
     
@@ -838,8 +831,8 @@ class AdminBoxCategoryItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
 class AdminBoxTypeItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,id,*args, **kwargs):
         try:
-            box_type = BoxType.objects.get(id=id)
-        except BoxType.DoesNotExist as e:
+            box_type = BoxMaterial.objects.get(id=id)
+        except BoxMaterial.DoesNotExist as e:
             print(e)
             
         form = BoxTypeForm(instance=box_type)
@@ -848,8 +841,8 @@ class AdminBoxTypeItemEdit(NeverCacheMixin,StaffRequiredMixin,View):
     def post(self,request,id,*args, **kwargs):
         data = request.POST
         try:
-            box_type = BoxType.objects.get(id=id)
-        except BoxType.DoesNotExist as e:
+            box_type = BoxMaterial.objects.get(id=id)
+        except BoxMaterial.DoesNotExist as e:
             print(e)
             
         form = BoxTypeForm(data,instance=box_type)

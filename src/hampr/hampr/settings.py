@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     
+    'tinymce',
+    
     
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
@@ -180,4 +182,27 @@ SOCIALACCOUNT_PROVIDERS = {
             'prompt':'select_account',
         }
     }
+}
+
+
+TINYMCE_DEFAULT_CONFIG = {
+    "height": 400,
+    "width": "100%",
+    "menubar": False,
+
+   
+    "plugins": (
+        "advlist autolink lists link charmap preview anchor "
+        "searchreplace visualblocks code fullscreen "
+        "insertdatetime table help wordcount"
+    ),
+
+    "toolbar": (
+        "undo redo | blocks | bold italic underline | "
+        "alignleft aligncenter alignright | "
+        "bullist numlist | table | removeformat"
+    ),
+
+    "images_upload_handler": None,
+    "file_picker_types": "",
 }

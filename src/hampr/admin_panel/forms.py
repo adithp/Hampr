@@ -1,4 +1,4 @@
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxSize,ProductCategory,Product,ProductVariant,Color,Size,Decoration
+from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxSize,ProductCategory,Product,ProductVariant,Color,Size,Decoration
 from django import forms
 import re
 from django.core.exceptions import ValidationError
@@ -27,12 +27,11 @@ class HamperBoxForm(forms.ModelForm):
                 
             }),
             'description':forms.Textarea(attrs={
-                'class':"form-control",
-                'id':"boxDescription",
-                'rows':'5',
+                'class':" tinymce",
+            
                 'placeholder':"Describe materials, features, durability...",
-                'maxlength':'1000',
-                'oninput':"updateCharCount(this, 'descCount')"
+               
+                
                 
             }),
             'is_active':forms.CheckboxInput(attrs={
@@ -59,31 +58,20 @@ class HamperBoxForm(forms.ModelForm):
         
         if not re.match(r'^[A-Za-z ]+$', name):
             raise ValidationError("Box name must contain only alphabets and spaces")
-        if BoxType.objects.filter(name__iexact=name).exists():
+        if BoxMaterial.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box name already exists")
     
         return name
     
     
-    def clean_description(self):
-        description = self.cleaned_data.get('description')
-        
-        if not description:
-            raise ValidationError("Box Name Is Required")
-        
-        if len(description) < 20:
-            raise ValidationError("Box Length Must be under 20 characters")
-        if description.isdigit():
-            raise ValidationError("Must Conatin Alphabets")
-
-        return description.strip()
+   
     
 
     
 class BoxTypeForm(forms.ModelForm):
  
     class Meta():
-        model = BoxType
+        model = BoxMaterial
         fields = '__all__'
         widgets = {
             'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'typeName','placeholder':"e.g., Standard Box, Basket, Wooden Crate",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
@@ -103,7 +91,7 @@ class BoxTypeForm(forms.ModelForm):
         
         if not re.match(r'^[A-Za-z ]+$', name):
             raise ValidationError("Box name must contain only alphabets and spaces")
-        if BoxType.objects.filter(name__iexact=name).exists():
+        if BoxMaterial.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box name already exists")
         
         return name.strip()

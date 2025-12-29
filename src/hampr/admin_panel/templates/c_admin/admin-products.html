@@ -337,8 +337,8 @@
                                                 {% comment %} <img src="https://placehold.co/40x40/8B6F47/FFFFFF?text=C"
                                                     class="product-img-thumb me-2" alt="Img"> {% endcomment %}
                                                 <span class="fw-medium">
-                                                    {% if item.item_type == 'Box' %}{{item.hamper_box.name}}{% elif
-                                                    item.item_type == 'Interior'%}{{item.product.name}}
+                                                    {% if item.item_type == 'Box' %}{{item.hamper_box.name}}
+                                                    {% elif item.item_type == 'Interior'%}{{item.product.name}}
                                                     {% elif item.item_type == 'Decor' %} {{item.name}}{% endif %}
                                                 </span>
                                             </div>

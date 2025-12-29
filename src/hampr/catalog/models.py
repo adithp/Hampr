@@ -1,11 +1,13 @@
 from django.db import models
 import uuid
 
+from tinymce.models import HTMLField
+
 
 from autoslug import AutoSlugField
 
 
-class BoxType(models.Model):
+class BoxMaterial(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True,blank=True)
@@ -22,7 +24,7 @@ class BoxType(models.Model):
     
 class BoxCategory(models.Model):
     id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
-    box_type = models.ForeignKey(BoxType,on_delete=models.CASCADE) # Set TO Null Check How Real world works
+    box_type = models.ForeignKey(BoxMaterial,on_delete=models.CASCADE) # Set TO Null Check How Real world works
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
@@ -55,7 +57,7 @@ class HamperBox(models.Model):
     category = models.ForeignKey(BoxCategory,on_delete=models.CASCADE)
     
     created_at = models.DateTimeField(auto_now=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     name = models.CharField(max_length=40)
     slug = AutoSlugField(populate_from='name',unique=True)
