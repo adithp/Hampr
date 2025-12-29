@@ -150,9 +150,12 @@
         </ul>
 
         <div class="px-3 pt-5">
-            <a href="{% url 'core:logout' %}" class="btn btn-outline-danger w-100">
-                <i class="fas fa-sign-out-alt me-2"></i> Logout
-            </a>
+            <form action="{% url 'core:logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
+            </form>
         </div>
     </nav>
 
@@ -211,11 +214,13 @@
 
                             <td class="text-end">
                                 {% if cuser.is_active %}
-                                <a href="{% url 'cadmin:user_block' cuser.id %}" class="btn btn-sm btn-outline-danger">
+                                <a href="{% url 'cadmin:user_block' cuser.id %}?{{ request.GET.urlencode }}"
+                                    class="btn btn-sm btn-outline-danger">
                                     Block User
                                 </a>
                                 {% else %}
-                                <a href="{% url 'cadmin:user_block' cuser.id %}" class="btn btn-sm btn-outline-success">
+                                <a href="{% url 'cadmin:user_block' cuser.id %}?{{ request.GET.urlencode }} "
+                                    class="btn btn-sm btn-outline-success">
                                     Unblock User
                                 </a>
                                 {% endif %}
@@ -232,9 +237,75 @@
                 </table>
             </div>
         </div>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <p class="text-muted small mb-0"> </p>
+            <nav>
+                <ul class="pagination mb-0" id="pagination">
+
+                    <li class="page-item" data-type="prev">
+                        <a class="page-link" href="#">Previous</a>
+                    </li>
+
+                    {% for i in total_page_num %}
+                    <li class="page-item" data-page="{{ i }}">
+                        <a class="page-link" href="#">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    <li class="page-item" data-type="next">
+                        <a class="page-link" href="#">Next</a>
+                    </li>
+
+                </ul>
+
+            </nav>
+        </div>
 
     </main>
+    <script>
+        const pagination = document.getElementById('pagination');
 
+        // Get current page from URL
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(params.get('page')) || 1;
+
+        const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+        const totalPages = pageItems.length;
+
+        // Set active class on load
+        pageItems.forEach(item => {
+            if (parseInt(item.dataset.page) === currentPage) {
+                item.classList.add('active');
+            }
+        });
+
+        pagination.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const li = e.target.closest('.page-item');
+            if (!li) return;
+
+            // Page number click
+            if (li.dataset.page) {
+                goToPage(parseInt(li.dataset.page));
+            }
+
+            // Previous
+            if (li.dataset.type === 'prev' && currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+
+            // Next
+            if (li.dataset.type === 'next' && currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+
+        function goToPage(page) {
+            params.set('page', page);
+            window.location.search = params.toString();
+        }
+    </script>
     <script>
         function toggleSidebar() {
             document.getElementById("sidebar").classList.toggle("active");

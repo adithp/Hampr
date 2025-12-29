@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import BoxType,BoxCategory,BoxCategoryImage,HamperBox,BoxSize,BoxImage,ProductCategory,ProductImage,ProductVariant,Product,Decoration,DecorationImages
+from .models import BoxMaterial,BoxCategory,BoxCategoryImage,HamperBox,BoxSize,BoxImage,ProductCategory,ProductImage,ProductVariant,Product,Decoration,DecorationImages
 
 
-admin.site.register(BoxType)
+admin.site.register(BoxMaterial)
 
 admin.site.register(BoxCategory)
 

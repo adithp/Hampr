@@ -1,29 +1,38 @@
 from django.db import models
 import uuid
 
+from tinymce.models import HTMLField
+
 
 from autoslug import AutoSlugField
 
 
-class BoxType(models.Model):
+class BoxMaterial(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
     name =  models.CharField(max_length=20)
     
+    class Meta:
+        ordering = ['-created_at']
+    
     def __str__(self):
         return self.name
     
     
+    
 class BoxCategory(models.Model):
     id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
-    box_type = models.ForeignKey(BoxType,on_delete=models.CASCADE)
+    box_type = models.ForeignKey(BoxMaterial,on_delete=models.CASCADE) # Set TO Null Check How Real world works
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
     name = models.CharField(max_length=30)
     slug = AutoSlugField(populate_from="name",unique=True)
+    
+    class Meta:
+        ordering = ['-created_at']
     
     def __str__(self):
         return self.name
@@ -37,6 +46,9 @@ class BoxCategoryImage(models.Model):
     image = models.ImageField(upload_to='category_images/')
     is_primary = models.BooleanField(default=False)
     
+    class Meta:
+        ordering = ['-created_at']
+    
     
     
     
@@ -45,11 +57,14 @@ class HamperBox(models.Model):
     category = models.ForeignKey(BoxCategory,on_delete=models.CASCADE)
     
     created_at = models.DateTimeField(auto_now=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     name = models.CharField(max_length=40)
     slug = AutoSlugField(populate_from='name',unique=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
     
     
 class BoxSize(models.Model):
@@ -72,6 +87,10 @@ class BoxSize(models.Model):
     
     class Meta:
         unique_together = ('hamper_box', 'size_label')
+        ordering = ['-created_at']
+            
+    def __str__(self):
+        return self.size_label
 
     
 class BoxImage(models.Model):
@@ -88,7 +107,7 @@ class Color(models.Model):
     
     
 class Size(models.Model):
-    name = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=32)
     sort_order = models.PositiveSmallIntegerField(default=0) 
     
 
@@ -102,6 +121,8 @@ class ProductCategory(models.Model):
     parent_category = models.ForeignKey('self',on_delete=models.CASCADE,null=True,blank=True, related_name='children')
     slug = AutoSlugField(populate_from='name',unique=True)
     
+    class Meta:
+        ordering = ['-created_at']
     
     def __str__(self):
         return self.name
@@ -120,7 +141,10 @@ class Product(models.Model):
     total_reviews = models.IntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
     
-    
+    class Meta:
+        ordering = ['-created_at']
+        
+        
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
     # sku = models.CharField(max_length=64, blank=True, null=True, db_index=True)
@@ -141,6 +165,9 @@ class ProductVariant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        ordering = ['-created_at']
+        
 
 class ProductImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -148,6 +175,7 @@ class ProductImage(models.Model):
     image = models.ImageField(upload_to='product_image/')
     is_thumbnail = models.BooleanField(default=False)
     product = models.ForeignKey(ProductVariant,on_delete=models.CASCADE) 
+    
     
     
     
@@ -167,6 +195,10 @@ class Decoration(models.Model):
     is_outside = models.BooleanField(default=False)
     is_inside = models.BooleanField(default=False)
 
+
+    class Meta:
+        ordering = ['-created_at']
+        
 
 class DecorationImages(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

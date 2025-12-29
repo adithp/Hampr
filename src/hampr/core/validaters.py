@@ -17,3 +17,11 @@ def username_validater(value):
     pattern = r'[a-zA-z1-9_]'
     if not re.match(pattern,value):
         raise ValidationError('username only contain alphabets and numbers and _')
+
+
+
+def validate_image(image):
+    valid_types = ['image/jpeg', 'image/png', 'image/webp']
+
+    if image.file.content_type not in valid_types:
+        raise ValidationError("Only JPG, PNG and WEBP images are allowed")

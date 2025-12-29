@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Box - Step 2 | Admin Dashboard</title>
+    <title>
+        {% if edit %}Edit Box Size{% else %}Add Box - Step 2{% endif %} | Admin Dashboard
+    </title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,14 +15,11 @@
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
         rel="stylesheet">
 
-    <!-- Bootstrap 5 CSS -->
+  
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- FontAwesome -->
+ 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css">
 
     <style>
         body {
@@ -32,55 +31,37 @@
             top: 0;
             bottom: 0;
             left: 0;
-            z-index: 100;
-            padding: 48px 0 0;
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
-            background-color: var(--white);
             width: 240px;
-            transition: all 0.3s;
+            padding: 48px 0 0;
+            background-color: var(--white);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
         }
 
         .main-content {
             margin-left: 240px;
             padding: 2rem;
-            transition: all 0.3s;
         }
 
-        .summary-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
+        .summary-card,
         .size-card {
             background: #fff;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s;
-            margin-bottom: 1.5rem;
-        }
-
-        .size-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: #b3d7ff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
         }
 
         .size-card-header {
+            padding: 1rem 1.5rem;
             background-color: #f8f9fa;
             border-bottom: 1px solid #e0e0e0;
-            border-radius: 8px 8px 0 0;
-            padding: 1rem 1.5rem;
         }
 
         .btn-primary-custom {
             background-color: #0066cc;
             border-color: #0066cc;
             color: white;
-            height: 50px;
-            border-radius: 6px;
             font-weight: 500;
+            height: 50px;
         }
     </style>
 </head>
@@ -93,10 +74,15 @@
             <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
             <p class="text-muted small">Admin Portal</p>
         </div>
+
         <div class="px-3">
             <div class="alert alert-light border mb-0">
                 <small class="text-muted d-block mb-2">Current Task:</small>
+                {% if edit %}
+                <div class="fw-bold text-primary"><i class="fas fa-pen me-2"></i>Editing Size</div>
+                {% else %}
                 <div class="fw-bold text-primary"><i class="fas fa-box me-2"></i>Adding New Box</div>
+                {% endif %}
             </div>
             <hr>
         </div>
@@ -105,12 +91,19 @@
     <!-- Main Content -->
     <main class="main-content">
 
+        <!-- Dynamic Title -->
         <div class="mb-4">
-            <h2 class="fw-bold mb-1">Add Box Sizes</h2>
+            <h2 class="fw-bold mb-1">
+                {% if edit %}Edit Size{% else %}Add Box Sizes{% endif %}
+            </h2>
+
+            {% if not edit %}
             <p class="text-muted mb-0">Step 2 of 3: Define available size</p>
+            {% endif %}
         </div>
 
-        <!-- Summary Card -->
+        <!-- Summary Card (ONLY IN ADD MODE) -->
+        {% if not edit %}
         <div class="card summary-card p-3 mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
@@ -119,26 +112,39 @@
                 </div>
             </div>
         </div>
+        {% endif %}
+
+        <!-- Django Messages -->
         {% if messages %}
         <div class="mb-4">
             {% for message in messages %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {% if message.tags == "success" %}
                 <i class="fas fa-check-circle me-2"></i>
+                {% elif message.tags == "error" or message.tags == "danger" %}
+                <i class="fas fa-times-circle me-2"></i>
+                {% elif message.tags == "warning" %}
+                <i class="fas fa-exclamation-circle me-2"></i>
+                {% else %}
+                <i class="fas fa-info-circle me-2"></i>
+                {% endif %}
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             {% endfor %}
         </div>
         {% endif %}
+
         <!-- FORM START -->
         <form method="POST">
             {% csrf_token %}
 
-            <!-- Only ONE size form -->
             <div class="size-card" id="sizeCard-1">
 
                 <div class="size-card-header">
-                    <h6 class="fw-bold mb-0 text-primary">Size Details</h6>
+                    <h6 class="fw-bold mb-0 text-primary">
+                        {% if edit %}Edit Size Details{% else %}Size Details{% endif %}
+                    </h6>
                 </div>
 
                 <div class="card-body p-4">
@@ -146,8 +152,8 @@
                     <!-- Size Label -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Size Label <span class="text-danger">*</span></label>
-                        {{form.size_label}}
-                        {{form.size_label.errors}}
+                        {{ form.size_label }}
+                        {{ form.size_label.errors }}
                     </div>
 
                     <!-- Dimensions -->
@@ -155,22 +161,18 @@
                         <label class="form-label fw-semibold">Dimensions (cm) <span class="text-danger">*</span></label>
                         <div class="row g-2">
                             <div class="col-4">
-                                {{form.height}}
-                                {{form.height.errors}}
+                                {{ form.height }}
                                 <small class="text-muted">Height</small>
                             </div>
                             <div class="col-4">
-                                {{form.width}}
-                                {{form.width.errors}}
+                                {{ form.width }}
                                 <small class="text-muted">Width</small>
                             </div>
                             <div class="col-4">
-                                {{form.depth}}
-                                {{form.depth.errors}}
+                                {{ form.depth }}
                                 <small class="text-muted">Depth</small>
                             </div>
                         </div>
-
                         <div class="mt-2 text-muted small" id="volume-1">Volume: 0 cm³</div>
                     </div>
 
@@ -179,14 +181,13 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Cost Price (₹) <span
                                     class="text-danger">*</span></label>
-                            {{form.cost}}
-                            {{form.cost.errors}}
+                            {{ form.cost }}
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Selling Price (₹) <span
                                     class="text-danger">*</span></label>
-                            {{form.price}}
-                            {{form.price.errors}}
+                            {{ form.price }}
                         </div>
 
                         <div class="col-12">
@@ -196,13 +197,12 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Stock Quantity <span
                                     class="text-danger">*</span></label>
-                            {{form.stock}}
-                            {{form.stock.errors}}
+                            {{ form.stock }}
                         </div>
 
                         <div class="col-md-6 d-flex align-items-end">
                             <div class="form-check form-switch">
-                                {{form.is_active}}
+                                {{ form.is_active }}
                                 <label class="form-check-label">Active Status</label>
                             </div>
                         </div>
@@ -211,69 +211,48 @@
                 </div>
             </div>
 
+            <!-- SUBMIT BUTTON -->
             <button type="submit" class="btn btn-primary-custom w-100 mt-3">
-                Add Size <i class="fas fa-arrow-right ms-2"></i>
+                {% if edit %}Update Size{% else %}Add Size{% endif %}
+                <i class="fas fa-arrow-right ms-2"></i>
             </button>
-
         </form>
+
+        <!-- ADD MODE ONLY BUTTONS -->
+        {% if not edit %}
         <div class="d-flex">
-            <a type="submit" class="btn btn-primary-custom w-50 mt-3 me-2"
-                href="{% url 'cadmin:second_third_redirect' %}">
+            <a class="btn btn-primary-custom w-50 mt-3 me-2" href="{% url 'cadmin:second_third_redirect' %}">
                 Next Stage Image Uploads <i class="fas fa-arrow-right ms-2"></i>
             </a>
+
             <a href="{% url 'cadmin:box_product_adding_cancel' %}" class="btn btn-secondary w-50 mt-3">
-                Cancel Box Adding <i class="fas fa-arrow-right ms-2"></i>
+                Cancel Box Adding
             </a>
         </div>
+        {% endif %}
+
+        <!-- EDIT MODE: SIMPLE CANCEL BUTTON -->
+        {% if edit %}
+        <a href="{% url 'cadmin:box_manage' %}" class="btn btn-secondary w-100 mt-3">
+            Cancel Editing
+        </a>
+        {% endif %}
+
     </main>
 
-    <!-- Minimal JS -->
+    <!-- JS -->
     <script>
-        // Load saved step1 data
-        window.addEventListener('DOMContentLoaded', () => {
+        // Load step 1 data (only for add mode)
+        {% if not edit %}
+        document.addEventListener('DOMContentLoaded', () => {
             const saved = localStorage.getItem('newBoxData_Step1');
             if (saved) {
                 const data = JSON.parse(saved);
-                document.getElementById('summaryBoxName').textContent = data.name || 'New Box';
-                document.getElementById('summaryCategory').textContent = data.category || 'Uncategorized';
+                document.getElementById('summaryBoxName').innerText = data.name || 'New Box';
+                document.getElementById('summaryCategory').innerText = data.category || 'Uncategorized';
             }
         });
-
-        // Volume calculation
-        function calcVolume() {
-            const h = parseFloat(document.querySelector('input[name="height"]').value) || 0;
-            const w = parseFloat(document.querySelector('input[name="width"]').value) || 0;
-            const d = parseFloat(document.querySelector('input[name="depth"]').value) || 0;
-
-            document.getElementById("volume-1").textContent =
-                `Volume: ${h * w * d} cm³`;
-        }
-
-        // Profit calculation
-        function calcProfit() {
-            const cost = parseFloat(document.querySelector('input[name="cost"]').value) || 0;
-            const sell = parseFloat(document.querySelector('input[name="price"]').value) || 0;
-
-            const profit = sell - cost;
-            const margin = sell > 0 ? ((profit / sell) * 100).toFixed(1) : 0;
-
-            const el = document.getElementById("profit-1");
-            el.textContent = `Profit: ₹${profit} (${margin}%)`;
-
-            el.className =
-                profit > 0 ? "small text-success" :
-                    profit < 0 ? "small text-danger" :
-                        "small text-muted";
-        }
-    </script>
-    <script>
-        window.addEventListener("beforeunload", function () { });
-        window.addEventListener("unload", function () { });
-        window.addEventListener("pageshow", function (event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
+        {% endif %}
     </script>
 
 </body>

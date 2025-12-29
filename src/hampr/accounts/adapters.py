@@ -11,12 +11,21 @@ class GoogleBlockAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
         email = sociallogin.account.extra_data.get('email')
         if not email:
-            return
-        
+            return  
         try:
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
             return  
+        if not user.is_active:
+            messages.error(
+                request,
+                "Your account has been blocked. Please contact support."
+            )
+            raise ImmediateHttpResponse(
+                redirect(reverse("accounts:not_active_error"))
+            )
+            
+        
         if user.has_usable_password():
             messages.error(request, "You already registered using email & password. Please login using your password.")
             raise ImmediateHttpResponse(

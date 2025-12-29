@@ -1,0 +1,537 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Magnetic Gift Box | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'catalog/css/box-detail.css' %}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+
+    <!-- Main Content -->
+    <main class="product-detail-section" style="margin-top: 80px;">
+        <div class="container">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../index.html" class="text-decoration-none">Home</a></li>
+                    <!-- <li class="breadcrumb-item"><a href="shop-boxes.html" class="text-decoration-none">Hampers</a></li>
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Birthday</a></li> -->
+                    <li class="breadcrumb-item active" aria-current="page">Luxury Magnetic Box</li>
+                </ol>
+            </nav>
+
+            <a href="shop-boxes.html" class="text-muted text-decoration-none mb-4 d-inline-block hover-text-gold">
+                <i class="fas fa-arrow-left me-2"></i>Back to boxes
+            </a>
+
+            <div class="row">
+                <!-- Left Column: Image Gallery -->
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="gallery-container">
+                        <figure class="main-image-wrapper shadow-sm">
+                            {% if product_images %}
+                            <img src="{{ product_images.0.image.url }}" id="mainImage">
+                            {% endif %}
+                        </figure>
+                        <div class="thumbnails-row">
+                            {% for image in product_images %}
+                            <button type="button" class="thumbnail-btn {% if forloop.first %}active{% endif %}"
+                                onclick="updateMainImage(this, '{{ image.image.url }}')">
+                                <img src="{{ image.image.url }}" alt="Box Image">
+                            </button>
+                            {% endfor %}
+                            <!-- <button class="thumbnail-btn"
+                                onclick="updateMainImage(this, 'https://placehold.co/800x800/f8f9fa/212529?text=Magnetic+Box+Open')">
+                                <img src="https://placehold.co/150x150/f8f9fa/212529?text=Open" alt="Open View">
+                            </button>
+                            <button class="thumbnail-btn"
+                                onclick="updateMainImage(this, 'https://placehold.co/800x800/f8f9fa/212529?text=Magnetic+Box+Side')">
+                                <img src="https://placehold.co/150x150/f8f9fa/212529?text=Side" alt="Side View">
+                            </button>
+                            <button class="thumbnail-btn"
+                                onclick="updateMainImage(this, 'https://placehold.co/800x800/f8f9fa/212529?text=Magnetic+Box+Detail')">
+                                <img src="https://placehold.co/150x150/f8f9fa/212529?text=Detail" alt="Detail View">
+                            </button> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Product Info -->
+                <div class="col-lg-6 product-info-col">
+                    <!-- <span class="product-category-badge">Best Seller</span> -->
+                    <h1 class="product-title display-5">{{product.name}}</h1>
+                    <p class="product-tagline">The perfect foundation for an unforgettable gift.</p>
+
+                    <div class="price-display">
+                        <span class="price-label">Starting from</span>
+                        <span class="current-price" id="displayPrice">₹</span>
+                    </div>
+
+                    <!-- Size Selector -->
+                    <div class="mb-4">
+                        <span class="size-selector-label">Select Size: <span id="selectedSizeLabel"
+                                class="fw-normal text-muted">Small</span></span>
+                        <div class="size-options">
+                            {% for size in sizes %}
+                            <button class="size-btn {% if forloop.first %}active{% endif %}"
+                                data-size="{{ size.get_size_label_display }}" data-price="{{ size.price }}"
+                                data-stock="{{ size.stock }}"
+                                data-dimensions="{{ size.width }} × {{ size.height }} × {{ size.depth }} cm"
+                                onclick="selectSize(this)">
+                                {{ size.get_size_label_display }}
+                            </button>
+                            {% endfor %}
+                        </div>
+
+
+                    </div>
+
+                    <!-- Stock & Attributes -->
+                    <div class="mb-4">
+                        <div id="stockStatus" class="stock-status in-stock">
+                            <i class="fas fa-check-circle"></i> In Stock (Ready to ship)
+                        </div>
+
+                        <div class="product-attributes">
+                            <div class="attribute-item">
+                                <span class="attribute-label">Dimensions:</span>
+                                <span class="attribute-value" id="dimensionsDisplay">20 × 15 × 10 cm</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attribute-label">Material:</span>
+                                <span class="attribute-value">{{product.category.box_type.name}}</span>
+                            </div>
+                            <!-- <div class="attribute-item">
+                                <span class="attribute-label">Finish:</span>
+                                <span class="attribute-value">Matte White with Gold Edging</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attribute-label">Closure:</span>
+                                <span class="attribute-value">Concealed Magnetic Snap</span>
+                            </div> -->
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary btn-lg btn-add-hamper shadow-sm hover-scale-up"
+                            id="addToHamperBtn">
+                            Add to Hamper
+                        </button>
+                        <button class="btn btn-outline-secondary btn-wishlist hover-scale-up" title="Add to Wishlist">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <!-- Short Benefits -->
+                    <ul class="list-unstyled text-muted small">
+                        <li class="mb-2"><i class="fas fa-truck text-gold me-2"></i> Free shipping on orders over ₹3000
+                        </li>
+                        <li class="mb-2"><i class="fas fa-undo text-gold me-2"></i> 30-day easy returns</li>
+                        <li><i class="fas fa-shield-alt text-gold me-2"></i> Secure checkout guaranteed</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="row details-section">
+                <div class="col-lg-8">
+                    <h2 class="section-title">Product Description</h2>
+                    {{product.description | safe}}
+
+                    <h2 class="section-title mb-4">Size Guide</h2>
+                    <div class="table-responsive">
+                        <table class="table table-hover dimensions-table border">
+                            <thead>
+                                <tr>
+                                    <th>Size</th>
+                                    <th>Dimensions (L × W × H)</th>
+                                    <th>Volume</th>
+                                    <!-- <th>Ideal For</th> -->
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for size in sizes %}
+                                <tr class="size-row" data-row-size="Small">
+                                    <td class="fw-bold">{{size.get_size_label_display}}</td>
+                                    <td>{{size.depth}} × {{size.width}} × {{size.height}} cm</td>
+                                    <td>{{size.volume}} L</td>
+                                    <!-- <td>Chocolates, small accessories, jewelry</td> -->
+                                    <td>₹{{size.price}}</td>
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section" id="reviews">
+        <div class="container">
+            <h2 class="section-title text-center d-block mx-auto mb-5" style="width: fit-content;">Customer Reviews</h2>
+
+            <div class="row">
+                <!-- Rating Summary -->
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <div class="rating-summary-card">
+                        <div class="big-rating">4.8</div>
+                        <div class="rating-stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p class="text-muted mb-4">Based on 128 reviews</p>
+
+                        <!-- Bars -->
+                        <div class="rating-bar-row">
+                            <span>5★</span>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: 85%;"></div>
+                            </div>
+                            <span>102</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>4★</span>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: 10%;"></div>
+                            </div>
+                            <span>18</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>3★</span>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: 3%;"></div>
+                            </div>
+                            <span>5</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>2★</span>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: 1%;"></div>
+                            </div>
+                            <span>2</span>
+                        </div>
+                        <div class="rating-bar-row">
+                            <span>1★</span>
+                            <div class="rating-bar-container">
+                                <div class="rating-bar-fill" style="width: 1%;"></div>
+                            </div>
+                            <span>1</span>
+                        </div>
+
+                        <button class="btn btn-outline-dark w-100 mt-4">Write a Review</button>
+                    </div>
+                </div>
+
+                <!-- Review List -->
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Latest Reviews</h5>
+                        <select class="form-select form-select-sm w-auto border-0 bg-transparent fw-bold text-muted">
+                            <option>Most Recent</option>
+                            <option>Highest Rated</option>
+                            <option>Lowest Rated</option>
+                        </select>
+                    </div>
+
+                    <!-- Review 1 -->
+                    <div class="review-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex gap-3">
+                                <div class="reviewer-avatar">JD</div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Jane Doe</h6>
+                                    <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">2 days ago</small>
+                        </div>
+                        <div class="text-warning mb-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <h6 class="fw-bold">Perfect for my bridesmaid boxes!</h6>
+                        <p class="text-muted mb-0">I bought 5 of the Medium sizes for my bridesmaid proposals and they
+                            were absolutely perfect. The magnetic closure is strong and the finish is very premium.
+                            Highly recommend!</p>
+                    </div>
+
+                    <!-- Review 2 -->
+                    <div class="review-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex gap-3">
+                                <div class="reviewer-avatar">AS</div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Amit Singh</h6>
+                                    <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">1 week ago</small>
+                        </div>
+                        <div class="text-warning mb-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                class="fas fa-star"></i><i class="far fa-star"></i>
+                        </div>
+                        <h6 class="fw-bold">Great quality, but one arrived slightly dented</h6>
+                        <p class="text-muted mb-0">The boxes are beautiful and very sturdy. One of them had a small dent
+                            on the corner, but customer service was super quick to replace it. Will buy again.</p>
+                    </div>
+
+                    <!-- Review 3 -->
+                    <div class="review-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex gap-3">
+                                <div class="reviewer-avatar">MK</div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">Meera K.</h6>
+                                    <div class="verified-badge"><i class="fas fa-check-circle"></i> Verified Buyer</div>
+                                </div>
+                            </div>
+                            <small class="text-muted">2 weeks ago</small>
+                        </div>
+                        <div class="text-warning mb-2">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+                                class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <h6 class="fw-bold">Luxurious feel</h6>
+                        <p class="text-muted mb-0">Used the XL size for a corporate hamper. It fits a wine bottle
+                            perfectly along with many other goodies. The gold edging adds such a nice touch.</p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button class="btn btn-link text-dark text-decoration-none fw-bold">View All Reviews <i
+                                class="fas fa-chevron-right ms-1 small"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sticky Bottom Bar (Mobile) -->
+    <div class="sticky-bottom-bar d-md-none" id="mobileStickyBar">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small" id="mobileStickySize">Small</span>
+            <span class="fw-bold text-primary" id="mobileStickyPrice">₹1,500</span>
+        </div>
+        <button class="btn btn-primary w-100 rounded-pill" id="mobileStickyBtn">Add to Hamper</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h3 class="text-white mb-4">HAM<span class="text-gold">PR.</span></h3>
+                    <p class="text-white-50">Premium gift hampers for all occasions. Curated with love and care.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Shop</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">All
+                                Products</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">New
+                                Arrivals</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Company</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">About
+                                Us</a></li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="text-white mb-3">Newsletter</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Your email">
+                        <button class="btn btn-primary">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center text-white-50">
+                <small>&copy; 2023 HAMPR. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // --- Product Logic ---
+
+        function updateMainImage(thumbnail, newSrc) {
+            // Update Main Image
+            const mainImg = document.getElementById('mainImage');
+            mainImg.style.opacity = '0.5';
+
+            setTimeout(() => {
+                mainImg.src = newSrc;
+                mainImg.style.opacity = '1';
+            }, 200);
+
+            // Update Active State
+            document.querySelectorAll('.thumbnail-btn').forEach(btn => btn.classList.remove('active'));
+            thumbnail.classList.add('active');
+        }
+
+        function selectSize(btn) {
+
+            // active button
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const price = btn.dataset.price;
+            const dimensions = btn.dataset.dimensions;
+            const stock = parseInt(btn.dataset.stock);
+            const size = btn.dataset.size;
+
+            // price
+            document.getElementById('displayPrice').textContent =
+                '₹' + parseInt(price).toLocaleString();
+
+            // size label
+            document.getElementById('selectedSizeLabel').textContent = size;
+
+            // dimensions
+            document.getElementById('dimensionsDisplay').textContent = dimensions;
+
+            // stock logic
+            const stockEl = document.getElementById('stockStatus');
+            const addBtn = document.getElementById('addToHamperBtn');
+
+            if (stock === 0) {
+                stockEl.className = 'stock-status out-of-stock';
+                stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+                addBtn.disabled = true;
+            }
+            else if (stock <= 10) {
+                stockEl.className = 'stock-status low-stock';
+                stockEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Only ${stock} left!`;
+                addBtn.disabled = false;
+            }
+            else {
+                stockEl.className = 'stock-status in-stock';
+                stockEl.innerHTML = '<i class="fas fa-check-circle"></i> In Stock (Ready to ship)';
+                addBtn.disabled = false;
+            }
+        }
+
+        // init first size
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstBtn = document.querySelector('.size-btn');
+            if (firstBtn) selectSize(firstBtn);
+        });
+        // --- Image Zoom Logic ---
+        const mainImageWrapper = document.querySelector('.main-image-wrapper');
+        const mainImage = document.querySelector('.main-image-wrapper img');
+
+        if (mainImageWrapper && mainImage) {
+            mainImageWrapper.addEventListener('mousemove', function (e) {
+                // Get container dimensions and mouse position
+                const rect = mainImageWrapper.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Calculate percentage position
+                const xPercent = (x / rect.width) * 100;
+                const yPercent = (y / rect.height) * 100;
+
+                // Set transform origin to mouse position
+                mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+
+                // Scale up (Zoom)
+                mainImage.style.transform = 'scale(2.5)'; // 2.5x zoom
+                mainImage.style.cursor = 'zoom-in';
+            });
+
+            mainImageWrapper.addEventListener('mouseleave', function () {
+                // Reset on mouse leave
+                mainImage.style.transformOrigin = 'center center';
+                mainImage.style.transform = 'scale(1)';
+
+                // Add smooth transition for reset
+                mainImage.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    mainImage.style.transition = 'none'; // Remove transition for next mousemove
+                }, 300);
+            });
+
+            // Remove transition on enter to prevent laggy movement
+            mainImageWrapper.addEventListener('mouseenter', function () {
+                mainImage.style.transition = 'none';
+            });
+        }
+
+        // --- Sticky Bar Logic (Mobile) ---
+        window.addEventListener('scroll', () => {
+            const stickyBar = document.getElementById('mobileStickyBar');
+            const titleSection = document.querySelector('.product-title');
+
+            if (!titleSection) return;
+
+            const titleBottom = titleSection.getBoundingClientRect().bottom;
+
+            // Show sticky bar when title scrolls out of view
+            if (titleBottom < 0) {
+                stickyBar.classList.add('visible');
+            } else {
+                stickyBar.classList.remove('visible');
+            }
+        });
+
+        // Initialize with first size selected
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstSizeBtn = document.querySelector('.size-btn');
+            if (firstSizeBtn) {
+                selectSize(firstSizeBtn);
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -2,7 +2,7 @@ from django.urls import path
 
 
 
-from .views import succses,UserSignupView,Otp_Verify_View,Otp_Resend,CustomLoginView,ResetPasswordLinkSend,ResetPassword
+from .views import not_active_error,UserSignupView,Otp_Verify_View,Otp_Resend,CustomLoginView,ResetPasswordLinkSend,ResetPassword
 
 app_name = 'accounts'
 
@@ -13,4 +13,5 @@ urlpatterns = [
     path('login/',CustomLoginView.as_view(),name='login'),
     path('reset_link/',ResetPasswordLinkSend.as_view(),name='reset_link'),
     path('reset_password/<uuid:id>/',ResetPassword.as_view(),name='reset_password'),
+    path('not_active_error/',not_active_error,name='not_active_error')
 ]

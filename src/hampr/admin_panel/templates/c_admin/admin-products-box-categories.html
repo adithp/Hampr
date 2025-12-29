@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
@@ -20,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
 
     <style>
         body {
@@ -191,9 +192,9 @@
                         Dashboard</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'cadmin:products_manage' %}"
+                    <a href="{% url 'cadmin:box_manage' %}"
                         class="nav-link active text-primary fw-bold bg-light rounded"><i class="fas fa-box me-2"></i>
-                        Products</a>
+                        BoxProducts</a>
                 </li>
             </ul>
             <hr>
@@ -209,8 +210,8 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{% url 'cadmin:products_manage' %}"
-                            class="text-decoration-none text-muted">Products</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cadmin:box_manage' %}"
+                            class="text-decoration-none text-muted">Boxes</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Box Categories</li>
                 </ol>
             </nav>
@@ -228,16 +229,19 @@
         </div>
 
         <!-- Filters & Search -->
-        <!-- <div class="card table-card p-3 mb-4">
-            <div class="row g-3">
+        <div class="card table-card p-3 mb-4">
+            <form class="row g-3">
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i
                                 class="fas fa-search text-muted"></i></span>
-                        <input type="text" class="form-control border-start-0 bg-light" placeholder="Search by name...">
+
+                        <input type="text" class="form-control border-start-0 bg-light" placeholder="Search by name..."
+                            name="search" value="{{request.GET.search}}">
+                        <button type="submit" hidden id="">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                     <select class="form-select bg-light border-0">
                         <option selected>Status: All</option>
                         <option>Active</option>
@@ -250,9 +254,10 @@
                         <option>Name A-Z</option>
                         <option>Most Used</option>
                     </select>
-                </div>
-            </div>
-        </div> -->
+                </div> -->
+            </form>
+        </div>
+
 
         <!-- Box Categories Table -->
         <div class="card table-card p-4">
@@ -286,10 +291,13 @@
                             <td data-label="Status"><span class="status-badge status-inactive">Inactive</span></td>
                             {% endif %}
                             <td data-label="Actions" class="text-end">
-                                <a href="admin-products-box-categories-add.html" class="btn btn-sm btn-light me-1"
-                                    title="Edit"><i class="fas fa-edit"></i></a>
-                                <button class="btn btn-sm btn-light text-danger" onclick="confirmDelete()"
-                                    title="Delete"><i class="fas fa-trash"></i></button>
+                                <form action="{% url 'cadmin:box_category_delete' category.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <a href="{% url 'cadmin:box_category_edit' category.id %}"
+                                        class="btn btn-sm btn-light me-1"><i class="fas fa-edit"></i></a>
+                                    <button type="submit" class="btn btn-sm btn-light text-danger" title="Delete"><i
+                                            class="fas fa-trash"></i></button>
+                                </form>
                             </td>
                         </tr>
                         {% endfor %}
@@ -311,20 +319,77 @@
             </div>
 
             <!-- Pagination -->
-            <!-- <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                <p class="text-muted small mb-0">Showing 1 to 3 of 3 entries</p>
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <p class="text-muted small mb-0"> </p>
                 <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active"><a class="page-link bg-primary border-primary" href="#">1</a></li>
-                        <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
+                    <ul class="pagination mb-0" id="pagination">
+
+                        <li class="page-item" data-type="prev">
+                            <a class="page-link" href="#">Previous</a>
+                        </li>
+
+                        {% for i in total_page_num %}
+                        <li class="page-item" data-page="{{ i }}">
+                            <a class="page-link" href="#">{{ i }}</a>
+                        </li>
+                        {% endfor %}
+
+                        <li class="page-item" data-type="next">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+
                     </ul>
+
                 </nav>
-            </div> -->
+            </div>
         </div>
     </main>
 
     <!-- Scripts -->
+    <script>
+        const pagination = document.getElementById('pagination');
+
+        // Get current page from URL
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(params.get('page')) || 1;
+
+        const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+        const totalPages = pageItems.length;
+
+        // Set active class on load
+        pageItems.forEach(item => {
+            if (parseInt(item.dataset.page) === currentPage) {
+                item.classList.add('active');
+            }
+        });
+
+        pagination.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const li = e.target.closest('.page-item');
+            if (!li) return;
+
+            // Page number click
+            if (li.dataset.page) {
+                goToPage(parseInt(li.dataset.page));
+            }
+
+            // Previous
+            if (li.dataset.type === 'prev' && currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+
+            // Next
+            if (li.dataset.type === 'next' && currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+
+        function goToPage(page) {
+            params.set('page', page);
+            window.location.search = params.toString();
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleSidebar() {

@@ -1,4 +1,4 @@
-from catalog.models import BoxCategory,BoxType,HamperBox,BoxSize,ProductCategory,Product,ProductVariant,Color,Size,Decoration
+from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxSize,ProductCategory,Product,ProductVariant,Color,Size,Decoration
 from django import forms
 import re
 from django.core.exceptions import ValidationError
@@ -27,12 +27,11 @@ class HamperBoxForm(forms.ModelForm):
                 
             }),
             'description':forms.Textarea(attrs={
-                'class':"form-control",
-                'id':"boxDescription",
-                'rows':'5',
+                'class':" tinymce",
+            
                 'placeholder':"Describe materials, features, durability...",
-                'maxlength':'1000',
-                'oninput':"updateCharCount(this, 'descCount')"
+               
+                
                 
             }),
             'is_active':forms.CheckboxInput(attrs={
@@ -59,31 +58,20 @@ class HamperBoxForm(forms.ModelForm):
         
         if not re.match(r'^[A-Za-z ]+$', name):
             raise ValidationError("Box name must contain only alphabets and spaces")
-        if BoxType.objects.filter(name__iexact=name).exists():
+        if BoxMaterial.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box name already exists")
     
         return name
     
     
-    def clean_description(self):
-        description = self.cleaned_data.get('description')
-        
-        if not description:
-            raise ValidationError("Box Name Is Required")
-        
-        if len(description) < 20:
-            raise ValidationError("Box Length Must be under 20 characters")
-        if description.isdigit():
-            raise ValidationError("Must Conatin Alphabets")
-
-        return description
+   
     
 
     
 class BoxTypeForm(forms.ModelForm):
  
     class Meta():
-        model = BoxType
+        model = BoxMaterial
         fields = '__all__'
         widgets = {
             'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'typeName','placeholder':"e.g., Standard Box, Basket, Wooden Crate",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
@@ -103,10 +91,10 @@ class BoxTypeForm(forms.ModelForm):
         
         if not re.match(r'^[A-Za-z ]+$', name):
             raise ValidationError("Box name must contain only alphabets and spaces")
-        if BoxType.objects.filter(name__iexact=name).exists():
+        if BoxMaterial.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box name already exists")
         
-        return name
+        return name.strip()
     
     
 class BoxCategoryAdd(forms.ModelForm):
@@ -146,7 +134,50 @@ class BoxCategoryAdd(forms.ModelForm):
         if BoxCategory.objects.filter(name__iexact=name).exists():
             raise ValidationError("This box category name already exists")
         
-        return name
+        return name.strip()
+    
+    
+class BoxCategoryAdd(forms.ModelForm):
+    
+    class Meta:
+        model = BoxCategory
+        fields = '__all__'
+        widgets = {
+            'box_type':forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'boxType',
+                'required': True,
+                'onchange': 'validateInput(this)',
+            }),
+            'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'categoryName','placeholder':"e.g., Birthday, Wedding",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
+            'description':forms.Textarea(attrs={'class':"form-control",'id':"categoryDescription",'row':'4', 'placeholder':"Describe this category...",'maxlength':'200','oninput':"updateCharCount(this)"}),
+            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus",})
+        }
+        
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['box_type'].empty_label = "Select Box Type"
+        
+        
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        
+        if not name:
+            raise ValidationError("Box category  Name Is Required")
+        
+        if len(name) < 3:
+            raise ValidationError("Box category Length Must be under 3 characters")
+        
+        if not re.match(r'^[A-Za-z ]+$', name):
+            raise ValidationError("Box name must contain only alphabets and spaces")
+        
+        
+        qs = BoxCategory.objects.filter(name__iexact=name).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Another category already uses this name")
+
+        return name.strip()
     
     
 class BoxSizeForm(forms.ModelForm):
@@ -271,7 +302,7 @@ class ProductCategoryForm(forms.ModelForm):
             
             'name':forms.TextInput(attrs={'type':'text','class':'form-control','id':'categoryName','placeholder':"e.g., Dress, Electronics",'maxlength':"50",'required':True,'oninput':"validateInput(this)"}),
             'description':forms.Textarea(attrs={'class':"form-control",'id':"categoryDescription",'row':'4', 'placeholder':"Describe this category...",'maxlength':'200','oninput':"updateCharCount(this)"}),
-            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus",'checked':True})
+            'is_active':forms.CheckboxInput(attrs={'class':"form-check-input",'type':'checkbox','id':"categoryStatus"})
         }
         
     def clean_name(self):
@@ -285,10 +316,14 @@ class ProductCategoryForm(forms.ModelForm):
         
         if not re.match(r'^[A-Za-z ]+$', name):
             raise ValidationError("Product Category name must contain only alphabets and spaces")
-        if ProductCategory.objects.filter(name__iexact=name).exists():
-            raise ValidationError("This product category already exists")
+        if self.instance:
+            if ProductCategory.objects.filter(name__iexact=name).exclude(slug=self.instance.slug).exists():
+                raise ValidationError("This product category already exists")
+        else:
+            if ProductCategory.objects.filter(name__iexact=name).exists():
+                raise ValidationError("This product category already exists")
         
-        return name
+        return name.strip()
         
         
 class ProductForm(forms.ModelForm):
@@ -343,7 +378,7 @@ class ProductForm(forms.ModelForm):
             raise ValidationError("Product name must contain only alphabets and spaces and numbers")
      
         
-        return brand
+        return brand.strip()
     
     def clean_description(self):
         description = self.cleaned_data.get('description')
@@ -357,7 +392,7 @@ class ProductForm(forms.ModelForm):
         if description.isdigit():
             raise ValidationError("description is not allowed only numbers")
         
-        return description
+        return description.strip()
     
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -370,7 +405,7 @@ class ProductForm(forms.ModelForm):
         
         if name.isdigit():
             raise ValidationError("name is not allowed only numbers")
-        return name
+        return name.strip()
         
         
 class ProductSimpleVairentForm(forms.ModelForm):
@@ -443,7 +478,7 @@ class ColorForm(forms.ModelForm):
         if not re.match(r"^[A-Za-z][A-Za-z\s-]*[A-Za-z]$"
 , name):
             raise forms.ValidationError("Color name may only contain letters, spaces, or hyphens.")
-        return name
+        return name.strip()
     
     
 class SizeForm(forms.ModelForm):
@@ -453,14 +488,7 @@ class SizeForm(forms.ModelForm):
         fields = '__all__'
         
         
-    def clean_name(self):
-        name = self.cleaned_data['name']
-        
-        if not re.match(r"^[A-Za-z][A-Za-z\s-]*[A-Za-z]$"
-, name):
-            raise forms.ValidationError("Size name may only contain letters, spaces, or hyphens.")
-        
-        return name
+    
     
     def clean_sort_order(self):
         sort_order = self.cleaned_data['sort_order']

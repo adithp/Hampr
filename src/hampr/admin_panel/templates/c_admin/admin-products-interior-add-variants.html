@@ -109,6 +109,12 @@
             height: 100px;
         }
 
+        .variant-card .remove-variant-btn {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+        }
+
         @media (max-width:768px) {
             .main-content {
                 margin-left: 0;
@@ -139,9 +145,9 @@
             <p class="text-muted small">Admin Portal</p>
         </div>
         <div class="px-3">
-            <form action="{% url 'cadmin:cancel_add_product' %}" method="POST">
+            <form action="{% url 'cadmin:interior_product_manage' %}" method="POST">
                 {% csrf_token %}
-                <button type="submit" href="" class="btn btn-outline-secondary w-100 btn-sm">
+                <button type="submit" class="btn btn-outline-secondary w-100 btn-sm">
                     <i class="fas fa-times me-2"></i>Cancel & Exit
                 </button>
             </form>
@@ -155,16 +161,15 @@
                     <li class="breadcrumb-item"><a style="text-decoration: none;" class="text-muted">Products</a></li>
                     <li class="breadcrumb-item"><a style="text-decoration: none;" class="text-muted">Interior Items</a>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">Add Variants</li>
+                   
+                    
+                    <li class="breadcrumb-item active" aria-current="page"> {% if edit %}Edit{% else %}Add{% endif %} Variants</li>
+                    
                 </ol>
             </nav>
-
-            <!-- <a href="admin-products-interior-add.html" class="text-decoration-none text-muted small">
-                <i class="fas fa-arrow-left me-1"></i> Back to Step 1
-            </a> -->
         </div>
 
-        <h2 class="fw-bold">Add New Interior Product</h2>
+        <h2 class="fw-bold">{% if edit %}Edit{% else %}Add New{%  endif %} Interior Product</h2>
         <p class="text-muted mb-4">Step 2: Inventory, Variants & Images</p>
 
         <div class="card form-card p-4">
@@ -178,53 +183,169 @@
                 {% endfor %}
             </div>
             {% endif %}
+
             <form id="productForm" action="" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
                 {% if form.non_field_errors or color_form.non_field_errors or size_form.non_field_errors %}
                 <div class="alert alert-danger">
                     <strong>There were some errors:</strong>
                     <ul class="mb-0">
-
-                        <!-- Errors from main form -->
-                        {% for error in form.non_field_errors %}
-                        <li>{{ error }}</li>
-                        {% endfor %}
-
-                        <!-- Errors from color form -->
-                        {% for error in color_form.non_field_errors %}
-                        <li>{{ error }}</li>
-                        {% endfor %}
-
-                        <!-- Errors from size form -->
-                        {% for error in size_form.non_field_errors %}
-                        <li>{{ error }}</li>
-                        {% endfor %}
-
+                        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                        {% for error in color_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                        {% for error in size_form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
                     </ul>
                 </div>
                 {% endif %}
-                {% csrf_token %}
 
+                <!-- SINGLE VARIANT BLOCK (only one at a time) -->
+                <!-- We use explicit names matching your backend checks (variant-1 in names) -->
+                <div id="variant-1" class="variant-card card mb-3 p-3 position-relative">
+                    <div class="row g-3">
 
+                        <!-- Type select: user chooses, we do NOT auto-select on server -->
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Type</label>
+                            <select name="variant_type_variant-1"
+        class="form-select variant-type-select"
+        id="variantTypeSelect"
+        onchange="updateVariantInput(this,'variant-1')">
 
-                <!-- Single Product Container - ALWAYS HIDDEN -->
-                <div id="singleProductContainer" class="col-12" style="display:none;"></div>
+    <option value="Color"
+        {% if form.instance.color %}selected{% endif %}>
+        Color
+    </option>
 
-                <!-- VARIANTS SECTION ALWAYS VISIBLE -->
-                <div id="variantsContainer" class="col-12">
-                    <div id="variantsList" class="d-flex flex-column gap-3"></div>
+    <option value="Size"
+        {% if form.instance.size %}selected{% endif %}>
+        Size
+    </option>
+</select>
+                            {% if form.variant_type.errors %}
+                            <div class="text-danger small">{{ form.variant_type.errors }}</div>
+                            {% endif %}
+                        </div>
 
+                        <!-- Value container (default shows Color inputs, JS will switch to Size if selected) -->
+                        <div class="col-md-4"
+     id="variant-value-container-variant-1"
+    data-size-label="{{ size_form.instance.name|default:'' }}"
 
+     data-size-order="{{ size_form.instance.sort_order|default:'' }}"
+     data-color-name="{{ color_form.instance.name|default:'' }}"
+     data-color-hex="{{ color_form.instance.hex|default:'#000000' }}">
+                            <label class="form-label small text-muted">Color Name & Code</label>
+                            <div class="input-group">
+                                <span class="input-group-text p-1">
+                                    <input name="variant_color_code_variant-1" type="color"
+                                        class="form-control form-control-color border-0"
+                                        value="{{ color_form.initial.hex|default:'#000000' }}">
+                                </span>
+                                <input name="variant_color_variant-1" type="text" class="form-control"
+                                    placeholder="e.g. Red" value="{{ color_form.initial.name|default:'' }}">
+                            </div>
+                            {% if color_form.name.errors %}
+                            <div class="text-danger small">{{ color_form.name.errors }}</div>
+                            {% endif %}
+                            {% if color_form.hex.errors %}
+                            <div class="text-danger small">{{ color_form.hex.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Cost -->
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Cost Price (₹)</label>
+                            <input name="cost" value="{{ form.cost.value|default:'' }}" type="number"
+                                class="form-control">
+                            {% if form.cost.errors %}
+                            <div class="text-danger small">{{ form.cost.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Selling Price -->
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Selling Price (₹)</label>
+                            <input name="price" type="number" value="{{ form.price.value|default:'' }}"
+                                class="form-control">
+                            {% if form.price.errors %}
+                            <div class="text-danger small">{{ form.price.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Stock -->
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Stock</label>
+                            <input name="stock" type="number" value="{{ form.stock.value|default:'' }}"
+                                class="form-control">
+                            {% if form.stock.errors %}
+                            <div class="text-danger small">{{ form.stock.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Dimensions -->
+                        <div class="col-12">
+                            <label class="form-label small text-muted">Dimensions (cm)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">H</span>
+                                <input name="height" type="number" value="{{ form.height.value|default:'' }}"
+                                    class="form-control">
+
+                                <span class="input-group-text">W</span>
+                                <input name="width" type="number" value="{{ form.width.value|default:'' }}"
+                                    class="form-control">
+
+                                <span class="input-group-text">D</span>
+                                <input name="depth" type="number" value="{{ form.depth.value|default:'' }}"
+                                    class="form-control">
+                            </div>
+                            {% if form.height.errors %}
+                            <div class="text-danger small">{{ form.height.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Images -->
+                        <div class="col-12">
+                            <label class="form-label small text-muted">Variant Images</label>
+                            <div class="d-flex gap-3 flex-wrap p-3 bg-light rounded">
+                                <div class="variant-thumbnails" id="thumbs-variant-1"></div>
+
+                                <label class="variant-img-upload-box btn btn-outline-secondary border-dashed">
+                                    <!-- single file input; JS will allow adding multiple images via crop -->
+                                    {% comment %} <input type="file" accept="image/*" hidden id="img-input-variant-1"
+                                        class="img-input"> {% endcomment %}
+                                        <input type="file"
+       accept="image/*"
+       hidden
+       id="img-input-variant-1"
+       onchange="initCrop(this)">
+
+                                    <i class="fas fa-plus mb-1"></i>
+                                    <small>Add</small>
+                                </label>
+                            </div>
+                            <div class="form-text small">You can add up to {{ max_images|default:"10" }} images per
+                                variant.
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
 
                 <div class="col-12 mt-4 d-flex justify-content-between">
-                    <!-- <a class="btn btn-secondary px-4" href="admin-products-interior-add.html">
-                        <i class="fas fa-arrow-left me-2"></i> Back to Step 1
-                    </a> -->
+                    {% if edit  %}
                     <div>
-                        <button type="submit" class="btn btn-success px-4">Save Product</button>
-                        <a class="btn btn-success" href="{%url 'cadmin:varients_finshed'%}">Finish</a>
+                        <!-- We only allow one variant at a time (Save to add another) -->
+                        <a class="btn btn-secondary" href="{% url 'cadmin:interior_product_manage' %}">Cancel</a>
+                        <button type="submit" class="btn btn-success px-4">Save Variant</button>
+                        
                     </div>
-
+                    {% else %}
+                    <div>
+                        <!-- We only allow one variant at a time (Save to add another) -->
+                        <button type="submit" class="btn btn-success px-4">Save Variant</button>
+                        <a class="btn btn-secondary" href="{% url 'cadmin:varients_finshed' %}">Finish</a>
+                    </div>
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -244,7 +365,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" id="cropCancelBtn">Cancel</button>
                     <button class="btn btn-primary" id="cropBtn">Crop & Add</button>
                 </div>
             </div>
@@ -256,287 +377,300 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
     <script>
-        /* --------------------
-         PAGE STATE
-        -------------------- */
-        let cropper = null;
-        let currentCropInput = null;
-        let currentVariantId = null;
-        let variantImages = {};
-        const maxImages = 10;
 
-        document.addEventListener("DOMContentLoaded", () => {
+function updateVariantInput(selectEl, variantKey) {
+    const container = document.getElementById(`variant-value-container-${variantKey}`);
+    if (!container) return;
 
-            /* Restore Step 1 Data */
-            const stored = localStorage.getItem('tempInteriorProduct');
-            if (stored) {
-                const data = JSON.parse(stored);
-                hiddenName.value = data.name || '';
-                hiddenBrand.value = data.brand || '';
-                hiddenCategory.value = data.category || '';
-                hiddenDescription.value = data.description || '';
-                hiddenFeatured.value = data.featured || '';
-                hiddenStatus.value = data.status || '';
-            }
+    if (selectEl.value === 'Size') {
+        container.innerHTML = `
+            <label class="form-label small text-muted">Size Label</label>
+            <input type="text"
+                   name="variant_size_${variantKey}"
+                   class="form-control mb-2"
+                   value="${container.dataset.sizeLabel || ''}"
+                   placeholder="Small">
 
-            // Always enable variant mode
-            document.getElementById("variantsContainer").style.display = "block";
-            document.getElementById("singleProductContainer").style.display = "none";
-
-            // Auto add first variant
-            if (document.getElementById("variantsList").children.length === 0) {
-                addVariant();
-            }
-        });
-
-        /* --------------------
-         VARIANT UI GENERATION
-        -------------------- */
-        let variantCount = 0;
-
-        function addVariant() {
-            variantCount++;
-            const id = `variant-${variantCount}`;
-
-            const html = `
-    <div class="variant-card card mb-3 p-3" id="${id}">
-        
-
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label small text-muted">Type</label>
-                <select name="variant_type_${id}" class="form-select" onchange="updateVariantInput(this,'${id}')">
-                    <option value="Color">Color</option>
-                    <option value="Size">Size</option>
-                </select>
-            </div>
-
-            <div class="col-md-4" id="variant-value-container-${id}">
-                <label class="form-label small text-muted">Color Name & Code</label>
-                <div class="input-group">
-                    <span class="input-group-text p-1">
-                        <input name="variant_color_code_${id}" type="color" class="form-control form-control-color border-0" value="{{   color_form.hex.value}}">
-                        {{color_form.hex.errors}}
-                    </span>
-                    <input name="variant_color_${id}" type="text" class="form-control" placeholder="e.g. Red" {% if color_form.name.value %} value="{{color_form.name.value}}{% endif    %}">
-                    {{color_form.name.errors}}
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label small text-muted">Cost Price (₹)</label>
-                <input name="cost" value={{form.cost.value}} type="number" class="form-control">
-                {{form.cost.errors}}
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label small text-muted">Selling Price (₹)</label>
-                <input name="price" type="number" value={{form.price.value}} class="form-control">
-                {{form.price.errors}}
-            </div>
-             <div class="col-md-6">
-                <label class="form-label small text-muted">Stock</label>
-                <input name="stock" type="number" value={{form.stock.value}} class="form-control">
-                {{form.stock.errors}}
-            </div>
-
-            <div class="col-12">
-                <label class="form-label small text-muted">Dimensions (cm)</label>
-                <div class="input-group">
-                    <span class="input-group-text">H</span>
-                    <input name="height" type="number value={{form.height.value}}" class="form-control">
-                    {{form.height.errors}}
-                    <span class="input-group-text">W</span>
-                    <input name="width" type="number" value={{form.width.value}} class="form-control">
-                    {{form.width.errors}}
-                    <span class="input-group-text">D</span>
-                    <input name="depth" type="number" value={{form.depth.value}} class="form-control">
-                    {{form.height.errors}}
-                </div>
-            </div>
-
-            <div class="col-12">
-                <label class="form-label small text-muted">Variant Images</label>
-                <div class="d-flex gap-3 flex-wrap p-3 bg-light rounded">
-                    <div class="variant-thumbnails" id="thumbs-${id}"></div>
-
-                    <label class="variant-img-upload-box btn btn-outline-secondary border-dashed">
-                        <input type="file" accept="image/*" hidden onchange="initCrop(this,'${id}')">
-                        <i class="fas fa-plus mb-1"></i>
-                        <small>Add</small>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-    `;
-
-            document.getElementById("variantsList").insertAdjacentHTML("beforeend", html);
-            variantImages[id] = [];
-        }
-
-        function removeVariant(id) {
-            delete variantImages[id];
-            const el = document.getElementById(id);
-            if (el) el.remove();
-        }
-
-        function updateVariantInput(select, id) {
-            const target = document.getElementById(`variant-value-container-${id}`);
-            if (select.value === "Color") {
-                target.innerHTML = `
+            <label class="form-label small text-muted">Sort Order</label>
+            <input type="number"
+                   name="variant_size_order_${variantKey}"
+                   class="form-control"
+                   value="${container.dataset.sizeOrder || ''}"
+                   placeholder="1">
+        `;
+    } else {
+        container.innerHTML = `
             <label class="form-label small text-muted">Color Name & Code</label>
             <div class="input-group">
-                <span class="input-group-text p-1"><input type="color" name="variant_color_code_${id}" class="form-control form-control-color border-0"></span>
-                <input type="text" name="variant_color_${id}" class="form-control" placeholder="Red">
+                <span class="input-group-text p-1">
+                    <input type="color"
+                           name="variant_color_code_${variantKey}"
+                           class="form-control form-control-color border-0"
+                           value="${container.dataset.colorHex || '#000000'}">
+                </span>
+                <input type="text"
+                       name="variant_color_${variantKey}"
+                       class="form-control"
+                       value="${container.dataset.colorName || ''}"
+                       placeholder="Red">
             </div>
         `;
-            } else {
-                target.innerHTML = `
-                <div>
-            <label class="form-label small text-muted">Value</label>
-            <input type="text" name="size" value="{% if size_form.name.value %} {{size_form.name.value}}{% endif %}" class="form-control" placeholder="Small">
-             <label class="form-label small text-muted mt-3">Sort Order</label>
-            <input type="text" name="sort_order " value="{{size_form.sort_order.value}}" class="form-control" placeholder="Small">
-                </div>
-        `;
-            }
+    }
+}
+
+  /* =====================================================
+           1) EXISTING VARIANT IMAGES (EDIT MODE)
+        ===================================================== */
+        const existingImagesData = [
+            {% if exsiting_images %}
+        {% for img in exsiting_images %}
+        {
+            id: "{{ img.id }}",
+                src: "{{ img.image.url }}",
+                    order: {{ img.display_order}},
+            isThumbnail: {% if img.is_thumbnail %}true{% else %}false{% endif %},
+            isExisting: true,
+                file: null
+        } {% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        {% endif %}
+];
+
+        /* =====================================================
+           2) SHARED STATE
+        ===================================================== */
+        let cropper = null;
+        let uploadedImages = [...existingImagesData];
+        let deletedIds = [];
+        const maxImages = Number("{{ max_images|default:'10' }}");
+
+        const cropModalEl = document.getElementById('cropModal');
+        const cropModal = new bootstrap.Modal(cropModalEl);
+        const cropImage = document.getElementById('cropImage');
+
+        /* =====================================================
+           3) INIT
+        ===================================================== */
+   document.addEventListener('DOMContentLoaded', () => {
+    refreshGallery();
+
+    const select = document.getElementById('variantTypeSelect');
+    if (select) {
+        updateVariantInput(select, 'variant-1');
+    }
+});
+
+
+
+        /* =====================================================
+           4) SIDEBAR (OPTIONAL)
+        ===================================================== */
+        function toggleSidebar() {
+            document.getElementById('sidebar')?.classList.toggle('active');
         }
 
-        /* --------------------
-        IMAGE CROP + PREVIEW
-        -------------------- */
-        const cropModalEl = document.getElementById("cropModal");
-        const cropModal = new bootstrap.Modal(cropModalEl);
-        const cropImage = document.getElementById("cropImage");
-
-        function initCrop(input, variantId) {
-            if (!input.files[0]) return;
-            currentCropInput = input;
-            currentVariantId = variantId;
+        /* =====================================================
+           5) IMAGE CROPPER
+        ===================================================== */
+        function initCrop(input) {
+            if (!input.files || !input.files[0]) return;
 
             const file = input.files[0];
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file.');
+                input.value = '';
+                return;
+            }
+
+            if (uploadedImages.length >= maxImages) {
+                alert(`Maximum ${maxImages} images allowed`);
+                input.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = e => {
                 cropImage.src = e.target.result;
                 cropModal.show();
 
-                cropModalEl.addEventListener(
-                    "shown.bs.modal",
-                    () => {
-                        if (cropper) cropper.destroy();
-                        cropper = new Cropper(cropImage, {
-                            aspectRatio: 1,
-                            viewMode: 1,
-                            autoCropArea: 1,
-                        });
-                    },
-                    { once: true }
-                );
-            };
-            reader.readAsDataURL(file);
+                if (cropper) cropper.destroy();
 
-            input.value = "";
+                cropModalEl.addEventListener('shown.bs.modal', () => {
+                    cropper = new Cropper(cropImage, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 1
+                    });
+                }, { once: true });
+            };
+
+            reader.readAsDataURL(file);
+            input.value = '';
         }
 
-        document.getElementById("cropBtn").onclick = () => {
+        /* =====================================================
+           6) CROP & ADD IMAGE
+        ===================================================== */
+        document.getElementById('cropBtn').addEventListener('click', () => {
             if (!cropper) return;
 
-            cropper.getCroppedCanvas({ width: 800, height: 800 }).toBlob(blob => {
-                const id = Date.now();
-                const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
-                const src = URL.createObjectURL(file);
+            cropper.getCroppedCanvas({ width: 800, height: 800 })
+                .toBlob(blob => {
+                    const id = Date.now() + Math.random();
+                    const file = new File([blob], `variant_${id}.jpg`, { type: 'image/jpeg' });
 
-                variantImages[currentVariantId].push({
-                    id, file, src,
-                    order: variantImages[currentVariantId].length + 1,
-                    isThumbnail: variantImages[currentVariantId].length === 0
-                });
+                    uploadedImages.push({
+                        id,
+                        src: URL.createObjectURL(file),
+                        order: uploadedImages.length + 1,
+                        isThumbnail: uploadedImages.length === 0,
+                        isExisting: false,
+                        file
+                    });
 
-                refreshVariantPreview(currentVariantId);
-                cropModal.hide();
-                cropper.destroy();
-            });
-        };
+                    cropModal.hide();
+                    cropper.destroy();
+                    cropper = null;
 
-        function refreshVariantPreview(variantId) {
-            const container = document.getElementById(`thumbs-${variantId}`);
-            container.innerHTML = "";
+                    refreshGallery();
+                }, 'image/jpeg', 0.9);
+        });
 
-            variantImages[variantId].forEach(img => {
-                const wrap = document.createElement("div");
-                wrap.className = "variant-img-wrapper";
+        /* =====================================================
+           7) RENDER GALLERY
+        ===================================================== */
+        function refreshGallery() {
+            const container = document.getElementById('thumbs-variant-1');
+            container.innerHTML = '';
 
-                wrap.innerHTML = `
-            ${img.isThumbnail ? `<div class="primary-badge">Primary</div>` : ""}
-            <img src="${img.src}" class="variant-thumb border rounded mb-1">
+            if (!uploadedImages.length) return;
 
-            <div class="d-flex gap-1 justify-content-center">
-                <button type="button" class="btn btn-sm btn-light" onclick="setPrimary('${variantId}',${img.id})">
-                    <i class="fas fa-image"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteImg('${variantId}',${img.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach(img => {
+                const wrap = document.createElement('div');
+                wrap.className = 'variant-img-wrapper text-center';
+
+                if (img.isThumbnail) {
+                    const badge = document.createElement('div');
+                    badge.className = 'primary-badge';
+                    badge.innerText = 'Primary';
+                    wrap.appendChild(badge);
+                }
+
+                const imageEl = document.createElement('img');
+                imageEl.src = img.src;
+                imageEl.className = 'variant-thumb border rounded mb-1';
+
+                const btns = document.createElement('div');
+                btns.className = 'd-flex gap-1 justify-content-center';
+
+                const primaryBtn = document.createElement('button');
+                primaryBtn.type = 'button';
+                primaryBtn.className = 'btn btn-sm btn-light';
+                primaryBtn.innerHTML = '<i class="fas fa-image"></i>';
+                primaryBtn.onclick = () => setPrimary(img.id);
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'btn btn-sm btn-danger';
+                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                delBtn.onclick = () => removeImage(img.id);
+
+                btns.appendChild(primaryBtn);
+                btns.appendChild(delBtn);
+
+                wrap.appendChild(imageEl);
+                wrap.appendChild(btns);
                 container.appendChild(wrap);
             });
         }
 
-        function setPrimary(variantId, imgId) {
-            variantImages[variantId].forEach(i => (i.isThumbnail = i.id === imgId));
-            refreshVariantPreview(variantId);
+        /* =====================================================
+           8) IMAGE ACTIONS
+        ===================================================== */
+        function setPrimary(id) {
+            uploadedImages.forEach(i => i.isThumbnail = (i.id === id));
+            refreshGallery();
         }
 
-        function deleteImg(variantId, imgId) {
-            variantImages[variantId] = variantImages[variantId].filter(i => i.id !== imgId);
+        function removeImage(id) {
+            const img = uploadedImages.find(i => i.id === id);
+            if (!img) return;
 
-            if (variantImages[variantId].length && !variantImages[variantId].some(i => i.isThumbnail)) {
-                variantImages[variantId][0].isThumbnail = true;
+            if (img.isExisting) deletedIds.push(img.id);
+
+            if (!img.isExisting && img.src.startsWith('blob:')) {
+                URL.revokeObjectURL(img.src);
             }
 
-            refreshVariantPreview(variantId);
+            uploadedImages = uploadedImages.filter(i => i.id !== id);
+
+            if (uploadedImages.length && !uploadedImages.some(i => i.isThumbnail)) {
+                uploadedImages[0].isThumbnail = true;
+            }
+
+            uploadedImages.forEach((i, idx) => i.order = idx + 1);
+            refreshGallery();
         }
 
-        /* --------------------
-         FORM SUBMIT
-        -------------------- */
-        document.getElementById("productForm").addEventListener("submit", function () {
+        /* =====================================================
+           9) FORM SUBMIT (BACKEND COMPATIBLE)
+        ===================================================== */
+        document.getElementById('productForm').addEventListener('submit', function () {
 
-            this.querySelectorAll(".dynamic-image-input").forEach(x => x.remove());
+            this.querySelectorAll('.dynamic-image-input').forEach(el => el.remove());
 
-            Object.keys(variantImages).forEach(variantId => {
-                variantImages[variantId].forEach((img, index) => {
+            uploadedImages.sort((a, b) => a.order - b.order);
+
+            uploadedImages.forEach((img, idx) => {
+
+                // image type (existing / new)
+                addHidden(this, 'image_types', img.isExisting ? 'existing' : 'new');
+
+                // existing image ids
+                if (img.isExisting) {
+                    addHidden(this, 'existing_images', img.id);
+                }
+
+                // new images
+                if (!img.isExisting && img.file) {
                     const dt = new DataTransfer();
                     dt.items.add(img.file);
 
-                    const f = document.createElement("input");
-                    f.type = "file";
-                    f.name = `images`;
-                    f.files = dt.files;
-                    f.className = "dynamic-image-input d-none";
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.name = 'images';
+                    fileInput.files = dt.files;
+                    fileInput.className = 'dynamic-image-input d-none';
+                    this.appendChild(fileInput);
+                }
 
-                    const order = document.createElement("input");
-                    order.type = "hidden";
-                    order.name = `orders`;
-                    order.value = index + 1;
-                    order.className = "dynamic-image-input";
-
-                    const primary = document.createElement("input");
-                    primary.type = "hidden";
-                    primary.name = `primary`;
-                    primary.value = img.isThumbnail ? "1" : "0";
-                    primary.className = "dynamic-image-input";
-
-                    this.appendChild(f);
-                    this.appendChild(order);
-                    this.appendChild(primary);
-                });
+                // order & primary
+                addHidden(this, 'orders', idx + 1);
+                addHidden(this, 'primary', img.isThumbnail ? '1' : '0');
             });
+
+            // deleted images
+            deletedIds.forEach(id => addHidden(this, 'deleted_ids', id));
         });
 
+        /* =====================================================
+           10) HELPER
+        ===================================================== */
+        function addHidden(form, name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            input.classList.add('dynamic-image-input');
+            form.appendChild(input);
+        }
+        
     </script>
+    
+
 </body>
 
 </html>
