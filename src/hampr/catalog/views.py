@@ -6,7 +6,9 @@ from django.db.models import Case, When, IntegerField
 from django.views.generic import DetailView
 
 
-from .models import BoxMaterial,BoxCategory,HamperBox,BoxImage,BoxSize
+from .models import BoxMaterial,BoxCategory,HamperBox,BoxImage,BoxSize,Product,ProductImage,ProductCategory
+from .utilts import voulme_calculater
+
 
 class BoxListView(View):
     def get(self,request,*args, **kwargs):
@@ -116,6 +118,92 @@ class BoxDetailView(DetailView):
         
         return context
 
+
+class ProductListView(View):
+     def get(self,request,*args, **kwargs):
+         products = Product.objects.all().order_by('-is_featured')
+         categories = ProductCategory.objects.all()
+         sort = request.GET.get('sort')
+         if request.GET.get('category',''):
+             filter_category = request.GET.get('category','')
+             filter_category_obj = ProductCategory.objects.filter(slug=filter_category).first()
+             products = products.filter(category=filter_category_obj)
+             print(products,filter_category)
+         if sort == 'price_asc':
+            products = products.order_by('variants__price').distinct()
+         if sort == 'price_desc':
+             products = products.order_by('-variants__price').distinct()
+         if sort == 'name_asc':
+            products = products.order_by('name')
+        #  print(products[0].slug) 
+         q = request.GET.get('search')
+         if q:
+            products = products.filter(name__icontains=q)
+         data = []
+         
+         for product in products:
+            if product.variants.first().size:
+                image = product.variants.first().variants_images.filter(is_thumbnail=True).first()
+                if not image:
+                    image = product.variants.first().variants_images.first()
+                variant = product.variants.first()  
+                volume = round(variant.width * variant.height * variant.depth / 1000,2)
+                data.append({'product':product,'varient':variant,'image':image,'volume':volume})
+                # print(image)
+                # print(data[0]['image'].image)
+        
+        
+         
+         return render(request,'catalog/product_list.html',{'data':data,'categories':categories})
+
+
+def product_search_suggestions(request):
+    q = request.GET.get('suggest','').strip()
+    
+    if len(q) > 1:
+        
+        products = Product.objects.filter(name__icontains=q).order_by('-created_at').values('id','name')[:6]
+            
+        return JsonResponse({"results":list(products)})
+    
+    return JsonResponse({"results": []})
+
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'catalog/product-detail.html'
+    context_object_name = 'product'
+    
+    slug_field = "slug"
+    slug_url_kwarg = 'slug'
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            
+            product = context.get('product')
+            
+        except Product.DoesNotExist as e:
+            print(e)
+        
+        varients = product.variants.all()
+        
+        varient_data = []
+        for i in varients:
+            varient_data.append({
+                'varient':i,
+                'images':i.variants_images.order_by('display_order'),
+                'volume':voulme_calculater(i.height,i.width,i.depth)
+            })
+        if  varient_data[0]['varient'].size:
+            size_color = 'size'
+        elif  varient_data[0]['varient'].color:
+            size_color = 'color'
+        else:
+            size_color = False
+        context['size_color'] =  size_color
+        context['varients'] = varient_data
+        return context
 
 
         

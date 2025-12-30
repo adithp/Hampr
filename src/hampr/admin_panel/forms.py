@@ -351,10 +351,14 @@ class ProductForm(forms.ModelForm):
                 'placeholder':"e.g. Lindt",
                 'required':True,
             }),
+    
             'description':forms.Textarea(attrs={
-                'class':"form-control",
-                'id':"productDescription",
-                'placeholder':"Enter product details, ingredients, or benefits...",
+                'class':" tinymce",
+                 
+                'placeholder':"Describe materials, features, durability...",
+               
+                
+                
             }),
             'is_featured':forms.CheckboxInput(attrs={
                 'class':"form-check-input",
@@ -374,8 +378,7 @@ class ProductForm(forms.ModelForm):
         if len(brand) < 3:
             raise ValidationError("brand Length Must be under 3 characters")
         
-        if not re.match(r'^[A-Za-z1-9]+$', brand):
-            raise ValidationError("Product name must contain only alphabets and spaces and numbers")
+        
      
         
         return brand.strip()

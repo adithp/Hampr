@@ -561,8 +561,8 @@ class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
             try:
                 with transaction.atomic():
                     size_form = SizeForm(data={
-                        'name':request.POST.get('size'),
-                        'sort_order':int(request.POST.get('sort_order'))
+                        'name':request.POST.get('variant_size_variant-1'),
+                        'sort_order':int(request.POST.get('variant_size_order_variant-1'))
                         
                     })
                     product = Product.objects.filter(id=pending_id).first()
@@ -598,14 +598,16 @@ class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
             form.add_error(None, 'Image Upload has some issue')
             return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form})
         print(request.POST)
+        form.instance.product = product
+        if color:
+            form.instance.color = color
+        elif size:
+            form.instance.size = size
         if form.is_valid():
             commit_form = form.save(commit=False)
-            commit_form.product = product
+            
             commit_form.is_default = True
-            if color:
-                commit_form.color = color
-            elif size:
-                commit_form.size = size
+            
             commit_form.save()
             variant_id = commit_form.id
             variant_obj = ProductVariant.objects.get(id=variant_id)
@@ -618,8 +620,9 @@ class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
             except Exception as e:
                 print(e)
                 messages.error(request, "Something went wrong. Please try again.")
-            
             return redirect('cadmin:products_varients_add_extra') 
+        return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form}) 
+           
         
     
     
