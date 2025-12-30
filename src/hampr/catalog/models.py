@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.core.exceptions import ValidationError
 
 from tinymce.models import HTMLField
 
@@ -134,7 +135,8 @@ class Product(models.Model):
     category = models.ForeignKey(ProductCategory,on_delete=models.CASCADE)
     
     created_at = models.DateTimeField(auto_now=True)
-    description = models.TextField()
+    description = models.TextField(blank=True)
+    
     is_featured = models.BooleanField(default=False)
     name = models.CharField(max_length=100)
     slug = AutoSlugField(populate_from='name',unique=True)
@@ -143,6 +145,22 @@ class Product(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+        
+        
+    def variant_mode(self):
+        
+        first_varient = self.variants.first()
+        
+        if not first_varient:
+            return None
+        
+        if first_varient.size and not first_varient.color:
+            return 'size'
+        
+        if first_varient.color and not first_varient.size:
+            return 'color'
+        
+        return None
         
         
 class ProductVariant(models.Model):
@@ -168,13 +186,35 @@ class ProductVariant(models.Model):
     class Meta:
         ordering = ['-created_at']
         
+        
+    def clean(self):
+        
+        if not self.product_id:
+            return
+        mode = self.product.variant_mode()
+        
+        if mode is None:
+            return
+        
+        if mode == 'color':
+            if not self.color:
+                raise ValidationError(
+                    "This product allows only color variants."
+                )
+        
+        if mode == 'size':
+            if not self.size:
+                raise ValidationError("This product allows only size variants.")
+        
+
+        
 
 class ProductImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     display_order = models.IntegerField()
     image = models.ImageField(upload_to='product_image/')
     is_thumbnail = models.BooleanField(default=False)
-    product = models.ForeignKey(ProductVariant,on_delete=models.CASCADE) 
+    product = models.ForeignKey(ProductVariant,on_delete=models.CASCADE,related_name='variants_images') 
     
     
     

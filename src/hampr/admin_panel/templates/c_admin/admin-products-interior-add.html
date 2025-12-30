@@ -191,6 +191,33 @@
             text-decoration: none !important;
         }
     </style>
+    <script src="https://cdn.tiny.cloud/1/sh9jhcbx2ycq8miq54ebud6ycb4iqpqhc3a4cawev3wlm9ys/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
+
+    <script>
+        tinymce.init({
+            selector: 'textarea.tinymce',
+            height: 320,
+
+            plugins: 'lists link code wordcount',
+            toolbar:
+                'undo redo | bold italic underline | ' +
+                'alignleft aligncenter alignright | ' +
+                'bullist numlist | link | code',
+
+            menubar: false,
+
+            /* Disable images */
+            image_uploadtab: false,
+            images_upload_url: null,
+            file_picker_types: '',
+            paste_data_images: false,
+
+            branding: false,
+            promotion: false
+        });
+    </script>   
 </head>
 
 <body>
@@ -393,7 +420,7 @@
         }
 
     </script>
-<script>
+    <script>
         window.addEventListener("beforeunload", function () { });
         window.addEventListener("unload", function () { });
         window.addEventListener("pageshow", function (event) {

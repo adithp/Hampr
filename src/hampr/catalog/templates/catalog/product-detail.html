@@ -1,0 +1,703 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Scented Candle | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'catalog/css/box-detail.css' %}">
+
+    <style>
+        /* Additional Styles for Product Variants */
+
+        /* Color Swatches */
+        .color-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .color-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 0;
+        }
+
+        .color-btn::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 1px solid #dee2e6;
+            border-radius: 50%;
+            transition: border-color 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active::after {
+            border-color: var(--primary-color, #D4AF37);
+            border-width: 2px;
+        }
+
+        .color-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .color-btn.disabled::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #999;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        /* Hamper Summary Panel Styles (Copied from builder-step3) */
+        .hamper-summary-panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .capacity-meter-container {
+            background: #f0f0f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .capacity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+        }
+
+        .item-list-scroll {
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        /* Mobile Panel Adjustments */
+        @media (max-width: 991.98px) {
+            .hamper-summary-panel {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                max-height: 80vh;
+                border-radius: 20px 20px 0 0;
+                z-index: 1050;
+                transform: translateY(calc(100% - 70px));
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .hamper-summary-panel.expanded {
+                transform: translateY(0);
+            }
+
+            .mobile-handle {
+                width: 40px;
+                height: 4px;
+                background: #e0e0e0;
+                border-radius: 2px;
+                margin: 0 auto 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+
+    <!-- Main Content -->
+    <main class="product-detail-section" style="margin-top: 80px;">
+        <div class="container">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../index.html" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item"><a href="builder-step3.html" class="text-decoration-none">Builder</a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Wellness</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Premium Scented Candle</li>
+                </ol>
+            </nav>
+
+            <a href="builder-step3.html" class="text-muted text-decoration-none mb-4 d-inline-block hover-text-gold">
+                <i class="fas fa-arrow-left me-2"></i>Back to products
+            </a>
+
+            <div class="row">
+                <!-- Left Column: Image Gallery (Adjusted to col-lg-5) -->
+                <div class="col-lg-5 mb-4 mb-lg-0">
+                    <div class="gallery-container">
+                        <figure class="main-image-wrapper shadow-sm">
+                            <img src="https://placehold.co/800x800/f8f9fa/212529?text=Candle+Lavender"
+                                alt="Premium Scented Candle" id="mainImage">
+                        </figure>
+                        <div class="thumbnails-row">
+                           {% for image in product_images %}
+                            <button type="button" class="thumbnail-btn {% if forloop.first %}active{% endif %}"
+                                onclick="updateMainImage(this, '{{ image.image.url }}')">
+                                <img src="{{ image.image.url }}" alt="Box Image">
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Column: Product Info (Adjusted to col-lg-4) -->
+                <div class="col-lg-4 product-info-col">
+                    {% comment %} <span class="product-category-badge">Best Seller</span> {% endcomment %}
+                    <h1 class="product-title display-6">{{product.name}}</h1>
+                    {% comment %} <p class="product-tagline small">Hand-poured soy wax candles for a serene ambiance.</p> {% endcomment %}
+
+                    <div class="price-display mb-3">
+                        <span class="price-label">Price</span>
+                        <span class="current-price fs-2" id="displayPrice">₹650</span>
+                    </div>
+
+                    <!-- Color Selector -->
+                   <div class="mb-4">
+    <span class="size-selector-label small">
+        {% if size_color == 'size' %}
+            Select Size:
+        {% else %}
+            Select Color:
+        {% endif %}
+        <span class="fw-normal text-muted" id="selectedVariantLabel"></span>
+    </span>
+
+    <div class="size-options" id="variantOptions">
+        {% for item in varients %}
+            <button
+                class="size-btn btn-sm {% if forloop.first %}active{% endif %}"
+                data-variant-id="{{ item.varient.id }}"
+                data-price="{{ item.varient.price }}"
+                data-stock="{{ item.varient.stock }}"
+                data-volume="{{ item.volume }}"
+                data-label="{% if size_color == 'size' %}{{ item.varient.size.name }}{% else %}{{ item.varient.color.name }}{% endif %}"
+                data-images="{% for img in item.images %}{{ img.image.url }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                onclick="selectVariant(this)"
+            >
+                {% if size_color == 'size' %}
+                    {{ item.varient.size.name }}
+                {% else %}
+                    {{ item.varient.color.name }}
+                {% endif %}
+            </button>
+        {% endfor %}
+    </div>
+</div>
+
+
+                    <!-- Stock & Attributes -->
+                    <div class="mb-4">
+                        <div id="stockStatus" class="stock-status in-stock small">
+                            <i class="fas fa-check-circle"></i> In Stock
+                        </div>
+
+                         <div class="product-attributes p-2 small">
+                            <div class="attribute-item">
+                                <span class="attribute-label" style="width: 80px;">Volume:</span>
+                                <span class="attribute-value" id="burnTimeDisplay">L</span>
+                            </div>
+                            {% comment %} <div class="attribute-item">
+                                <span class="attribute-label" style="width: 80px;">Wax:</span>
+                                <span class="attribute-value">Soy Wax</span>
+                            </div> {% endcomment %}
+                        </div> 
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-buttons">
+                        <button class="btn btn-primary btn-lg btn-add-hamper shadow-sm hover-scale-up w-100"
+                            id="addToHamperBtn" onclick="addToHamper()">
+                            Add to Hamper
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Hamper Summary (New col-lg-3) -->
+                <div class="col-lg-3">
+                    <div class="hamper-summary-panel" id="hamperPanel">
+                        <!-- Mobile Handle -->
+                        <div class="d-lg-none pt-3 pb-1" id="mobileToggle">
+                            <div class="mobile-handle"></div>
+                            <div class="px-3 d-flex justify-content-between align-items-center">
+                                <h6 class="fw-bold mb-0">Hamper Summary</h6>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-dark rounded-pill" id="mobileCount">0 items</span>
+                                    <span class="fw-bold text-primary" id="mobileTotal">₹1,900</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="fw-bold font-heading mb-1">Your Hamper</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-dark border"
+                                            style="font-size: 0.7rem;">Standard Box</span>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block" style="font-size: 0.7rem;">Capacity</small>
+                                    <span class="fw-bold text-dark" id="capacityPercent">0%</span>
+                                </div>
+                            </div>
+
+                            <!-- Capacity Meter -->
+                            <div class="mb-3">
+                                <div class="capacity-meter-container">
+                                    <div class="capacity-fill" id="capacityBar" style="width: 0%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted" id="volumeText" style="font-size: 0.7rem;">0 / 12L
+                                        used</small>
+                                    <small class="text-muted" id="remainingText" style="font-size: 0.7rem;">12L
+                                        remaining</small>
+                                </div>
+                            </div>
+
+                            <hr class="opacity-10 my-2">
+
+                            <!-- Items List -->
+                            <div class="item-list-scroll pe-2 mb-3">
+                                <!-- Box & Decor Group -->
+                                <div class="mb-2">
+                                    <h6 class="small fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem;">
+                                        Base & Decor</h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-medium">Standard Box (M)</span>
+                                        <span class="small fw-bold">₹1,500</span>
+                                    </div>
+                                    <div id="decorList">
+                                        <!-- Decor items injected here -->
+                                    </div>
+                                </div>
+
+                                <!-- Products Group -->
+                                <div>
+                                    <h6 class="small fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem;">
+                                        Products</h6>
+                                    <div id="hamperProductList">
+                                        <p class="text-muted small fst-italic">No products added yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Totals -->
+                            <div class="bg-light p-3 rounded-3 mb-3">
+                                <div class="d-flex justify-content-between mb-1 small">
+                                    <span class="text-muted">Total</span>
+                                    <span class="fw-bold text-primary" id="grandTotal">₹1,900</span>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <a href="builder-step3.html" class="btn btn-outline-dark btn-sm fw-medium">
+                                    <i class="fas fa-arrow-left me-1"></i> Back to Builder
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="row details-section">
+                <div class="col-lg-8">
+                    <h2 class="section-title">Product Description</h2>
+                   {{product.description | safe}}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sticky Bottom Bar (Mobile) -->
+    <div class="sticky-bottom-bar d-md-none" id="mobileStickyBar">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <span class="text-muted small" id="mobileStickyVariant">Lavender · Medium</span>
+            </div>
+            <span class="fw-bold text-primary" id="mobileStickyPrice">₹650</span>
+        </div>
+        <button class="btn btn-primary w-100 rounded-pill" id="mobileStickyBtn" onclick="addToHamper()">Add to
+            Hamper</button>
+    </div>
+
+    <!-- Scripts -->
+
+    <script>
+const hamper = {
+    box: {
+        name: "Standard Box",
+        capacityLiters: 12,
+        basePrice: 1500
+    },
+    decorations: [],
+    products: []
+};
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    let currentPrice = 0;
+    let currentStock = 0;
+    let currentVolume = 0;
+    let selectedVariantId = null;
+function selectVariant(btn) {
+
+    selectedVariantId = btn.dataset.variantId;
+
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    currentPrice = parseInt(btn.dataset.price, 10);
+    currentStock = parseInt(btn.dataset.stock, 10);
+    currentVolume = parseFloat(btn.dataset.volume);
+
+    const label = btn.dataset.label;
+    const images = btn.dataset.images ? btn.dataset.images.split(',') : [];
+
+    // Update UI
+    document.getElementById('displayPrice').innerText = `₹${currentPrice}`;
+    document.getElementById('mobileStickyPrice').innerText = `₹${currentPrice}`;
+    document.getElementById('selectedVariantLabel').innerText = label;
+
+    // ✅ UPDATE VOLUME DISPLAY
+    document.getElementById('burnTimeDisplay').innerText = currentVolume + " L";
+
+    updateStockStatus(currentStock);
+    updateVariantImages(images);
+
+    console.log("Variant selected:", selectedVariantId, "Volume:", currentVolume);
+}
+
+</script>
+<script>
+    function updateVariantImages(images) {
+
+        if (!images.length) return;
+
+        const mainImg = document.getElementById('mainImage');
+        const thumbs = document.querySelector('.thumbnails-row');
+
+        mainImg.src = images[0];
+        thumbs.innerHTML = "";
+
+        images.forEach((img, index) => {
+            const btn = document.createElement('button');
+            btn.className = "thumbnail-btn" + (index === 0 ? " active" : "");
+            btn.innerHTML = `<img src="${img}">`;
+            btn.onclick = () => updateMainImage(btn, img);
+            thumbs.appendChild(btn);
+        });
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstVariant = document.querySelector('.size-btn');
+        if (firstVariant) {
+            selectVariant(firstVariant);
+        }
+    });
+
+</script>
+
+    <script>
+        
+        const mainImageWrapper = document.querySelector('.main-image-wrapper');
+        const mainImage = document.querySelector('.main-image-wrapper img');
+
+        if (mainImageWrapper && mainImage) {
+            mainImageWrapper.addEventListener('mousemove', function (e) {
+                // Get container dimensions and mouse position
+                const rect = mainImageWrapper.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Calculate percentage position
+                const xPercent = (x / rect.width) * 100;
+                const yPercent = (y / rect.height) * 100;
+
+                // Set transform origin to mouse position
+                mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+
+                // Scale up (Zoom)
+                mainImage.style.transform = 'scale(2.5)'; // 2.5x zoom
+                mainImage.style.cursor = 'zoom-in';
+            });
+
+            mainImageWrapper.addEventListener('mouseleave', function () {
+                // Reset on mouse leave
+                mainImage.style.transformOrigin = 'center center';
+                mainImage.style.transform = 'scale(1)';
+
+                // Add smooth transition for reset
+                mainImage.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    mainImage.style.transition = 'none'; // Remove transition for next mousemove
+                }, 300);
+            });
+
+            // Remove transition on enter to prevent laggy movement
+            mainImageWrapper.addEventListener('mouseenter', function () {
+                mainImage.style.transition = 'none';
+            });
+        }
+    </script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({ duration: 800, once: true });
+
+        // --- Hamper State (Mocked) ---
+       
+        function updateMainImage(thumbnail, newSrc) {
+            const mainImg = document.getElementById('mainImage');
+            mainImg.style.opacity = '0.5';
+            setTimeout(() => {
+                mainImg.src = newSrc;
+                mainImg.style.opacity = '1';
+            }, 200);
+            document.querySelectorAll('.thumbnail-btn').forEach(btn => btn.classList.remove('active'));
+            thumbnail.classList.add('active');
+        }
+
+        
+
+        function updateStockStatus(stock) {
+            const stockEl = document.getElementById('stockStatus');
+            const addBtn = document.getElementById('addToHamperBtn');
+            const mobileBtn = document.getElementById('mobileStickyBtn');
+
+            if (stock === 0) {
+                stockEl.className = 'stock-status out-of-stock small';
+                stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+                addBtn.disabled = true;
+                addBtn.textContent = 'Out of Stock';
+                mobileBtn.disabled = true;
+                mobileBtn.textContent = 'Out of Stock';
+            } else if (stock <= 10) {
+                stockEl.className = 'stock-status low-stock small';
+                stockEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Only ${stock} left!`;
+                addBtn.disabled = false;
+                addBtn.textContent = 'Add to Hamper';
+                mobileBtn.disabled = false;
+                mobileBtn.textContent = 'Add to Hamper';
+            } else {
+                stockEl.className = 'stock-status in-stock small';
+                stockEl.innerHTML = '<i class="fas fa-check-circle"></i> In Stock';
+                addBtn.disabled = false;
+                addBtn.textContent = 'Add to Hamper';
+                mobileBtn.disabled = false;
+                mobileBtn.textContent = 'Add to Hamper';
+            }
+        }
+
+       
+
+        // --- Hamper Logic ---
+
+       function addToHamper() {
+
+    if (!selectedVariantId) {
+        alert("Please select a variant");
+        return;
+    }
+
+    const usedVol = hamper.products.reduce(
+        (sum, p) => sum + (p.vol * p.qty), 0
+    );
+
+    if (usedVol + currentVolume > hamper.box.capacityLiters) {
+        alert("Box capacity exceeded!");
+        return;
+    }
+
+    const existingItem = hamper.products.find(
+        p => p.variantId === selectedVariantId
+    );
+
+    if (existingItem) {
+        existingItem.qty += 1;
+    } else {
+        hamper.products.push({
+            id: `p-${Date.now()}`,
+            variantId: selectedVariantId,
+            name: "{{ product.name|escapejs }}",
+            label: document.getElementById('selectedVariantLabel').innerText,
+            price: currentPrice,
+            qty: 1,
+            vol: currentVolume
+        });
+    }
+
+    updateSummary();
+}
+
+
+        function updateSummary() {
+            // Volume Calc
+            const usedVol = hamper.products.reduce((sum, p) => sum + (p.vol * p.qty), 0);
+            const maxVol = hamper.box.capacityLiters;
+            const percent = Math.min(Math.round((usedVol / maxVol) * 100), 100);
+
+            // Price Calc
+            const productsTotal = hamper.products.reduce((sum, p) => sum + (p.price * p.qty), 0);
+            const decorTotal = hamper.decorations.reduce((sum, d) => sum + (d.price * d.qty), 0);
+            const grandTotal = hamper.box.basePrice + decorTotal + productsTotal;
+
+            // Update UI - Capacity
+            const capacityBar = document.getElementById('capacityBar');
+            capacityBar.style.width = `${percent}%`;
+            document.getElementById('capacityPercent').innerText = `${percent}%`;
+            document.getElementById('volumeText').innerText = `${usedVol.toFixed(1)} / ${maxVol}L used`;
+            document.getElementById('remainingText').innerText = `${(maxVol - usedVol).toFixed(1)}L remaining`;
+
+            // Color Logic
+            if (percent > 90) capacityBar.style.background = '#dc3545';
+            else if (percent > 70) capacityBar.style.background = '#ffc107';
+            else capacityBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+
+            // Update UI - List
+            const list = document.getElementById('hamperProductList');
+            if (hamper.products.length === 0) {
+                list.innerHTML = '<p class="text-muted small fst-italic">No products added yet.</p>';
+            } else {
+                list.innerHTML = hamper.products.map(p => `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center gap-1" style="overflow: hidden; flex: 1;">
+                            <div style="min-width: 0;">
+                                <div class="small fw-medium text-dark text-truncate" style="font-size: 0.75rem;">${p.name}</div>
+                                <div class="text-muted text-truncate" style="font-size: 0.7rem;">${p.variant}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 ms-2">
+                            <div class="d-flex align-items-center border rounded-pill bg-light" style="padding: 1px;">
+                                <button class="btn btn-sm btn-link text-dark p-0 px-1" style="font-size: 0.7rem; text-decoration: none;" onclick="updateItemQty('${p.id}', -1)">−</button>
+                                <span class="fw-bold px-1" style="font-size: 0.7rem;">${p.qty}</span>
+                                <button class="btn btn-sm btn-link text-dark p-0 px-1" style="font-size: 0.7rem; text-decoration: none;" onclick="updateItemQty('${p.id}', 1)">+</button>
+                            </div>
+                            <span class="small fw-bold text-end" style="font-size: 0.75rem; min-width: 40px;">₹${p.price * p.qty}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Update UI - Prices
+            document.getElementById('grandTotal').innerText = `₹${grandTotal}`;
+
+            // Mobile Summary
+            document.getElementById('mobileCount').innerText = `${hamper.products.reduce((s, p) => s + p.qty, 0)} items`;
+            document.getElementById('mobileTotal').innerText = `₹${grandTotal}`;
+        }
+
+        function updateItemQty(itemId, change) {
+            const item = hamper.products.find(p => p.id === itemId);
+            if (!item) return;
+
+            // Check Capacity if adding
+            if (change > 0) {
+                const usedVol = hamper.products.reduce((sum, p) => sum + (p.vol * p.qty), 0);
+                if (usedVol + item.vol > hamper.box.capacityLiters + 0.1) {
+                    alert("Box capacity exceeded! Cannot add more of this item.");
+                    return;
+                }
+                item.qty += 1;
+            } else {
+                item.qty -= 1;
+                if (item.qty <= 0) {
+                    hamper.products = hamper.products.filter(p => p.id !== itemId);
+                }
+            }
+
+            updateSummary();
+        }
+
+         function renderDecorations() {
+            const list = document.getElementById('decorList');
+            list.innerHTML = hamper.decorations.map(d => `
+                <div class="d-flex justify-content-between align-items-center mb-1 ps-2 border-start border-2 border-light">
+                    <span class="small text-muted" style="font-size: 0.7rem;">${d.name} <small>x${d.qty}</small></span>
+                    <span class="small fw-medium" style="font-size: 0.7rem;">₹${d.price * d.qty}</span>
+                </div>
+            `).join('');
+        }
+
+        // Init
+        renderDecorations(); 
+        updateSummary();
+
+        // Mobile Toggle
+        document.getElementById('mobileToggle').addEventListener('click', () => {
+            document.getElementById('hamperPanel').classList.toggle('expanded');
+        });
+
+        // Sticky Bar Logic (Mobile)
+        window.addEventListener('scroll', () => {
+            const stickyBar = document.getElementById('mobileStickyBar');
+            const titleSection = document.querySelector('.product-title');
+            if (!titleSection) return;
+            const titleBottom = titleSection.getBoundingClientRect().bottom;
+            if (titleBottom < 0) {
+                stickyBar.classList.add('visible');
+            } else {
+                stickyBar.classList.remove('visible');
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -92,9 +92,9 @@
 
                 <!-- Sidebar Filters (Desktop) -->
                 <div class="col-lg-3 d-none d-lg-block">
-                    <div class="sticky-top" style="top: 100px; z-index: 900;">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body p-4">
+    <div class="sticky-top" style="top: 100px; z-index: 900;">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4" id="desktop-filters">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h5 class="fw-bold mb-0">Filter Boxes</h5>
                                     <a href="{% url 'shop:box_list' %}" class="text-muted text-decoration-none small"
@@ -130,7 +130,7 @@
                                         <div class="form-check mb-2">
                                             <input class="form-check-input box-filter" type="checkbox"
                                                 value="{{ box_type.name }}" id="box-{{ box_type.id }}"
-                                                 {% if box_type.name in selected_boxes %}checked {% endif %} >
+                                                 {% if box_type.name in selected_boxes %}checked {% endif %}>
                                             <p style="display:none">{{ selected_boxes }}</p>
 
 
@@ -158,8 +158,7 @@
                                             {% for category in box_categories %}
                                             <div class="form-check mb-2">
                                                 <input class="form-check-input category-filter" type="checkbox"
-                                                    value="{{ category.name }}" id="category-{{ category.id }}"
-                                                     {% if category.name in selected_categories %} checked {% endif %}>
+                                                    value="{{ category.name }}" id="category-{{ category.id }}" {% if category.name in selected_categories %} checked {% endif %}>
                                                 <label class="form-check-label" for="category-{{ category.id }}">
                                                     {{ category.name }}
                                                 </label>
@@ -184,8 +183,9 @@
                                             {% for size in size_list %}
                                             <div class="form-check mb-2">
                                                 <input class="form-check-input sizes-filter" type="checkbox"
-                                                    value="{{ size.1 }}" id="size-{{ size.0 }}" 
-                                                    {% if size.1 in selected_sizes %}checked{% endif %}>
+                                                   
+                                                value="{{ size.1 }}"
+                                                 id="size-{{ size.0 }}" {% if size.1 in selected_sizes %}checked{% endif %}>
                                                 <label class="form-check-label" for="size-{{ size.0 }}">
                                                     {{ size.1 }}
                                                 </label>
@@ -291,30 +291,30 @@
                         {% for box in boxes %}
                         <div class="col-12 col-md-6 col-lg-4">
                             <a style="text-decoration:none;" href="{% url 'shop:box_detail' box.box.slug %}">
-                            <div class="box-card" >
-                                <div class="box-image-wrapper">
-                                    <img src="{{box.image.image.url}}" class="box-image"
-                                        alt="Premium Magnetic Gift Box">
+                                <div class="box-card">
+                                    <div class="box-image-wrapper">
+                                        <img src="{{box.image.image.url}}" class="box-image"
+                                            alt="Premium Magnetic Gift Box">
+                                    </div>
+                                    <div class="box-card-body">
+                                        <div class="box-badges">
+                                            <!-- <span class="box-badge"></span> -->
+                                            <span class="box-badge" style="background-color:#fff0f3;color:#d63384;">
+                                                {{box.box.category}}
+                                            </span>
+                                        </div>
+                                        <h5 class="fw-bold mb-2 text-truncate">{{box.box.name}}</h5>
+                                        <div class="box-details">
+                                            <div><i class="fas fa-ruler-combined"></i>
+                                                {% for boxsize in box.box_vareint %}{{boxsize}} ,{% endfor %}</div>
+                                            <div><i class="fas fa-layer-group"></i> {{box.box.category.box_type}}</div>
+                                        </div>
+                                        <div class="box-price-section">
+                                            <span class="fw-bold text-primary fs-5">₹{{box.size.price}}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="box-card-body">
-                                    <div class="box-badges">
-                                        <!-- <span class="box-badge"></span> -->
-                                        <span class="box-badge" style="background-color:#fff0f3;color:#d63384;">
-                                            {{box.box.category}}
-                                        </span>
-                                    </div>
-                                    <h5 class="fw-bold mb-2 text-truncate">{{box.box.name}}</h5>
-                                    <div class="box-details">
-                                        <div><i class="fas fa-ruler-combined"></i>
-                                            {% for boxsize in box.box_vareint %}{{boxsize}} ,{% endfor %}</div>
-                                        <div><i class="fas fa-layer-group"></i> {{box.box.category.box_type}}</div>
-                                    </div>
-                                    <div class="box-price-section">
-                                        <span class="fw-bold text-primary fs-5">₹{{box.size.price}}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
+                            </a>
                         </div>
                         {% endfor %}
                     </div>
@@ -462,6 +462,92 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="{% static 'accounts/js/utils.js' %}"></script>
     <script src="{% static 'accounts/js/main.js' %}"></script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const desktopFilters = document.getElementById("desktop-filters");
+    const mobileContainer = document.getElementById("mobile-filter-container");
+
+    if (!desktopFilters || !mobileContainer) return;
+
+    const clone = desktopFilters.cloneNode(true);
+
+    // 🔹 Fix duplicate collapse IDs for mobile
+    clone.querySelectorAll('[data-bs-toggle="collapse"]').forEach((toggle, index) => {
+        const target = toggle.getAttribute("data-bs-target");
+        if (!target) return;
+
+        const newId = target.replace("#", "") + "-mobile-" + index;
+
+        toggle.setAttribute("data-bs-target", "#" + newId);
+
+        const collapseEl = clone.querySelector(target);
+        if (collapseEl) {
+            collapseEl.id = newId;
+        }
+    });
+
+    mobileContainer.innerHTML = "";
+    mobileContainer.appendChild(clone);
+
+    // 🔥 VERY IMPORTANT: re-init Bootstrap collapse
+    mobileContainer.querySelectorAll(".collapse").forEach(el => {
+        new bootstrap.Collapse(el, { toggle: false });
+    });
+});
+</script>
+
+
+
+<script>
+document.addEventListener("change", function (e) {
+
+    if (
+        e.target.classList.contains("box-filter") ||
+        e.target.classList.contains("category-filter") ||
+        e.target.classList.contains("sizes-filter")
+    ) {
+        // Desktop → instant apply
+        if (window.innerWidth >= 992) {
+            applyFiltersSafe();
+        }
+    }
+});
+
+function applyFiltersSafe() {
+    const params = new URLSearchParams(window.location.search);
+
+    params.delete("box");
+    params.delete("category");
+    params.delete("sizes");
+    params.delete("page");
+
+    document.querySelectorAll(".box-filter:checked").forEach(cb => {
+        params.append("box", cb.value);
+    });
+
+    document.querySelectorAll(".category-filter:checked").forEach(cb => {
+        params.append("category", cb.value);
+    });
+
+    document.querySelectorAll(".sizes-filter:checked").forEach(cb => {
+        params.append("sizes", cb.value);
+    });
+
+    const url = params.toString()
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+
+    window.location.href = url;
+}
+</script>
+<script>
+document.querySelector(".offcanvas-footer .btn.btn-primary")
+    ?.addEventListener("click", function () {
+        applyFiltersSafe();
+    });
+</script>
+
+
     <!-- <script src="{% static 'catalog/js/shop-boxes.js' %}"></script> -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -568,48 +654,8 @@
         });
     </script>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
 
-            function updateFilters() {
-                const params = new URLSearchParams(window.location.search);
-
-                // 🔹 remove old filter params only
-                params.delete("box");
-                params.delete("category");
-                params.delete("sizes");
-
-                // 🔹 box filters
-                document.querySelectorAll(".box-filter:checked").forEach(cb => {
-                    params.append("box", cb.value);
-                });
-
-                // 🔹 category filters
-                document.querySelectorAll(".category-filter:checked").forEach(cb => {
-                    params.append("category", cb.value);
-                });
-
-                // 🔹 size filters
-                document.querySelectorAll(".sizes-filter:checked").forEach(cb => {
-                    params.append("sizes", cb.value);
-                });
-
-                const newUrl = params.toString()
-                    ? `${window.location.pathname}?${params.toString()}`
-                    : window.location.pathname;
-
-                window.location.href = newUrl;
-            }
-
-            // 🔹 listen to all filter checkbox changes
-            document
-                .querySelectorAll(".box-filter, .category-filter, .sizes-filter")
-                .forEach(cb => cb.addEventListener("change", updateFilters));
-
-        });
-    </script>
-
-    <script>
+    {% comment %} <script>
         document.addEventListener("DOMContentLoaded", function () {
 
             function updateFilters() {
@@ -641,9 +687,9 @@
                 .forEach(cb => cb.addEventListener("change", updateFilters));
 
         });
-    </script>
+    </script> {% endcomment %}
 
-    <script>
+    {% comment %} <script>
         document.addEventListener("DOMContentLoaded", function () {
             const checkboxes = document.querySelectorAll(".box-filter");
 
@@ -668,7 +714,7 @@
                 });
             });
         });
-    </script>
+    </script> {% endcomment %}
 
 
     <script>
