@@ -1,0 +1,322 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoration Details | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'catalog/css/shop-decorations.css' %}">
+    <link rel="stylesheet" href="{% static 'catalog/css/box-detail.css' %}">
+
+    <style>
+        .badge-outer {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .badge-inner {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .badge-both {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        /* Override qty-stepper input for this page */
+        .qty-stepper input {
+            width: 30px;
+            border: none;
+            text-align: center;
+            font-weight: bold;
+            background: transparent;
+        }
+
+        .main-image-wrapper {
+            overflow: hidden;
+        }
+
+        .main-image-wrapper img {
+            width: 100%;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .thumbnail-btn.active {
+            border: 2px solid #0d6efd;
+        }
+
+        /* Ensure zoom stays inside main image card */
+        .card .bg-white {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card .bg-white img#mainImage {
+            transition: transform 0.2s ease;
+            will-change: transform;
+        }
+    </style>
+</head>
+
+<body class="bg-light pb-5">
+
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+
+    <!-- Main Content -->
+    <section class="py-5 mt-5">
+        <div class="container">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="builder-step1.html"
+                            class="text-decoration-none text-muted">Box</a></li>
+                    <li class="breadcrumb-item"><a href="builder-step2.html"
+                            class="text-decoration-none text-muted">Decorations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" id="crumbName">Decoration Details</li>
+                </ol>
+            </nav>
+
+            <div class="row g-5">
+                <!-- Left Column: Images & Info -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-0">
+                            <div class="row g-0">
+                                <div class="col-12 bg-white text-center p-5">
+
+                                    <img src="{{ images.0.image.url }}" class="img-fluid rounded shadow-sm"
+                                        alt="Decoration" id="mainImage">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <div class="gallery-container">
+                            <figure class="main-image-wrapper shadow-sm">
+                                {% if product_images %}
+                                <img src="{{ product_images.0.image.url }}" id="mainImage">
+                                {% endif %}
+                            </figure>
+                            <div class="thumbnails-row">
+                                {% for image in images %}
+                                <button type="button" class="thumbnail-btn {% if forloop.first %}active{% endif %}"
+                                    onclick="updateMainImage(this, '{{ image.image.url }}')">
+                                    <img src="{{ image.image.url }}" alt="Box Image">
+                                </button>
+                                {% endfor %}
+                                <!-- <button class="thumbnail-btn"
+                                    onclick="updateMainImage(this, 'https://placehold.co/800x800/f8f9fa/212529?text=Magnetic+Box+Open')">
+                                    <img src="https://placehold.co/150x150/f8f9fa/212529?text=Open" alt="Open View">
+                                </button>
+                                <button class="thumbnail-btn"
+                                    onclick="updateMainImage(this, 'https://placehold.co/800x800/f8f9fa/212529?text=Magnetic+Box+Side')">
+                                    <img src="https://placehold.co/150x150/f8f9fa/212529?text=Side" alt="Side View">
+                                </button>
+                                <button class="thumbnail-btn"
+                                    onclick="updateMainImage(this, 'https://placehold.co/800x800/f8f9fa/212529?text=Magnetic+Box+Detail')">
+                                    <img src="https://placehold.co/150x150/f8f9fa/212529?text=Detail" alt="Detail View">
+                                </button> -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <h2 class="fw-bold mb-0" id="decoName">{{product.name}}</h2>
+                            <span class="badge badge-both" id="decoTypeBadge">
+                                {% if product.is_outside and product.is_inside %}Outer + Inner{% elif product.is_inside %}
+                                Inner{% else %}Outer{% endif %}</span>
+                        </div>
+                        <h4 class="text-gold fw-bold mb-3" id="decoPrice">$0.00</h4>
+
+                        <div class="row mb-4 text-muted small">
+                            <div class="col-6 col-md-4 mb-2">
+                                <i class="fas fa-cube me-2"></i>Volume: <span id="decoVolume">{{volume}}</span> L
+                            </div>
+                            <div class="col-6 col-md-4 mb-2">
+                                <i class="fas fa-ruler-combined me-2"></i>Dims: <span id="decoDims">{{product.width}}x{{product.height}}x{{product.depth}}</span> cm
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold">Description</h5>
+                        {{product.description | safe}}
+                    </div>
+                </div>
+
+                <!-- Right Column: Configuration -->
+                <div class="col-lg-5">
+                    <div class="card hamper-sidebar-card sticky-top" style="top: 100px; z-index: 1;">
+                        <div class="card-body p-4">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div>
+                                    <h4 class="fw-bold sidebar-header-font mb-2">Configure</h4>
+                                    <span class="badge bg-light text-dark border">Decoration</span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted d-block mb-1">Capacity</small>
+                                    <h4 class="fw-bold mb-0" id="capacityPercent">0%</h4>
+                                </div>
+                            </div>
+
+                            <!-- Capacity Bar -->
+                            <div class="mb-2">
+                                <div class="capacity-progress">
+                                    <div class="capacity-bar" id="volumeBar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mb-4">
+                                <span id="capacityText">0.0 / 10.0L used</span>
+                                <span id="capacityRemaining">10.0L remaining</span>
+                            </div>
+                            <small class="text-danger d-none fw-bold mt-1" id="capacityWarning"><i
+                                    class="fas fa-exclamation-triangle me-1"></i>Capacity Exceeded!</small>
+
+                            <hr class="mb-4">
+
+                            <!-- Configuration Sections -->
+                            <div class="mb-4">
+                                <h6 class="section-header">SETTINGS</h6>
+
+                                <!-- Outer Config -->
+                                <div class="mb-3 p-3 border rounded bg-light" id="outerConfigSection">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="useAsOuter">
+                                        <label class="form-check-label fw-bold" for="useAsOuter">
+                                            Use as Outer Decoration
+                                        </label>
+                                    </div>
+                                    <p class="text-muted small mt-1 mb-0 ms-4">
+                                        Limit: 2 outer decorations per hamper. <br>
+                                        <span id="outerCountText">0/2 currently selected.</span>
+                                    </p>
+                                </div>
+
+                                <!-- Inner Config -->
+                                <div class="mb-3 p-3 border rounded bg-light" id="innerConfigSection">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label class="fw-bold mb-0">Inner Quantity</label>
+                                        <div class="qty-stepper">
+                                            <button onclick="updateQty(-1)">-</button>
+                                            <input type="text" id="innerQty" value="0" readonly>
+                                            <button onclick="updateQty(1)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <small class="text-muted">Subtotal: </small>
+                                        <span class="fw-bold text-primary" id="innerSubtotal">$0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="total-box mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="h5 mb-0 text-muted">Total Addition</span>
+                                    <span class="total-price" id="totalAddition">$0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary py-3 fw-bold" id="btnSave">Add to Hamper</button>
+                                <a href="builder-step2.html" class="btn btn-outline-secondary py-2">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script>
+        (function () {
+
+            let visibleMainImage = null;
+
+            document.addEventListener("DOMContentLoaded", function () {
+
+                /*
+                 We must target the BIG visible image inside the card,
+                 NOT the gallery image.
+                */
+                visibleMainImage = document.querySelector(
+                    ".card .bg-white img#mainImage"
+                );
+
+                if (!visibleMainImage) return;
+
+                /* ===============================
+                   ZOOM ON HOVER (VISIBLE IMAGE)
+                =============================== */
+                visibleMainImage.addEventListener("mousemove", function (e) {
+                    const rect = visibleMainImage.getBoundingClientRect();
+                    const x = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                    visibleMainImage.style.transformOrigin = `${x}% ${y}%`;
+                    visibleMainImage.style.transform = "scale(2.5)";
+                    visibleMainImage.style.cursor = "zoom-in";
+                });
+
+                visibleMainImage.addEventListener("mouseleave", function () {
+                    visibleMainImage.style.transform = "scale(1)";
+                    visibleMainImage.style.transformOrigin = "center";
+                    visibleMainImage.style.cursor = "default";
+                });
+
+            });
+
+            /* ==================================================
+               SUPPORT inline onclick="updateMainImage()"
+            ================================================== */
+            window.updateMainImage = function (btn, imageUrl) {
+                if (!visibleMainImage || !imageUrl) return;
+
+                visibleMainImage.style.opacity = "0.4";
+
+                setTimeout(() => {
+                    visibleMainImage.src = imageUrl;
+                    visibleMainImage.style.opacity = "1";
+                }, 150);
+
+                document.querySelectorAll(".thumbnail-btn").forEach(b => {
+                    b.classList.remove("active");
+                });
+
+                btn.classList.add("active");
+            };
+
+        })();
+    </script>
+
+
+
+</body>
+
+</html>

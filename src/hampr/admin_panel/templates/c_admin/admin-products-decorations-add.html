@@ -181,6 +181,33 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
+    <script src="https://cdn.tiny.cloud/1/sh9jhcbx2ycq8miq54ebud6ycb4iqpqhc3a4cawev3wlm9ys/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
+
+
+    <script>
+        tinymce.init({
+            selector: 'textarea.tinymce',
+            height: 320,
+
+            plugins: 'lists link code wordcount',
+            toolbar:
+                'undo redo | bold italic underline | ' +
+                'alignleft aligncenter alignright | ' +
+                'bullist numlist | link | code',
+
+            menubar: false,
+
+            /* Disable images */
+            image_uploadtab: false,
+            images_upload_url: null,
+            file_picker_types: '',
+            paste_data_images: false,
+
+            branding: false,
+            promotion: false
+        });
+    </script>
 </head>
 
 <body>
@@ -205,7 +232,7 @@
                     {% if edit %}
                     Editing Decoration
                     {% else %}
-                    Add Decoration 
+                    Add Decoration
                     {% endif %}
                 </div>
             </div>
@@ -252,7 +279,7 @@
             <div class="col-lg-8">
                 <div class="card form-card p-4">
                     <form id="addDecorationForm" method="POST" action="" onsubmit="return validateForm(event)"
-                        enctype="multipart/form-data">
+                        enctype="multipart/form-data" novalidate>
                         {% for error in form.non_field_errors %}
                         <li>{{ error }}</li>
                         {% endfor %}
@@ -350,14 +377,15 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="is_inside" id="is_inside" {% if form.is_inside.value %}checked{% endif %}>
-                                    <label class="form-check-label" for="is_inside" >Is Inside</label>
+                                    <input class="form-check-input" type="checkbox" name="is_inside" id="is_inside" 
+                                    {% if form.is_inside.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_inside">Is Inside</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox"
-                                      name="is_outside" id="is_outside"  {% if form.is_outside.value %}checked{% endif %} >
+                                    <input class="form-check-input" type="checkbox" name="is_outside" id="is_outside"
+                                     {%  if form.is_outside.value %}checked{% endif %}>
                                     <label class="form-check-label" for="is_outside">Is Outside</label>
                                 </div>
                             </div>
@@ -365,9 +393,8 @@
                             <!-- Description -->
                             <div class="col-12 mt-3">
                                 <label class="form-label">Description <span class="text-danger">*</span></label>
-                               <textarea class="form-control" name="description" id="description"
-    oninput="updatePreview()" placeholder="Enter product description..." rows='5'
-    required>{{ form.description.value|default_if_none:"" }}</textarea>
+                                {{form.description}}
+                                {{form.description.errors}}
 
                             </div>
 
@@ -383,52 +410,51 @@
                                         onchange="handleImageSelect(this)">
                                 </div>
 
-       <div id="imageList" class="mt-3">
-    {% if edit %}
-        {% for img in exsiting_images %}
-        <div class="image-list-item existing-image" data-id="{{ img.id }}">
+                                <div id="imageList" class="mt-3">
+                                    {% if edit %}
+                                        {% for img in existing_images %}
+                                    <div class="image-list-item existing-image" data-id="{{ img.id }}">
 
-            <img src="{{ img.image.url }}" class="image-list-thumb">
+                                        <img src="{{ img.image.url }}" class="image-list-thumb">
 
-            <div class="flex-grow-1">
-                <div class="row g-2 align-items-center">
-                    <div class="col-auto">
-                        <input type="number"
-                               class="form-control form-control-sm image-order"
-                               value="{{ img.display_order }}" min="1">
-                    </div>
+                                        <div class="flex-grow-1">
+                                            <div class="row g-2 align-items-center">
+                                                <div class="col-auto">
+                                                    <input type="number"
+                                                        class="form-control form-control-sm image-order"
+                                                        value="{{ img.display_order }}" min="1">
+                                                </div>
 
-                    <div class="col-auto">
-                        <input class="form-check-input primary-radio"
-                               type="radio"
-                               name="primary_image"
-                               {% if img.is_thumbnail %}checked{% endif %}>
-                    </div>
-                </div>
+                                                <div class="col-auto">
+                                                    <input class="form-check-input primary-radio" type="radio"
+                                                        name="primary_image"
+                                                         {% if img.is_thumbnail %}checked{% endif %}>
+                                                </div>
+                                            </div>
 
-                <input type="hidden" class="seq-type" value="existing">
-                <input type="hidden" class="hidden-file-id" value="{{ img.id }}">
-            </div>
+                                            <input type="hidden" class="seq-type" value="existing">
+                                            <input type="hidden" class="hidden-file-id" value="{{ img.id }}">
+                                        </div>
 
-            <button type="button"
-                    class="btn btn-outline-danger btn-sm"
-                    onclick="removeExistingImage('{{ img.id }}')">
-                <i class="fas fa-trash"></i>
-            </button>
-        </div>
-        {% endfor %}
-    {% endif %}
-</div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            onclick="removeExistingImage('{{ img.id }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                                </div>
 
-                            
 
-                            <!-- Submit Buttons -->
-                            <div class="col-12 mt-5">
-                                <hr>
-                                <button type="submit" class="btn btn-success px-4 py-2 me-2">Save Decoration</button>
-                                <!-- <a href="admin-products-decorations.html" class="btn btn-secondary px-4 py-2">Cancel</a> -->
+
+                                <!-- Submit Buttons -->
+                                <div class="col-12 mt-5">
+                                    <hr>
+                                    <button type="submit" class="btn btn-success px-4 py-2 me-2">Save
+                                        Decoration</button>
+                                    <!-- <a href="admin-products-decorations.html" class="btn btn-secondary px-4 py-2">Cancel</a> -->
+                                </div>
                             </div>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -483,114 +509,114 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-<script>
-/* ===================== FULL WORKING IMAGE JS - DROP IN PLACE ===================== */
-/* This script fixes: cropper modal lifecycle, new-image add showing when existing images present,
-   ensures exactly one primary, sends seq_types/orders/primary/existing_ids/deleted_ids and files='images' */
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script>
+        /* ===================== FULL WORKING IMAGE JS - DROP IN PLACE ===================== */
+        /* This script fixes: cropper modal lifecycle, new-image add showing when existing images present,
+           ensures exactly one primary, sends seq_types/orders/primary/existing_ids/deleted_ids and files='images' */
 
-/* ADDED: track deleted existing image ids */
-let deletedExistingIds = [];
+        /* ADDED: track deleted existing image ids */
+        let deletedExistingIds = [];
 
-/* store new uploaded files before submit */
-let uploadedFiles = []; // { id: "...", file: File }
+        /* store new uploaded files before submit */
+        let uploadedFiles = []; // { id: "...", file: File }
 
-let cropper;
-let imageCount = 0;
+        let cropper;
+        let imageCount = 0;
 
-const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
-const cropModalEl = document.getElementById('cropModal');
-const cropImage = document.getElementById('cropImage');
+        const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+        const cropModalEl = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
 
-/* Safety: if crop modal hidden, destroy cropper */
-if (cropModalEl) {
-    cropModalEl.addEventListener('hidden.bs.modal', () => {
-        if (cropper) {
-            try { cropper.destroy(); } catch (e) {}
-            cropper = null;
-        }
-    });
-}
-
-/* helper to toggle sidebar (kept intact) */
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('active');
-}
-
-/* preview update (kept) */
-function updatePreview() {
-    document.getElementById('previewName').textContent =
-        document.getElementById('name').value || 'Product Name';
-
-    const price = document.getElementById('price') ? document.getElementById('price').value : '';
-    document.getElementById('previewPrice').textContent =
-        price ? `₹${parseFloat(price).toFixed(2)}` : '₹0.00';
-
-    document.getElementById('previewDesc').textContent =
-        document.getElementById('description').value || 'Product description will appear here...';
-}
-
-/* handle file input -> open crop modal, init cropper after modal shown */
-function handleImageSelect(input) {
-    if (!input.files || !input.files[0]) return;
-
-    const file = input.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-        cropImage.src = e.target.result;
-
-        /* ensure cropper initialized only after modal fully shown */
-        cropModal.show();
-
-        function initOnce() {
-            if (cropper) {
-                try { cropper.destroy(); } catch (ex) {}
-                cropper = null;
-            }
-            cropper = new Cropper(cropImage, {
-                aspectRatio: 1,
-                viewMode: 1,
-                autoCropArea: 1,
-                responsive: true
+        /* Safety: if crop modal hidden, destroy cropper */
+        if (cropModalEl) {
+            cropModalEl.addEventListener('hidden.bs.modal', () => {
+                if (cropper) {
+                    try { cropper.destroy(); } catch (e) { }
+                    cropper = null;
+                }
             });
-            cropModalEl.removeEventListener('shown.bs.modal', initOnce);
         }
 
-        cropModalEl.addEventListener('shown.bs.modal', initOnce);
-    };
+        /* helper to toggle sidebar (kept intact) */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
 
-    reader.readAsDataURL(file);
-    input.value = '';
-}
+        /* preview update (kept) */
+        function updatePreview() {
+            document.getElementById('previewName').textContent =
+                document.getElementById('name').value || 'Product Name';
 
-/* crop and add to DOM and uploadedFiles */
-function cropAndAdd() {
-    if (!cropper) return;
+            const price = document.getElementById('price') ? document.getElementById('price').value : '';
+            document.getElementById('previewPrice').textContent =
+                price ? `₹${parseFloat(price).toFixed(2)}` : '₹0.00';
 
-    cropper.getCroppedCanvas({ width: 1200, height: 1200 }).toBlob((blob) => {
-        if (!blob) return;
-        const id = String(Date.now() + Math.floor(Math.random() * 10000));
-        const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
-        const previewURL = URL.createObjectURL(file);
+            document.getElementById('previewDesc').textContent =
+                document.getElementById('description').value || 'Product description will appear here...';
+        }
 
-        uploadedFiles.push({ id, file }); // keep reference for form submit
-        addImageToList(file, previewURL, id);
-        // release object URL later if needed
-    }, "image/jpeg", 0.9);
+        /* handle file input -> open crop modal, init cropper after modal shown */
+        function handleImageSelect(input) {
+            if (!input.files || !input.files[0]) return;
 
-    cropModal.hide();
-}
+            const file = input.files[0];
+            const reader = new FileReader();
 
-/* Add a new image DOM block (new image). Does not touch existing image markup. */
-function addImageToList(file, previewURL, id) {
-    imageCount++;
+            reader.onload = function (e) {
+                cropImage.src = e.target.result;
 
-    const list = document.getElementById('imageList');
-    const div = document.createElement('div');
-    div.className = 'image-list-item';
-    // mark as new via seq-type hidden (backend will read seq_types)
-    div.innerHTML = `
+                /* ensure cropper initialized only after modal fully shown */
+                cropModal.show();
+
+                function initOnce() {
+                    if (cropper) {
+                        try { cropper.destroy(); } catch (ex) { }
+                        cropper = null;
+                    }
+                    cropper = new Cropper(cropImage, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        responsive: true
+                    });
+                    cropModalEl.removeEventListener('shown.bs.modal', initOnce);
+                }
+
+                cropModalEl.addEventListener('shown.bs.modal', initOnce);
+            };
+
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        /* crop and add to DOM and uploadedFiles */
+        function cropAndAdd() {
+            if (!cropper) return;
+
+            cropper.getCroppedCanvas({ width: 1200, height: 1200 }).toBlob((blob) => {
+                if (!blob) return;
+                const id = String(Date.now() + Math.floor(Math.random() * 10000));
+                const file = new File([blob], `image_${id}.jpg`, { type: "image/jpeg" });
+                const previewURL = URL.createObjectURL(file);
+
+                uploadedFiles.push({ id, file }); // keep reference for form submit
+                addImageToList(file, previewURL, id);
+                // release object URL later if needed
+            }, "image/jpeg", 0.9);
+
+            cropModal.hide();
+        }
+
+        /* Add a new image DOM block (new image). Does not touch existing image markup. */
+        function addImageToList(file, previewURL, id) {
+            imageCount++;
+
+            const list = document.getElementById('imageList');
+            const div = document.createElement('div');
+            div.className = 'image-list-item';
+            // mark as new via seq-type hidden (backend will read seq_types)
+            div.innerHTML = `
         <img src="${previewURL}" class="image-list-thumb">
         <div class="flex-grow-1">
             <div class="row g-2 align-items-center">
@@ -613,192 +639,192 @@ function addImageToList(file, previewURL, id) {
         </button>
     `;
 
-    list.appendChild(div);
+            list.appendChild(div);
 
-    // if no primary selected yet, make this the primary and update preview
-    const noPrimaryYet = !document.querySelector('.primary-radio:checked');
-    if (noPrimaryYet) {
-        const radio = div.querySelector('.primary-radio');
-        if (radio) radio.checked = true;
-        updatePrimaryPreview(previewURL);
-    }
-
-    // ensure order inputs are sequential
-    normalizeOrderInputs();
-}
-
-/* Remove new image (not yet uploaded) */
-function removeNewImage(id) {
-    uploadedFiles = uploadedFiles.filter(f => f.id !== String(id));
-    const hidden = document.querySelector(`.hidden-file-id[value="${id}"]`);
-    if (hidden) {
-        const item = hidden.closest('.image-list-item');
-        if (item) item.remove();
-    }
-    normalizeOrderInputs();
-}
-
-/* Remove existing image (mark for deletion and remove from DOM). */
-function removeExistingImage(id) {
-    deletedExistingIds.push(id);
-    const el = document.querySelector(`.existing-image[data-id="${id}"]`);
-    if (el) el.remove();
-    normalizeOrderInputs();
-}
-
-/* normalize order inputs to 1..n */
-function normalizeOrderInputs() {
-    const inputs = Array.from(document.querySelectorAll('.image-order'));
-    inputs.forEach((input, idx) => input.value = idx + 1);
-}
-
-/* update preview image when primary changed (delegated) */
-document.addEventListener('change', function (e) {
-    if (e.target && e.target.classList.contains('primary-radio')) {
-        const checked = document.querySelector('.primary-radio:checked');
-        if (checked) {
-            const img = checked.closest('.image-list-item')?.querySelector('img');
-            if (img) updatePrimaryPreview(img.src);
-            // ensure only one checked (radios share same name so browser enforces it)
-        }
-    }
-});
-
-/* make sure at least one primary exists before submit */
-function ensurePrimaryExists() {
-    const radios = document.querySelectorAll('.primary-radio');
-    if (radios.length === 0) return;
-    const checked = document.querySelector('.primary-radio:checked');
-    if (!checked) {
-        radios[0].checked = true;
-        const img = radios[0].closest('.image-list-item')?.querySelector('img');
-        if (img) updatePrimaryPreview(img.src);
-    }
-}
-
-/* Main validateForm — create dynamic hidden inputs and files for submission */
-function validateForm(event) {
-    const form = document.getElementById('addDecorationForm');
-
-    // require at least one of inside/outside
-    const inside = document.getElementById("is_inside")?.checked;
-    const outside = document.getElementById("is_outside")?.checked;
-    if (!inside && !outside) {
-        alert("Please select at least one: Is Inside or Is Outside.");
-        event.preventDefault();
-        return false;
-    }
-
-    // guarantee a primary exists
-    ensurePrimaryExists();
-
-    // cleanup previous dynamic nodes
-    form.querySelectorAll('.dyn-file').forEach(n => n.remove());
-    form.querySelectorAll('.dyn-meta').forEach(n => n.remove());
-
-    // collect items in the current DOM order
-    const itemElems = Array.from(document.querySelectorAll('.image-list-item'));
-
-    // build orderArray with elem and current order value (take value from input)
-    let orderArray = itemElems.map((elem, idx) => {
-        const orderInput = elem.querySelector('.image-order');
-        const val = orderInput ? parseInt(orderInput.value) || (idx + 1) : (idx + 1);
-        return { elem, order: val };
-    });
-
-    // sort by order and reassign sequential 1..n
-    orderArray.sort((a, b) => a.order - b.order);
-    orderArray.forEach((o, idx) => {
-        o.order = idx + 1;
-        const input = o.elem.querySelector('.image-order');
-        if (input) input.value = o.order;
-        // set radio value to normalized order for server-friendly value
-        const radio = o.elem.querySelector('.primary-radio');
-        if (radio) radio.value = o.order;
-    });
-
-    // For each ordered element, append seq_types, orders, primary and either existing_ids or file input
-    for (const o of orderArray) {
-        const seqType = o.elem.querySelector('.seq-type')?.value || 'existing';
-        const orderHidden = document.createElement('input');
-        orderHidden.type = 'hidden';
-        orderHidden.name = 'orders';
-        orderHidden.value = String(o.order);
-        orderHidden.classList.add('dyn-meta');
-        form.appendChild(orderHidden);
-
-        const seqHidden = document.createElement('input');
-        seqHidden.type = 'hidden';
-        seqHidden.name = 'seq_types';
-        seqHidden.value = seqType;
-        seqHidden.classList.add('dyn-meta');
-        form.appendChild(seqHidden);
-
-        const radio = o.elem.querySelector('.primary-radio');
-        const primaryHidden = document.createElement('input');
-        primaryHidden.type = 'hidden';
-        primaryHidden.name = 'primary';
-        primaryHidden.value = radio && radio.checked ? '1' : '0';
-        primaryHidden.classList.add('dyn-meta');
-        form.appendChild(primaryHidden);
-
-        if (seqType === 'existing') {
-            // existing image expected to have data-id or an .existing-image-id hidden input
-            const existingId = o.elem.getAttribute('data-id') || o.elem.querySelector('.existing-image-id')?.value;
-            if (existingId) {
-                const ex = document.createElement('input');
-                ex.type = 'hidden';
-                ex.name = 'existing_ids';
-                ex.value = existingId;
-                ex.classList.add('dyn-meta');
-                form.appendChild(ex);
+            // if no primary selected yet, make this the primary and update preview
+            const noPrimaryYet = !document.querySelector('.primary-radio:checked');
+            if (noPrimaryYet) {
+                const radio = div.querySelector('.primary-radio');
+                if (radio) radio.checked = true;
+                updatePrimaryPreview(previewURL);
             }
-        } else { // seqType === 'new'
-            // find the hidden-file-id and match to uploadedFiles and attach file input
-            const fid = o.elem.querySelector('.hidden-file-id')?.value;
-            if (fid) {
-                const found = uploadedFiles.find(f => f.id === fid);
-                if (found) {
-                    const dt = new DataTransfer();
-                    dt.items.add(found.file);
 
-                    const fileInput = document.createElement('input');
-                    fileInput.type = 'file';
-                    fileInput.name = 'images';
-                    fileInput.files = dt.files;
-                    fileInput.classList.add('dyn-file');
-                    fileInput.style.display = 'none';
-                    form.appendChild(fileInput);
+            // ensure order inputs are sequential
+            normalizeOrderInputs();
+        }
+
+        /* Remove new image (not yet uploaded) */
+        function removeNewImage(id) {
+            uploadedFiles = uploadedFiles.filter(f => f.id !== String(id));
+            const hidden = document.querySelector(`.hidden-file-id[value="${id}"]`);
+            if (hidden) {
+                const item = hidden.closest('.image-list-item');
+                if (item) item.remove();
+            }
+            normalizeOrderInputs();
+        }
+
+        /* Remove existing image (mark for deletion and remove from DOM). */
+        function removeExistingImage(id) {
+            deletedExistingIds.push(id);
+            const el = document.querySelector(`.existing-image[data-id="${id}"]`);
+            if (el) el.remove();
+            normalizeOrderInputs();
+        }
+
+        /* normalize order inputs to 1..n */
+        function normalizeOrderInputs() {
+            const inputs = Array.from(document.querySelectorAll('.image-order'));
+            inputs.forEach((input, idx) => input.value = idx + 1);
+        }
+
+        /* update preview image when primary changed (delegated) */
+        document.addEventListener('change', function (e) {
+            if (e.target && e.target.classList.contains('primary-radio')) {
+                const checked = document.querySelector('.primary-radio:checked');
+                if (checked) {
+                    const img = checked.closest('.image-list-item')?.querySelector('img');
+                    if (img) updatePrimaryPreview(img.src);
+                    // ensure only one checked (radios share same name so browser enforces it)
                 }
             }
+        });
+
+        /* make sure at least one primary exists before submit */
+        function ensurePrimaryExists() {
+            const radios = document.querySelectorAll('.primary-radio');
+            if (radios.length === 0) return;
+            const checked = document.querySelector('.primary-radio:checked');
+            if (!checked) {
+                radios[0].checked = true;
+                const img = radios[0].closest('.image-list-item')?.querySelector('img');
+                if (img) updatePrimaryPreview(img.src);
+            }
         }
-    }
 
-    // send deleted existing ids
-    deletedExistingIds.forEach(id => {
-        const del = document.createElement('input');
-        del.type = 'hidden';
-        del.name = 'deleted_ids';
-        del.value = id;
-        del.classList.add('dyn-meta');
-        form.appendChild(del);
-    });
+        /* Main validateForm — create dynamic hidden inputs and files for submission */
+        function validateForm(event) {
+            const form = document.getElementById('addDecorationForm');
 
-    // allow submit
-    return true;
-}
+            // require at least one of inside/outside
+            const inside = document.getElementById("is_inside")?.checked;
+            const outside = document.getElementById("is_outside")?.checked;
+            if (!inside && !outside) {
+                alert("Please select at least one: Is Inside or Is Outside.");
+                event.preventDefault();
+                return false;
+            }
 
-/* Attach submit handler (kept) */
-document.getElementById('addDecorationForm').addEventListener('submit', function (e) {
-    return validateForm(e);
-});
+            // guarantee a primary exists
+            ensurePrimaryExists();
 
-/* pageshow safety */
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) location.reload();
-});
-/* ===================== END SCRIPT ===================== */
-</script>
+            // cleanup previous dynamic nodes
+            form.querySelectorAll('.dyn-file').forEach(n => n.remove());
+            form.querySelectorAll('.dyn-meta').forEach(n => n.remove());
+
+            // collect items in the current DOM order
+            const itemElems = Array.from(document.querySelectorAll('.image-list-item'));
+
+            // build orderArray with elem and current order value (take value from input)
+            let orderArray = itemElems.map((elem, idx) => {
+                const orderInput = elem.querySelector('.image-order');
+                const val = orderInput ? parseInt(orderInput.value) || (idx + 1) : (idx + 1);
+                return { elem, order: val };
+            });
+
+            // sort by order and reassign sequential 1..n
+            orderArray.sort((a, b) => a.order - b.order);
+            orderArray.forEach((o, idx) => {
+                o.order = idx + 1;
+                const input = o.elem.querySelector('.image-order');
+                if (input) input.value = o.order;
+                // set radio value to normalized order for server-friendly value
+                const radio = o.elem.querySelector('.primary-radio');
+                if (radio) radio.value = o.order;
+            });
+
+            // For each ordered element, append seq_types, orders, primary and either existing_ids or file input
+            for (const o of orderArray) {
+                const seqType = o.elem.querySelector('.seq-type')?.value || 'existing';
+                const orderHidden = document.createElement('input');
+                orderHidden.type = 'hidden';
+                orderHidden.name = 'orders';
+                orderHidden.value = String(o.order);
+                orderHidden.classList.add('dyn-meta');
+                form.appendChild(orderHidden);
+
+                const seqHidden = document.createElement('input');
+                seqHidden.type = 'hidden';
+                seqHidden.name = 'seq_types';
+                seqHidden.value = seqType;
+                seqHidden.classList.add('dyn-meta');
+                form.appendChild(seqHidden);
+
+                const radio = o.elem.querySelector('.primary-radio');
+                const primaryHidden = document.createElement('input');
+                primaryHidden.type = 'hidden';
+                primaryHidden.name = 'primary';
+                primaryHidden.value = radio && radio.checked ? '1' : '0';
+                primaryHidden.classList.add('dyn-meta');
+                form.appendChild(primaryHidden);
+
+                if (seqType === 'existing') {
+                    // existing image expected to have data-id or an .existing-image-id hidden input
+                    const existingId = o.elem.getAttribute('data-id') || o.elem.querySelector('.existing-image-id')?.value;
+                    if (existingId) {
+                        const ex = document.createElement('input');
+                        ex.type = 'hidden';
+                        ex.name = 'existing_ids';
+                        ex.value = existingId;
+                        ex.classList.add('dyn-meta');
+                        form.appendChild(ex);
+                    }
+                } else { // seqType === 'new'
+                    // find the hidden-file-id and match to uploadedFiles and attach file input
+                    const fid = o.elem.querySelector('.hidden-file-id')?.value;
+                    if (fid) {
+                        const found = uploadedFiles.find(f => f.id === fid);
+                        if (found) {
+                            const dt = new DataTransfer();
+                            dt.items.add(found.file);
+
+                            const fileInput = document.createElement('input');
+                            fileInput.type = 'file';
+                            fileInput.name = 'images';
+                            fileInput.files = dt.files;
+                            fileInput.classList.add('dyn-file');
+                            fileInput.style.display = 'none';
+                            form.appendChild(fileInput);
+                        }
+                    }
+                }
+            }
+
+            // send deleted existing ids
+            deletedExistingIds.forEach(id => {
+                const del = document.createElement('input');
+                del.type = 'hidden';
+                del.name = 'deleted_ids';
+                del.value = id;
+                del.classList.add('dyn-meta');
+                form.appendChild(del);
+            });
+
+            // allow submit
+            return true;
+        }
+
+        /* Attach submit handler (kept) */
+        document.getElementById('addDecorationForm').addEventListener('submit', function (e) {
+            return validateForm(e);
+        });
+
+        /* pageshow safety */
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) location.reload();
+        });
+        /* ===================== END SCRIPT ===================== */
+    </script>
 
 
 </body>

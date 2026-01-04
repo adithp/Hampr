@@ -1,0 +1,268 @@
+/* Shop Decorations Page Styles */
+
+/* --- Filters --- */
+.filter-section .form-check-input:checked {
+    background-color: var(--primary-gold);
+    border-color: var(--primary-gold);
+}
+
+.filter-section .form-range::-webkit-slider-thumb {
+    background: var(--primary-gold);
+}
+
+.active-filter-tag {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark-text);
+}
+
+.active-filter-tag i {
+    cursor: pointer;
+    color: #adb5bd;
+}
+
+.active-filter-tag i:hover {
+    color: var(--danger-color);
+}
+
+/* --- Product Card --- */
+.product-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-wrapper {
+    position: relative;
+    overflow: hidden;
+    padding-top: 100%;
+    /* 1:1 Aspect Ratio */
+}
+
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+/* Badges */
+.badge-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 2;
+}
+
+.location-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+}
+
+/* Hover Actions */
+.hover-actions {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    /* Changed from top to bottom for better visibility */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    z-index: 3;
+}
+
+.product-card:hover .hover-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.action-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    color: var(--dark-text);
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: var(--primary-gold);
+    color: #fff;
+}
+
+/* Add to Hamper Overlay */
+.add-to-hamper-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.product-card:hover .add-to-hamper-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* List View Overrides */
+.product-card.list-view {
+    display: flex;
+    flex-direction: row;
+    height: 180px;
+}
+
+.product-card.list-view .product-image-wrapper {
+    width: 180px;
+    padding-top: 0;
+    flex-shrink: 0;
+}
+
+.product-card.list-view .product-image {
+    position: relative;
+}
+
+.product-card.list-view .add-to-hamper-overlay {
+    display: none;
+    /* Hide overlay in list view, use inline button */
+}
+
+/* --- Sidebar Redesign --- */
+.hamper-sidebar-card {
+    border: 1px solid #e9ecef;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-header-font {
+    font-family: 'Playfair Display', serif;
+}
+
+.capacity-progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #f1f3f5;
+    overflow: hidden;
+}
+
+.capacity-bar {
+    background-color: #dc3545;
+    /* Red as per image */
+    border-radius: 4px;
+}
+
+.section-header {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.qty-stepper {
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 2px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+}
+
+.qty-stepper button {
+    border: none;
+    background: none;
+    padding: 0;
+    color: #495057;
+    font-weight: bold;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.qty-stepper span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 15px;
+    text-align: center;
+}
+
+.total-box {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.total-price {
+    color: #0d6efd;
+    /* Blue as per image */
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.sidebar-item {
+    margin-bottom: 1rem;
+}
+
+.sidebar-item-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.sidebar-item-price {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.sidebar-item-sub {
+    font-size: 0.8rem;
+    color: #adb5bd;
+}

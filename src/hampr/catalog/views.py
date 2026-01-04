@@ -6,7 +6,7 @@ from django.db.models import Case, When, IntegerField
 from django.views.generic import DetailView
 
 
-from .models import BoxMaterial,BoxCategory,HamperBox,BoxImage,BoxSize,Product,ProductImage,ProductCategory
+from .models import BoxMaterial,BoxCategory,HamperBox,BoxImage,BoxSize,Product,ProductImage,ProductCategory,Decoration
 from .utilts import voulme_calculater
 
 
@@ -168,7 +168,9 @@ def product_search_suggestions(request):
     
     return JsonResponse({"results": []})
 
+
 class ProductDetailView(DetailView):
+    
     model = Product
     template_name = 'catalog/product-detail.html'
     context_object_name = 'product'
@@ -206,5 +208,98 @@ class ProductDetailView(DetailView):
         return context
 
 
-        
+class DecorationListView(View):
+    def get(self,request,*args, **kwargs):
+        list_decor= Decoration.objects.all()
+        location = request.GET.get('location')
+        max_price = request.GET.get('max_price')
+
+        if max_price:
+            list_decor = list_decor.filter(price__lte=max_price)
+        if location == 'outer':
+            list_decor = list_decor.filter(is_outside=True,is_inside=False)
+
+        if location == 'inner':
+            list_decor = list_decor.filter(is_inside=True,is_outside=False)
             
+        if location == 'both':
+            list_decor = list_decor.filter(is_inside=True,is_outside=True)
+        
+        q = request.GET.get('search')
+        if q:
+            list_decor = list_decor.filter(name__icontains=q)
+            
+        sort = request.GET.get("sort")
+        print(sort)
+        if sort == "price_low":
+            list_decor = list_decor.order_by("price")
+
+        elif sort == "price_high":
+            list_decor = list_decor.order_by("-price")
+
+        #  elif sort == "popular":
+        #     pass  
+
+        # elif sort == "rating":
+            # pass
+
+        else:  # newest
+            list_decor = list_decor.order_by("-created_at")
+            
+        paginator = Paginator(list_decor,4)
+        page_number = self.request.GET.get('page')
+        list_decor =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+            
+        total_page_num = range(1,total_pages+1)
+
+        decorations = []
+        count = 0
+        for i in list_decor:
+            count +=1
+            image= i.decoartion_image.filter(is_thumbnail=True).first()
+            if not image:
+                image = i.decoartion_image.all().first()
+            decorations.append({'product':i,'image':image})
+
+        return render(request,'catalog/shop-decorations.html',{'decorations':decorations,'count':count,'total_page_num':total_page_num,})
+        
+        
+        
+def decoartion_search_suggestions(request):
+    q = request.GET.get('suggest','').strip()
+    
+    if len(q) > 1:
+        
+        products = Decoration.objects.filter(name__icontains=q).order_by('-created_at').values('id','name')[:6]
+            
+        return JsonResponse({"results":list(products)})
+    
+    return JsonResponse({"results": []})
+            
+            
+            
+            
+
+class DecorationDetailView(DetailView):
+    
+    model = Decoration
+    template_name = 'catalog/decoration-detail.html'
+    context_object_name = 'product'
+    
+    slug_field = "slug"
+    slug_url_kwarg = 'slug'
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            
+            decoartor = context.get('product')
+            
+        except Decoration.DoesNotExist as e:
+            print(e)
+        volume = round(decoartor.width * decoartor.height * decoartor.depth / 1000 , 2)
+        context['volume'] = volume
+        context['images'] = decoartor.decoartion_image.all()
+        return context

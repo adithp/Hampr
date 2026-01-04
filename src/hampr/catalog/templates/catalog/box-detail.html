@@ -394,144 +394,144 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
-    <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 800,
-            once: true
-        });
-
-        // --- Product Logic ---
-
-        function updateMainImage(thumbnail, newSrc) {
-            // Update Main Image
-            const mainImg = document.getElementById('mainImage');
-            mainImg.style.opacity = '0.5';
-
-            setTimeout(() => {
-                mainImg.src = newSrc;
-                mainImg.style.opacity = '1';
-            }, 200);
-
-            // Update Active State
-            document.querySelectorAll('.thumbnail-btn').forEach(btn => btn.classList.remove('active'));
-            thumbnail.classList.add('active');
-        }
-
-        function selectSize(btn) {
-
-            // active button
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const price = btn.dataset.price;
-            const dimensions = btn.dataset.dimensions;
-            const stock = parseInt(btn.dataset.stock);
-            const size = btn.dataset.size;
-
-            // price
-            document.getElementById('displayPrice').textContent =
-                '₹' + parseInt(price).toLocaleString();
-
-            // size label
-            document.getElementById('selectedSizeLabel').textContent = size;
-
-            // dimensions
-            document.getElementById('dimensionsDisplay').textContent = dimensions;
-
-            // stock logic
-            const stockEl = document.getElementById('stockStatus');
-            const addBtn = document.getElementById('addToHamperBtn');
-
-            if (stock === 0) {
-                stockEl.className = 'stock-status out-of-stock';
-                stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
-                addBtn.disabled = true;
-            }
-            else if (stock <= 10) {
-                stockEl.className = 'stock-status low-stock';
-                stockEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Only ${stock} left!`;
-                addBtn.disabled = false;
-            }
-            else {
-                stockEl.className = 'stock-status in-stock';
-                stockEl.innerHTML = '<i class="fas fa-check-circle"></i> In Stock (Ready to ship)';
-                addBtn.disabled = false;
-            }
-        }
-
-        // init first size
-        document.addEventListener('DOMContentLoaded', () => {
-            const firstBtn = document.querySelector('.size-btn');
-            if (firstBtn) selectSize(firstBtn);
-        });
-        // --- Image Zoom Logic ---
-        const mainImageWrapper = document.querySelector('.main-image-wrapper');
-        const mainImage = document.querySelector('.main-image-wrapper img');
-
-        if (mainImageWrapper && mainImage) {
-            mainImageWrapper.addEventListener('mousemove', function (e) {
-                // Get container dimensions and mouse position
-                const rect = mainImageWrapper.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                // Calculate percentage position
-                const xPercent = (x / rect.width) * 100;
-                const yPercent = (y / rect.height) * 100;
-
-                // Set transform origin to mouse position
-                mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
-
-                // Scale up (Zoom)
-                mainImage.style.transform = 'scale(2.5)'; // 2.5x zoom
-                mainImage.style.cursor = 'zoom-in';
+        <script>
+            // Initialize AOS
+            AOS.init({
+                duration: 800,
+                once: true
             });
 
-            mainImageWrapper.addEventListener('mouseleave', function () {
-                // Reset on mouse leave
-                mainImage.style.transformOrigin = 'center center';
-                mainImage.style.transform = 'scale(1)';
+            // --- Product Logic ---
 
-                // Add smooth transition for reset
-                mainImage.style.transition = 'transform 0.3s ease';
+            function updateMainImage(thumbnail, newSrc) {
+                // Update Main Image
+                const mainImg = document.getElementById('mainImage');
+                mainImg.style.opacity = '0.5';
+
                 setTimeout(() => {
-                    mainImage.style.transition = 'none'; // Remove transition for next mousemove
-                }, 300);
+                    mainImg.src = newSrc;
+                    mainImg.style.opacity = '1';
+                }, 200);
+
+                // Update Active State
+                document.querySelectorAll('.thumbnail-btn').forEach(btn => btn.classList.remove('active'));
+                thumbnail.classList.add('active');
+            }
+
+            function selectSize(btn) {
+
+                // active button
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const price = btn.dataset.price;
+                const dimensions = btn.dataset.dimensions;
+                const stock = parseInt(btn.dataset.stock);
+                const size = btn.dataset.size;
+
+                // price
+                document.getElementById('displayPrice').textContent =
+                    '₹' + parseInt(price).toLocaleString();
+
+                // size label
+                document.getElementById('selectedSizeLabel').textContent = size;
+
+                // dimensions
+                document.getElementById('dimensionsDisplay').textContent = dimensions;
+
+                // stock logic
+                const stockEl = document.getElementById('stockStatus');
+                const addBtn = document.getElementById('addToHamperBtn');
+
+                if (stock === 0) {
+                    stockEl.className = 'stock-status out-of-stock';
+                    stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+                    addBtn.disabled = true;
+                }
+                else if (stock <= 10) {
+                    stockEl.className = 'stock-status low-stock';
+                    stockEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Only ${stock} left!`;
+                    addBtn.disabled = false;
+                }
+                else {
+                    stockEl.className = 'stock-status in-stock';
+                    stockEl.innerHTML = '<i class="fas fa-check-circle"></i> In Stock (Ready to ship)';
+                    addBtn.disabled = false;
+                }
+            }
+
+            // init first size
+            document.addEventListener('DOMContentLoaded', () => {
+                const firstBtn = document.querySelector('.size-btn');
+                if (firstBtn) selectSize(firstBtn);
+            });
+            // --- Image Zoom Logic ---
+            const mainImageWrapper = document.querySelector('.main-image-wrapper');
+            const mainImage = document.querySelector('.main-image-wrapper img');
+
+            if (mainImageWrapper && mainImage) {
+                mainImageWrapper.addEventListener('mousemove', function (e) {
+                    // Get container dimensions and mouse position
+                    const rect = mainImageWrapper.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    // Calculate percentage position
+                    const xPercent = (x / rect.width) * 100;
+                    const yPercent = (y / rect.height) * 100;
+
+                    // Set transform origin to mouse position
+                    mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+
+                    // Scale up (Zoom)
+                    mainImage.style.transform = 'scale(2.5)'; // 2.5x zoom
+                    mainImage.style.cursor = 'zoom-in';
+                });
+
+                mainImageWrapper.addEventListener('mouseleave', function () {
+                    // Reset on mouse leave
+                    mainImage.style.transformOrigin = 'center center';
+                    mainImage.style.transform = 'scale(1)';
+
+                    // Add smooth transition for reset
+                    mainImage.style.transition = 'transform 0.3s ease';
+                    setTimeout(() => {
+                        mainImage.style.transition = 'none'; // Remove transition for next mousemove
+                    }, 300);
+                });
+
+                // Remove transition on enter to prevent laggy movement
+                mainImageWrapper.addEventListener('mouseenter', function () {
+                    mainImage.style.transition = 'none';
+                });
+            }
+
+            // --- Sticky Bar Logic (Mobile) ---
+            window.addEventListener('scroll', () => {
+                const stickyBar = document.getElementById('mobileStickyBar');
+                const titleSection = document.querySelector('.product-title');
+
+                if (!titleSection) return;
+
+                const titleBottom = titleSection.getBoundingClientRect().bottom;
+
+                // Show sticky bar when title scrolls out of view
+                if (titleBottom < 0) {
+                    stickyBar.classList.add('visible');
+                } else {
+                    stickyBar.classList.remove('visible');
+                }
             });
 
-            // Remove transition on enter to prevent laggy movement
-            mainImageWrapper.addEventListener('mouseenter', function () {
-                mainImage.style.transition = 'none';
+            // Initialize with first size selected
+            document.addEventListener('DOMContentLoaded', () => {
+                const firstSizeBtn = document.querySelector('.size-btn');
+                if (firstSizeBtn) {
+                    selectSize(firstSizeBtn);
+                }
             });
-        }
 
-        // --- Sticky Bar Logic (Mobile) ---
-        window.addEventListener('scroll', () => {
-            const stickyBar = document.getElementById('mobileStickyBar');
-            const titleSection = document.querySelector('.product-title');
+        </script>
+    </body>
 
-            if (!titleSection) return;
-
-            const titleBottom = titleSection.getBoundingClientRect().bottom;
-
-            // Show sticky bar when title scrolls out of view
-            if (titleBottom < 0) {
-                stickyBar.classList.add('visible');
-            } else {
-                stickyBar.classList.remove('visible');
-            }
-        });
-
-        // Initialize with first size selected
-        document.addEventListener('DOMContentLoaded', () => {
-            const firstSizeBtn = document.querySelector('.size-btn');
-            if (firstSizeBtn) {
-                selectSize(firstSizeBtn);
-            }
-        });
-
-    </script>
-</body>
-
-</html>
+    </html>

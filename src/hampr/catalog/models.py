@@ -245,7 +245,7 @@ class DecorationImages(models.Model):
     display_order = models.IntegerField()
     image = models.ImageField(upload_to='decoration_image/')
     is_thumbnail = models.BooleanField(default=False)
-    product = models.ForeignKey(Decoration,on_delete=models.CASCADE) 
+    product = models.ForeignKey(Decoration,on_delete=models.CASCADE,related_name='decoartion_image') 
     
     
     
