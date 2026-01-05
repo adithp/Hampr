@@ -653,7 +653,7 @@ def cancel_add_product(req):
 class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
     def get(self,request,*args, **kwargs):
         form = DecorationForm()
-        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'edit':False})
     
     def post(self,request,*args, **kwargs):
         print(request.POST)
@@ -665,7 +665,7 @@ class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
         form = DecorationForm(request.POST)
         if len(orders) != len(primary) or len(orders) != len(files):
             form.add_error(None, 'Image Upload has some issue')
-            return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
+            return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'edit':False,})
         if form.is_valid():
             obj = form.save()
             try:
@@ -678,7 +678,7 @@ class AdminDecorationAdd(NeverCacheMixin,StaffRequiredMixin,View):
                 messages.error(request, "Something went wrong. Please try again.")
             
             return redirect('cadmin:decoration_manage')
-        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form})
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'edit':False})
     
     
 class AdminDecortionManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
@@ -1250,7 +1250,7 @@ class AdminDecorationEdit(NeverCacheMixin,StaffRequiredMixin,View):
             print(e)
         exsiting_images = DecorationImages.objects.filter(product=instance)
         form = DecorationForm(instance=instance)
-        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'exsiting_images':exsiting_images,'edit':True})
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'existing_images':exsiting_images,'edit':True})
     
     def post(self,request,id,*args, **kwargs):
         print(request.POST,request.FILES)
@@ -1272,7 +1272,7 @@ class AdminDecorationEdit(NeverCacheMixin,StaffRequiredMixin,View):
     
         if len(orders) != len(primary) or len(orders) != len(seq_types):
             form.add_error(None, 'Image Upload has some issue')
-            return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'exsiting_images':exsiting_images,'edit':True})
+            return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'existing_images':exsiting_images,'edit':True})
         if form.is_valid():
             obj = form.save()
             
@@ -1309,4 +1309,4 @@ class AdminDecorationEdit(NeverCacheMixin,StaffRequiredMixin,View):
                 messages.error(request, "Something went wrong. Please try again.")
             
             return redirect('cadmin:decoration_manage')
-        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'exsiting_images':exsiting_images,'edit':True})
+        return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'existing_images':exsiting_images,'edit':True})

@@ -511,12 +511,31 @@ class DecorationForm(forms.ModelForm):
         model = Decoration
         fields = ['name','height','width','depth','cost','price','stock','is_active','description','is_outside','is_inside']
         
+        widgets = {
+            
+    
+            'description':forms.Textarea(attrs={
+                'class':" tinymce",
+                 
+                'placeholder':"Describe materials, features, durability...",
+            })
+               
+             
+        }    
+ 
+        
     def clean_name(self):
-        name = self.cleaned_data['name']
-        if not re.match(r"^[A-Za-z][A-Za-z\s-]*[A-Za-z]$"
-, name):
-            raise forms.ValidationError("Decorater name may only contain letters, spaces, or hyphens.")
-        return name
+        name = self.cleaned_data.get('name')
+        
+        if not name:
+            raise ValidationError("Product Name Is Required")
+        
+        if len(name) < 3:
+            raise ValidationError("Product Length Must be under 3 characters")
+        
+        if name.isdigit():
+            raise ValidationError("name is not allowed only numbers")
+        return name.strip()
     def clean_cost(self):
         cost = self.cleaned_data.get('cost')
         if float(cost) < 0:

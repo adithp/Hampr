@@ -99,7 +99,7 @@
                                 class="fw-normal text-muted">Small</span></span>
                         <div class="size-options">
                             {% for size in sizes %}
-                            <button class="size-btn {% if forloop.first %}active{% endif %}"
+                            <button class="size-btn {% if forloop.first %}active{% endif %}" data-id="{{ size.id }}"
                                 data-size="{{ size.get_size_label_display }}" data-price="{{ size.price }}"
                                 data-stock="{{ size.stock }}"
                                 data-dimensions="{{ size.width }} × {{ size.height }} × {{ size.depth }} cm"
@@ -139,15 +139,41 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="action-buttons">
-                        <button class="btn btn-primary btn-lg btn-add-hamper shadow-sm hover-scale-up"
-                            id="addToHamperBtn">
-                            Add to Hamper
-                        </button>
-                        <button class="btn btn-outline-secondary btn-wishlist hover-scale-up" title="Add to Wishlist">
-                            <i class="far fa-heart"></i>
-                        </button>
+                    {% if messages %}
+                    <div class="container mt-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
                     </div>
+                    {% endif %}
+
+                   <div class="action-buttons">
+
+    {% if request.user.current_cart %}
+        <!-- CART EXISTS -->
+        <button type="button"
+                class="btn btn-primary btn-lg btn-add-hamper"
+                data-bs-toggle="modal"
+                data-bs-target="#replaceCartModal"
+                id="replaceBtn">
+            Replace Old & Continue
+        </button>
+    {% else %}
+        <!-- NO CART -->
+        <form id="addBoxForm" method="POST">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-primary btn-lg btn-add-hamper"
+                    id="addBtn">
+                Use This Box
+            </button>
+        </form>
+    {% endif %}
+
+</div>
 
                     <!-- Short Benefits -->
                     <ul class="list-unstyled text-muted small">
@@ -389,11 +415,65 @@
             </div>
         </div>
     </footer>
+    <div class="modal fade" id="replaceCartModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Replace Existing Hamper</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <p class="text-muted mb-4">
+                        You already have a hamper. What would you like to replace?
+                    </p>
+
+                    <div class="d-grid gap-3">
+                        <!-- Replace Box Only -->
+                        <form method="POST" id="replaceBoxForm" >
+                            {% csrf_token %}
+                            <input type="hidden" name="replace_type" value="box">
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                🔁 Replace Box Only
+                            </button>
+                        </form>
+
+                        <!-- Replace Full Cart -->
+                        <form method="POST" id="replaceFullForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="replace_type" value="full">
+                            <button type="submit" class="btn btn-danger w-100">
+                                🗑️ Replace Full Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+   <script>
+    {% if request.user.current_cart and request.user.current_cart.box_size %}
+        window.currentCartBoxSizeId = "{{ request.user.current_cart.box_size.id }}";
+    {% else %}
+        window.currentCartBoxSizeId = null;
+    {% endif %}
+</script>
+
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
+ <script>
+        window.addEventListener("beforeunload", function () { });
+        window.addEventListener("unload", function () { });
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
     <script>
         // Initialize AOS
         AOS.init({
@@ -418,47 +498,91 @@
             thumbnail.classList.add('active');
         }
 
-        function selectSize(btn) {
+   function selectSize(btn) {
 
-            // active button
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    // active size UI
+    document.querySelectorAll('.size-btn').forEach(b => {
+        b.classList.remove('active');
+        b.classList.remove('already-selected');
+    });
+    btn.classList.add('active');
+    
 
-            const price = btn.dataset.price;
-            const dimensions = btn.dataset.dimensions;
-            const stock = parseInt(btn.dataset.stock);
-            const size = btn.dataset.size;
 
-            // price
-            document.getElementById('displayPrice').textContent =
-                '₹' + parseInt(price).toLocaleString();
+    const boxSizeId = btn.dataset.id;          // UUID (string)
+    const stock = parseInt(btn.dataset.stock); // number
 
-            // size label
-            document.getElementById('selectedSizeLabel').textContent = size;
+    
 
-            // dimensions
-            document.getElementById('dimensionsDisplay').textContent = dimensions;
+    // ---- price & info ----
+    document.getElementById('displayPrice').textContent =
+        '₹' + parseInt(btn.dataset.price).toLocaleString();
 
-            // stock logic
-            const stockEl = document.getElementById('stockStatus');
-            const addBtn = document.getElementById('addToHamperBtn');
+    document.getElementById('selectedSizeLabel').textContent = btn.dataset.size;
+    document.getElementById('dimensionsDisplay').textContent = btn.dataset.dimensions;
 
-            if (stock === 0) {
-                stockEl.className = 'stock-status out-of-stock';
-                stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
-                addBtn.disabled = true;
-            }
-            else if (stock <= 10) {
-                stockEl.className = 'stock-status low-stock';
-                stockEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Only ${stock} left!`;
-                addBtn.disabled = false;
-            }
-            else {
-                stockEl.className = 'stock-status in-stock';
-                stockEl.innerHTML = '<i class="fas fa-check-circle"></i> In Stock (Ready to ship)';
-                addBtn.disabled = false;
-            }
-        }
+    // ---- form action (only if form exists) ----
+   
+
+    // ---- action buttons (ONE of these may exist) ----
+    const addBtn = document.getElementById('addBtn');       // Use This Box
+    const replaceBtn = document.getElementById('replaceBtn'); // Replace Old
+const replaceBoxForm = document.getElementById('replaceBoxForm');
+if (replaceBoxForm) {
+    replaceBoxForm.action = `/cart/replace-box/${boxSizeId}/`;
+}
+
+const addBoxForm = document.getElementById('addBoxForm');
+if (addBoxForm) {
+    addBoxForm.action = `/cart/add-box/${boxSizeId}/`;
+}
+
+const replaceFullForm = document.getElementById('replaceFullForm');
+if (replaceFullForm) {
+    replaceFullForm.action = `/cart/add-box/${boxSizeId}/`;
+}
+
+    // ---- stock UI ----
+    const stockEl = document.getElementById('stockStatus');
+
+    if (stock === 0) {
+        stockEl.className = 'stock-status out-of-stock';
+        stockEl.innerHTML = '<i class="fas fa-times-circle"></i> Out of Stock';
+
+        // 🔴 DISABLE ACTION BUTTON
+        if (addBtn) addBtn.disabled = true;
+        if (replaceBtn) replaceBtn.disabled = true;
+
+    } else if (stock <= 10) {
+        stockEl.className = 'stock-status low-stock';
+        stockEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Only ${stock} left!`;
+
+        if (addBtn) addBtn.disabled = false;
+        if (replaceBtn) replaceBtn.disabled = false;
+
+    } else {
+        stockEl.className = 'stock-status in-stock';
+        stockEl.innerHTML = '<i class="fas fa-check-circle"></i> In Stock';
+
+        if (addBtn) addBtn.disabled = false;
+        if (replaceBtn) replaceBtn.disabled = false;
+    }
+
+    // ---- already selected logic ----
+    if (window.currentCartBoxSizeId === boxSizeId && replaceBtn) {
+        replaceBtn.textContent = "Already Selected";
+        replaceBtn.disabled = true;
+        replaceBtn.classList.add("btn-secondary");
+        replaceBtn.classList.remove("btn-primary");
+
+        btn.classList.add('already-selected');
+    } else if (replaceBtn) {
+        replaceBtn.textContent = "Replace Old & Continue";
+        replaceBtn.classList.remove("btn-secondary");
+        replaceBtn.classList.add("btn-primary");
+    }
+}
+
 
         // init first size
         document.addEventListener('DOMContentLoaded', () => {

@@ -1,0 +1,1014 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Decorations | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'catalog/css/shop-decorations.css' %}">
+    <style>
+         .hamper-summary-panel {
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                position: sticky;
+                top: 100px;
+                max-height: calc(100vh - 120px);
+                overflow-y: auto;
+                z-index: 100;
+            }
+
+            .capacity-meter-container {
+                background: #f0f0f0;
+                height: 8px;
+                border-radius: 4px;
+                overflow: hidden;
+                margin-top: 8px;
+            }
+
+            .capacity-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #10b981, #059669);
+                transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+            }
+
+            .item-list-scroll {
+                max-height: 250px;
+                overflow-y: auto;
+                scrollbar-width: thin;
+            }
+
+            /* Mobile Adjustments */
+            @media (max-width: 991.98px) {
+                .hamper-summary-panel {
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    top: auto;
+                    max-height: 80vh;
+                    border-radius: 20px 20px 0 0;
+                    z-index: 1050;
+                    transform: translateY(calc(100% - 70px));
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .hamper-summary-panel.expanded {
+                    transform: translateY(0);
+                }
+
+                .mobile-handle {
+                    width: 40px;
+                    height: 4px;
+                    background: #e0e0e0;
+                    border-radius: 2px;
+                    margin: 0 auto 12px;
+                }
+            }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+
+    <!-- Page Header & Breadcrumbs -->
+    <section class="bg-light py-5 mt-5">
+        <div class="container mt-4">
+            <nav aria-label="breadcrumb" class="mb-3" data-aos="fade-right">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="../index.html" class="text-decoration-none text-muted">Home</a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Shop</a></li>
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Hamper Builder</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Select Decorations</li>
+                </ol>
+            </nav>
+            <div class="row align-items-end" data-aos="fade-up">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-2 font-heading">Choose Your Decorations</h1>
+                    <p class="lead text-muted mb-0">Personalize your hamper with beautiful decorations
+                        and items</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
+                        Step 1 of 3 - Choose Decorations
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-5">
+        <div class="container-fluid px-lg-5">
+            <div class="row">
+                <!-- Mobile Filter Toggle -->
+                <div class="col-12 d-lg-none mb-4">
+                    <button class="btn btn-outline-dark w-100 d-flex justify-content-between align-items-center"
+                        type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+                        <span><i class="fas fa-filter me-2"></i> Filters</span>
+                        <span class="badge bg-dark rounded-pill" id="mobile-active-filters-count"
+                            style="display: none;">0</span>
+                    </button>
+                    <!-- Search Bar Mobile -->
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i
+                                    class="fas fa-search text-muted"></i></span>
+                           <input type="text"
+    class="form-control border-start-0 js-search-input"
+    id="mobile-search-input"
+    placeholder="Search decorations..."
+    autocomplete="off"
+    value={{request.GET.search}}
+    >
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Filters (Desktop) -->
+                <div class="col-lg-3 d-none d-lg-block">
+                    <div class="sticky-top" style="top: 100px; z-index: 900;">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="fw-bold mb-0">Refine Results</h5>
+                                    <a href="{% url 'shop:decoation_list' %}" class="text-muted text-decoration-none small"
+                                        id="clear-all-filters">Clear All</a>
+                                </div>
+
+                                <!-- Search -->
+                                <div class="position-relative">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0">
+                                            <i class="fas fa-search text-muted"></i>
+                                        </span>
+
+                                        <input type="text" name="search" value="{{request.GET.search}}"
+                                            class="form-control border-start-0 js-search-input"
+                                            placeholder="Search Decoations..." autocomplete="off" />
+                                    </div>
+                                    <div class="js-search-suggestions list-group position-absolute w-100 shadow-sm d-none"
+                                        style="z-index: 1000;"></div>
+
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Location -->
+                                <div class="filter-section mb-4">
+                                    <h6 class="fw-bold mb-3 d-flex justify-content-between cursor-pointer"
+                                        data-bs-toggle="collapse" data-bs-target="#filterLocation">
+                                        Location <i class="fas fa-chevron-down small"></i>
+                                    </h6>
+                                    <div class="collapse show" id="filterLocation">
+                                        <div class="form-check mb-2">
+    <input class="form-check-input" type="radio" name="locationFilter"
+        id="locAll" value="all"
+        {% if not request.GET.location or request.GET.location == 'all' %}checked{% endif %}>
+    <label class="form-check-label" for="locAll">
+        All Decorations
+    </label>
+</div>
+
+<div class="form-check mb-2">
+    <input class="form-check-input" type="radio" name="locationFilter"
+        id="locOuter" value="outer"
+        {% if request.GET.location == 'outer' %}checked{% endif %}>
+    <label class="form-check-label" for="locOuter">
+        <i class="fas fa-box text-warning me-1"></i> Outer Only
+    </label>
+</div>
+
+<div class="form-check mb-2">
+    <input class="form-check-input" type="radio" name="locationFilter"
+        id="locInner" value="inner"
+        {% if request.GET.location == 'inner' %}checked{% endif %}>
+    <label class="form-check-label" for="locInner">
+        <i class="fas fa-gift text-success me-1"></i> Inner Only
+    </label>
+</div>
+
+<div class="form-check mb-2">
+    <input class="form-check-input" type="radio" name="locationFilter"
+        id="locBoth" value="both"
+        {% if request.GET.location == 'both' %}checked{% endif %}>
+    <label class="form-check-label" for="locInner">
+       <i class="fas fa-layer-group text-primary"></i> Both
+    </label>
+</div>
+
+
+
+                                    </div>
+                                </div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Price -->
+                                <label for="priceRange" class="form-label small text-muted">
+    Max Price: ₹<span id="priceValue">
+        {{ request.GET.max_price|default:5000 }}
+    </span>
+</label>
+
+<input
+    type="range"
+    class="form-range"
+    id="priceRange"
+    min="0"
+    max="5000"
+    step="100"
+    value="{{ request.GET.max_price|default:5000 }}"
+>
+
+<div class="d-flex justify-content-between small text-muted">
+    <span>₹0</span>
+    <span>₹5000+</span>
+</div>
+
+                                <hr class="text-muted opacity-25">
+
+                                <!-- Filter: Availability -->
+                                <div class="filter-section">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="inStockOnly"
+                                            checked>
+                                        <label class="form-check-label" for="inStockOnly">
+                                            In Stock Only
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Grid -->
+                <div class="col-lg-5">
+                    <!-- Top Bar -->
+                    <div
+                        class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+                        <div class="mb-3 mb-md-0">
+                            <span class="text-muted">Showing <span class="fw-bold text-dark" id="results-count">{{count}}</span>
+                                items</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex align-items-center">
+    <label class="me-2 text-muted small text-nowrap">Sort by:</label>
+    <select class="form-select form-select-sm border-0 bg-light" id="sortSelect">
+
+        <option value="newest"
+            {% if request.GET.sort == "newest" or not request.GET.sort %}selected{% endif %}>
+            Newest
+        </option>
+
+        <option value="price_low"
+            {% if request.GET.sort == "price_low" %}selected{% endif %}>
+            Price: Low to High
+        </option>
+
+        <option value="price_high"
+            {% if request.GET.sort == "price_high" %}selected{% endif %}>
+            Price: High to Low
+        </option>
+
+        <option value="popular"
+            {% if request.GET.sort == "popular" %}selected{% endif %}>
+            Most Popular
+        </option>
+
+        <option value="rating"
+            {% if request.GET.sort == "rating" %}selected{% endif %}>
+            Rating
+        </option>
+
+    </select>
+</div>
+
+                            {% comment %} <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-light active" id="viewGrid"><i
+                                        class="fas fa-th-large"></i></button>
+                                <button type="button" class="btn btn-sm btn-light" id="viewList"><i
+                                        class="fas fa-list"></i></button>
+                            </div> {% endcomment %}
+                        </div>
+                    </div>
+
+                    <!-- Active Filters Display -->
+                    <div class="d-flex flex-wrap gap-2 mb-4" id="active-filters-container">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Products Grid -->
+                    <div class="row g-3" id="products-grid">
+                        {% for product in decorations %}
+                        <div class="col-6 col-md-4 col-lg-6" data-aos="fade-up">
+                            <a href="{% url 'shop:decoartion_detail' product.product.slug  %}">
+                            <div class="product-card h-100">
+                                <div class="product-image-wrapper">
+
+                                    <!-- Badges -->
+                                    <div class="badge-overlay">
+                                        {% if product.product.stock == 0 %}
+                                        <span class="badge bg-secondary">Out of Stock</span>
+                                        {% elif product.product.stock < 10 %} <span class="badge bg-warning text-dark">Low
+                                            Stock</span>
+                                            {% elif product.product.original_price %}
+                                            <span class="badge bg-danger">
+                                                -{{
+                                                product.product.original_price|floatformat:0|add:"-"|add:product.product.price|floatformat:0
+                                                }}%
+                                            </span>
+                                            {% endif %}
+                                    </div>
+
+                                    <!-- Location Icon -->
+                                    <div class="location-badge">
+                                        {% if product.product.is_outside and not product.product.is_inside %}
+                                        <i class="fas fa-box text-warning"></i>
+                                        {% elif product.product.is_inside and not product.product.is_outside %}
+                                        <i class="fas fa-gift text-success"></i>
+                                        {% elif product.product.is_inside and product.product.is_outside %}
+                                        <i class="fas fa-layer-group text-primary"></i>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Hover Actions -->
+                                    {% comment %} <div class="hover-actions">
+                                        <button class="action-btn wishlist-btn">
+                                            <i class="far fa-heart"></i>
+                                        </button>
+                                        <button class="action-btn quick-view-btn" data-id="{{ product.product.id }}">
+                                            <i class="far fa-eye"></i>
+                                        </button>
+                                    </div> {% endcomment %}
+
+                                    <!-- Image -->
+                                    {% if product.image %}
+                                    <img src="{{ product.image.image.url }}" class="product-image" alt="{{ product.product.name }}">
+                                    {% else %}
+                                    <img src="https://image2url.com/r2/default/images/1767370373781-5b3967a3-44e3-456e-b043-461c1acef37f.png" class="product-image" alt="{{ product.product.name }}">
+                                    {% endif %}
+                                </a>
+                                    <!-- Add to Hamper -->
+                                    {% comment %} <div class="add-to-hamper-overlay">
+                                        <button class="btn btn-primary w-100" 
+                                        {% if product.product.stock == 0 %}disabled{% endif %}>
+                                            {% if product.product.stock > 0 %}Add to Hamper{% else %}Out of Stock{% endif %}
+                                        </button>
+                                    </div> {% endcomment %}
+
+                                </div>
+
+                                <!-- Card Body -->
+                                <div class="card-body p-3 d-flex flex-column">
+
+                                    <div class="small text-muted mb-1">
+                                        {% if product.product.is_outside %}Outer{% endif %}
+                                        {% if product.product.is_inside %} Inner{% endif %}
+                                    </div>
+
+                                    <h6 class="card-title fw-bold mb-2 text-truncate" title="{{ product.product.name }}">
+                                        {{ product.product.name }}
+                                    </h6>
+
+                                    <span class="text-muted small mb-2">
+                                      {{ product.product.description|striptags|truncatechars:60 }}
+
+
+                                    </span>
+
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fw-bold text-primary fs-5">₹{{ product.product.price }}</span>
+                                            {% if product.product.original_price %}
+                                            <span class="text-muted text-decoration-line-through small ms-1">
+                                                ₹{{ product.product.original_price }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                </div> 
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-5">
+                            <h5>No decorations found</h5>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Empty State (Hidden by default) -->
+                    <div id="empty-state" class="text-center py-5 d-none">
+                        <div class="mb-3">
+                            <i class="fas fa-gift fa-4x text-muted opacity-25"></i>
+                        </div>
+                        <h4 class="fw-bold">No decorations found</h4>
+                        <p class="text-muted">Try adjusting your filters or search terms</p>
+                        <button class="btn btn-primary mt-2" id="reset-filters-btn">Clear All
+                            Filters</button>
+                    </div>
+
+                    <!-- Load More -->
+                     <div class="d-flex justify-content-between align-items-center mt-4">
+                        <p class="text-muted small mb-0"> </p>
+                        <nav>
+                            <ul class="pagination mb-0" id="pagination">
+
+                                <li class="page-item" data-type="prev">
+                                    <a class="page-link" href="#">Previous</a>
+                                </li>
+
+                                {% for i in total_page_num %}
+                                <li class="page-item" data-page="{{ i }}">
+                                    <a class="page-link" href="#">{{ i }}</a>
+                                </li>
+                                {% endfor %}
+
+                                <li class="page-item" data-type="next">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+
+                            </ul>
+
+                        </nav>
+                    </div>
+                
+                </div>
+
+                <!-- Right Sidebar: Hamper Summary -->
+               
+                
+            {% comment %} </div>
+           
+        </div> {% endcomment %}
+         {% include 'catalog/right_side_bar.html' %}
+    </section>
+
+    <!-- Offcanvas Filter (Mobile) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title fw-bold" id="filterOffcanvasLabel">Filters</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Mobile Filter Content (Cloned from Desktop via JS or duplicated structure) -->
+            <div id="mobile-filter-container">
+                <!-- Will be populated by JS to sync with desktop -->
+            </div>
+        </div>
+        <div class="offcanvas-footer p-3 border-top">
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-outline-secondary w-100" id="mobile-clear-filters">Clear
+                        All</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-primary w-100" data-bs-dismiss="offcanvas">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Modal -->
+    <div class="modal fade" id="quickAddModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-body p-0">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="row g-0">
+                        <div class="col-md-6">
+                            <img src="" class="img-fluid h-100 object-fit-cover rounded-start" id="quick-add-img"
+                                alt="Product" style="min-height: 300px;">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 d-flex flex-column h-100 justify-content-center">
+                                <h4 class="fw-bold mb-2" id="quick-add-title">Product Name</h4>
+                                <p class="text-muted small mb-3" id="quick-add-type">Type</p>
+                                <h3 class="text-primary fw-bold mb-4" id="quick-add-price">₹0</h3>
+
+                                <div class="mb-4">
+                                    <label class="form-label small fw-bold text-uppercase">Quantity</label>
+                                    <div class="input-group" style="width: 140px;">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            id="qty-minus">-</button>
+                                        <input type="text" class="form-control text-center border-secondary" value="1"
+                                            id="qty-input">
+                                        <button class="btn btn-outline-secondary" type="button" id="qty-plus">+</button>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary w-100 py-2 mb-3" id="quick-add-confirm-btn">
+                                    Add to Hamper
+                                </button>
+                                <a href="#" class="text-center text-muted small text-decoration-none">View Full
+                                    Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="{% static 'accounts/js/utils.js' %}"></script>
+    <script src="{% static 'accounts/js/main.js' %}"></script>
+    <script>
+function fixMobileRadioNames() {
+    const mobileContainer = document.getElementById("mobile-filter-container");
+    if (!mobileContainer) return;
+
+    mobileContainer
+        .querySelectorAll('input[name="locationFilter"]')
+        .forEach(radio => {
+            radio.name = "locationFilterMobile";
+        });
+}
+</script>
+
+    <script>
+function syncLocationFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const location = params.get("location") || "all";
+
+    document
+        .querySelectorAll('input[name="locationFilter"]')
+        .forEach(radio => {
+            radio.checked = (radio.value === location);
+        });
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const desktopFilter = document.querySelector(".col-lg-3 .card");
+    const mobileContainer = document.getElementById("mobile-filter-container");
+
+    if (desktopFilter && mobileContainer) {
+        mobileContainer.innerHTML = desktopFilter.innerHTML;
+    }
+
+    fixMobileRadioNames();   // 🔥 ADD THIS LINE
+
+    initLocationFilter();
+    initPriceFilter();
+    initSearchInputs();
+    syncLocationFromURL();
+
+});
+</script>
+
+
+
+<script>
+function initLocationFilter() {
+    document.querySelectorAll('input[name="locationFilter"]').forEach(radio => {
+        radio.addEventListener("change", function () {
+
+            const params = new URLSearchParams(window.location.search);
+
+            if (this.value === "all") {
+                params.delete("location");
+            } else {
+                params.set("location", this.value);
+            }
+
+            const newUrl = params.toString()
+                ? `${window.location.pathname}?${params.toString()}`
+                : window.location.pathname;
+
+            window.location.href = newUrl;
+        });
+    });
+}
+</script>
+<script>
+function initPriceFilter() {
+
+    const priceRanges = document.querySelectorAll("#priceRange");
+
+    priceRanges.forEach(priceRange => {
+
+        const priceValue = priceRange
+            .closest(".filter-section, .card-body")
+            ?.querySelector("#priceValue");
+
+        // Update number while sliding
+        priceRange.addEventListener("input", function () {
+            if (priceValue) {
+                priceValue.textContent = this.value;
+            }
+        });
+
+        // Update URL on change
+        priceRange.addEventListener("change", function () {
+
+            const params = new URLSearchParams(window.location.search);
+
+            if (this.value === "5000") {
+                params.delete("max_price");
+            } else {
+                params.set("max_price", this.value);
+            }
+
+            const newUrl = params.toString()
+                ? `${window.location.pathname}?${params.toString()}`
+                : window.location.pathname;
+
+            window.location.href = newUrl;
+        });
+    });
+}
+
+</script>
+
+        <script>
+        const pagination = document.getElementById('pagination');
+
+        // Get current page from URL
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(params.get('page')) || 1;
+
+        const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+        const totalPages = pageItems.length;
+
+        // Set active class on load
+        pageItems.forEach(item => {
+            if (parseInt(item.dataset.page) === currentPage) {
+                item.classList.add('active');
+            }
+        });
+
+        pagination.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const li = e.target.closest('.page-item');
+            if (!li) return;
+
+            // Page number click
+            if (li.dataset.page) {
+                goToPage(parseInt(li.dataset.page));
+            }
+
+            // Previous
+            if (li.dataset.type === 'prev' && currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+
+            // Next
+            if (li.dataset.type === 'next' && currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+
+        function goToPage(page) {
+            params.set('page', page);
+            window.location.search = params.toString();
+        }
+    </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sortSelect = document.getElementById("sortSelect");
+    if (!sortSelect) return;
+
+    sortSelect.addEventListener("change", function () {
+        const params = new URLSearchParams(window.location.search);
+
+        if (this.value === "newest") {
+            params.delete("sort"); // clean URL
+        } else {
+            params.set("sort", this.value);
+        }
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.location.href = newUrl;
+    });
+
+});
+</script>
+
+ <script>
+function initSearchInputs() {
+
+    document.querySelectorAll(".js-search-input").forEach(input => {
+
+        let wrapper = input.closest(".position-relative");
+
+        // ✅ Mobile input fix
+        if (!wrapper) {
+            wrapper = document.createElement("div");
+            wrapper.className = "position-relative";
+            input.parentNode.appendChild(wrapper);
+            wrapper.appendChild(input);
+        }
+
+        let suggestionBox = wrapper.querySelector(".js-search-suggestions");
+
+        if (!suggestionBox) {
+            suggestionBox = document.createElement("div");
+            suggestionBox.className =
+                "js-search-suggestions list-group position-absolute w-100 shadow-sm d-none";
+            suggestionBox.style.zIndex = "1055";
+            wrapper.appendChild(suggestionBox);
+        }
+
+        let debounceTimer = null;
+
+        // ✅ ENTER KEY
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const value = input.value.trim();
+                const params = new URLSearchParams(window.location.search);
+
+                value ? params.set("search", value) : params.delete("search");
+
+                window.location.href =
+                    `${window.location.pathname}?${params.toString()}`;
+            }
+        });
+
+        // ✅ SUGGESTIONS
+        input.addEventListener("input", function () {
+
+            const query = this.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                suggestionBox.classList.add("d-none");
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`http://127.0.0.1:8000/shop/decoartion-search-suggestions/?suggest=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        suggestionBox.innerHTML = "";
+
+                        if (!data.results?.length) {
+                            suggestionBox.classList.add("d-none");
+                            return;
+                        }
+
+                        data.results.forEach(item => {
+                            const btn = document.createElement("button");
+                            btn.type = "button";
+                            btn.className = "list-group-item list-group-item-action";
+                            btn.textContent = item.name;
+
+                            btn.onclick = () => {
+                                const params = new URLSearchParams(window.location.search);
+                                params.set("search", item.name);
+                                window.location.href =
+                                    `${window.location.pathname}?${params.toString()}`;
+                            };
+
+                            suggestionBox.appendChild(btn);
+                        });
+
+                        suggestionBox.classList.remove("d-none");
+                    });
+            }, 300);
+        });
+    });
+}
+</script>
+<script>
+const INITIAL_CART_PRODUCTS = {{ cart_products_json|safe }};
+</script>
+
+<script>
+window.CART_STATE = {
+    products: INITIAL_CART_PRODUCTS,
+    decorations: {{ cart_decorations_json|safe }},
+     decorations_total: {{ cart.decorations_total|default:0 }},
+    products_total: {{ cart.products_total|default:0 }},
+    grand_total: {{ cart.grand_total|default:cart.box_size.price }},
+    used_volume: {{ cart.used_volume|default:0 }},
+    volume: {{ cart.volume|default:0 }}
+};
+</script>
+
+<script>
+    function renderDecorations(decorations) {
+    const list = document.getElementById("decorList");
+
+    if (!decorations || decorations.length === 0) {
+        list.innerHTML =
+            '<p class="text-muted small fst-italic">No decorations added yet.</p>';
+        return;
+    }
+
+    list.innerHTML = decorations.map(d => `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-medium">
+                ${d.name}(${d.position}) × ${d.quantity}
+            </span>
+            <span class="small fw-bold">₹${d.total}</span>
+        </div>
+    `).join("");
+}
+
+</script>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const panel = document.getElementById("hamperPanel");
+    const toggle = document.getElementById("mobileToggle");
+
+    if (!panel || !toggle) return;
+
+    toggle.addEventListener("click", function () {
+        panel.classList.toggle("expanded");
+
+        // 🔥 THIS IS THE MISSING LINE
+        if (panel.classList.contains("expanded")) {
+            refreshHamperSummary(window.CART_STATE);
+        }
+    });
+});
+</script>
+
+
+   
+    <script>
+    function updateCapacityUI(used, capacity) {
+        if (!capacity || capacity <= 0) return;
+
+        const percent = Math.min((used / capacity) * 100, 100);
+
+        document.getElementById("capacityBar").style.width = percent + "%";
+        document.getElementById("capacityPercent").innerText =
+            `${Math.round(percent)}%`;
+
+        document.getElementById("volumeText").innerText =
+            `${used} / ${capacity} L used`;
+
+        document.getElementById("remainingText").innerText =
+            `${Math.round(Math.max(capacity - used, 0))} L remaining`;
+
+        // optional color change
+        const bar = document.getElementById("capacityBar");
+        if (percent >= 100) bar.style.background = "#ef4444";
+        else if (percent >= 75) bar.style.background = "#f59e0b";
+        else bar.style.background = "linear-gradient(90deg,#10b981,#059669)";
+    }
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        updateCapacityUI(
+            {{ cart.used_volume|default:0 }},
+            {{ cart.volume|default:0 }}
+        );
+    });
+    </script>
+
+    <script>
+    function renderProducts(products) {
+        const list = document.getElementById("hamperProductList");
+
+        if (!products || products.length === 0) {
+            list.innerHTML =
+                '<p class="text-muted small fst-italic">No products added yet.</p>';
+            return;
+        }
+
+        list.innerHTML = products.map(p => `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-medium">${p.name}(  <span class="text-muted">
+                    (${p.variant_label})
+                </span>) × ${p.quantity}</span>
+                <span class="small fw-bold">₹${p.total}</span>
+            </div>
+        `).join("");
+    }
+    </script>
+    
+
+    <script>
+    function updateQty(btn, action) {
+        const control = btn.closest('.qty-control');
+        const productId = control.dataset.id;
+        const qtyInput = control.querySelector('.qty-input');
+
+        fetch("{% url 'cart:update_cart' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRF_TOKEN
+            },
+            body: JSON.stringify({
+                type: "product",
+                product_id: productId,
+                action: action
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.error);
+                return;
+            }
+
+            // ✅ backend decides quantity
+        
+            qtyInput.value = data.quantity;
+
+    // 🔥 THIS LINE FIXES YOUR ISSUE
+   
+    // update totals
+    
+
+    window.CART_STATE = data.cart;
+    refreshHamperSummary(window.CART_STATE);
+        })
+        .catch(() => {
+            alert("Something went wrong. Try again.");
+        });
+    }
+    </script> 
+  <script>
+    function refreshHamperSummary(cart) {
+        if (!cart) return;
+
+        // products list
+        renderProducts(cart.products);
+        renderDecorations(cart.decorations); 
+        // capacity
+        updateCapacityUI(cart.used_volume, cart.volume);
+
+        // totals
+        document.getElementById("productsSubtotal").innerText =
+            `₹${cart.products_total}`;
+
+    document.getElementById("decorSubtotal").innerText =
+        `₹${cart.decorations_total}`;
+
+    document.getElementById("grandTotal").innerText =
+        `₹${cart.grand_total}`;
+
+        // mobile header
+        const mobileCount = document.getElementById("mobileCount");
+        const mobileTotal = document.getElementById("mobileTotal");
+
+        if (mobileCount) {
+            mobileCount.innerText = `${cart.products.length} items`;
+        }
+        if (mobileTotal) {
+            mobileTotal.innerText = `₹${cart.grand_total}`;
+        }
+    }
+    </script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 🔥 Render cart immediately on page load
+    refreshHamperSummary(window.CART_STATE);
+});
+</script>
+
+</body>
+
+</html>
