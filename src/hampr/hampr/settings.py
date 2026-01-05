@@ -12,7 +12,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = True
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'catalog.apps.CatalogConfig',
     'admin_panel.apps.AdminPanelConfig',
+    'cart.apps.CartConfig',
 ]
 
 

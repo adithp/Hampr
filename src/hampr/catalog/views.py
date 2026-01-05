@@ -8,6 +8,8 @@ from django.views.generic import DetailView
 
 from .models import BoxMaterial,BoxCategory,HamperBox,BoxImage,BoxSize,Product,ProductImage,ProductCategory,Decoration
 from .utilts import voulme_calculater
+from accounts.models import CustomUser
+from core.mixins import NeverCacheMixin
 
 
 class BoxListView(View):
@@ -119,7 +121,7 @@ class BoxDetailView(DetailView):
         return context
 
 
-class ProductListView(View):
+class ProductListView(NeverCacheMixin,View):
      def get(self,request,*args, **kwargs):
          products = Product.objects.all().order_by('-is_featured')
          categories = ProductCategory.objects.all()
@@ -139,22 +141,88 @@ class ProductListView(View):
          q = request.GET.get('search')
          if q:
             products = products.filter(name__icontains=q)
+         paginator = Paginator(products,4)
+         page_number = self.request.GET.get('page')
+         products =paginator.get_page(page_number)
+         total_pages = paginator.num_pages
+            
+         total_page_num = range(1,total_pages+1)
          data = []
+         user_id = request.user.id
+         cart_products = []
+         
+         cart = []
+         
+         if CustomUser.objects.filter(id=user_id).exists():
+            user = CustomUser.objects.get(id=user_id)
+            if hasattr(user,'current_cart'):
+                cart = user.current_cart
+                cart.volume = round( cart.box_size.height * cart.box_size.width * cart.box_size.depth / 1000,2 )
+                print(cart.volume  )
+                cart_products = cart.cart_products.all()
+                cart.products_total = sum(
+                    item.quantity * item.product_varient.price
+                    for item in cart_products
+                )
+                cart.decorations_total = cart.get_decoration_total()
+
+                cart.grand_total = cart.box_size.price + cart.products_total + cart.decorations_total
+                
+                cart_products_json = [
+                    {
+                        "id": item.product_varient.id,
+                        "name": item.product_varient.product.name,
+                        "quantity": item.quantity,
+                        "price": float(item.product_varient.price),
+                        "total": float(item.quantity * item.product_varient.price),
+                         "variant_label": (
+                                        item.product_varient.size.name
+                                        if item.product_varient.size
+                                        else item.product_varient.color.name
+                                        if item.product_varient.color
+                                        else ""
+                                    ),
+                        
+                    }
+                    for item in cart_products
+                ]
+                cart_decorations_json = [
+                        {
+                            "name": d.decoration.name,
+                            "quantity": d.quantity,
+                            "price": float(d.decoration.price),
+                            "total": float(d.quantity * d.decoration.price),
+                            'position':d.position
+                        }
+                        for d in cart.cart_decoartion.all()
+                    ]
+                
+                cart.used_volume =cart.get_used_volume()
+                
+            
          
          for product in products:
-            if product.variants.first().size:
+            if product.variants.first():
                 image = product.variants.first().variants_images.filter(is_thumbnail=True).first()
                 if not image:
                     image = product.variants.first().variants_images.first()
-                variant = product.variants.first()  
+                variant = product.variants.first()
+                  
                 volume = round(variant.width * variant.height * variant.depth / 1000,2)
-                data.append({'product':product,'varient':variant,'image':image,'volume':volume})
+                qty = 0
+                if cart_products:
+                    cart_item = cart_products.filter(product_varient=variant).first()
+                    if cart_item:
+                        qty = cart_item.quantity
+                        
+                
+                data.append({'product':product,'varient':variant,'image':image,'volume':volume,'selected_qty':qty})
                 # print(image)
                 # print(data[0]['image'].image)
         
-        
+            
          
-         return render(request,'catalog/product_list.html',{'data':data,'categories':categories})
+         return render(request,'catalog/product_list.html',{'data':data,'categories':categories,'total_page_num':total_page_num,'cart':cart,'cart_products_json':cart_products_json,'cart_decorations_json':cart_decorations_json,})
 
 
 def product_search_suggestions(request):
@@ -190,6 +258,47 @@ class ProductDetailView(DetailView):
         
         varients = product.variants.all()
         
+        user_id = self.request.user.id
+        cart_products = []
+        cart_decoations = []
+        cart = []
+         
+        if CustomUser.objects.filter(id=user_id).exists():
+            user = CustomUser.objects.get(id=user_id)
+            if hasattr(user,'current_cart'):
+                cart = user.current_cart
+                cart.volume = round( cart.box_size.height * cart.box_size.width * cart.box_size.depth / 1000,2 )
+                print(cart.volume  )
+                cart_products = cart.cart_products.all()
+                cart.products_total = sum(
+                    item.quantity * item.product_varient.price
+                    for item in cart_products
+                )
+
+                cart.grand_total = cart.box_size.price + cart.products_total
+                
+                cart_products_json = [
+                    {
+                        "id": item.product_varient.id,
+                        "name": item.product_varient.product.name,
+                        "quantity": item.quantity,
+                        "price": float(item.product_varient.price),
+                        "total": float(item.quantity * item.product_varient.price),
+                        "variant_label": (
+                                        item.product_varient.size.name
+                                        if item.product_varient.size
+                                        else item.product_varient.color.name
+                                        if item.product_varient.color
+                                        else ""
+                                    ),
+                        
+                    }
+                    for item in cart_products
+                ]
+                cart_decoations = cart.cart_decoartion.all()
+                cart.used_volume =cart.get_used_volume()
+                
+        
         varient_data = []
         for i in varients:
             varient_data.append({
@@ -205,6 +314,9 @@ class ProductDetailView(DetailView):
             size_color = False
         context['size_color'] =  size_color
         context['varients'] = varient_data
+        context['cart_products_json'] =cart_products_json if cart_products_json else None
+        context['cart'] = cart if cart else None
+        context['cart_decoations'] = cart_decoations if cart_decoations else None
         return context
 
 
@@ -252,6 +364,57 @@ class DecorationListView(View):
         total_pages = paginator.num_pages
             
         total_page_num = range(1,total_pages+1)
+        user_id = request.user.id
+        cart_products = []
+        cart_decoations = []
+        cart = []
+         
+        
+        if CustomUser.objects.filter(id=user_id).exists():
+            user = CustomUser.objects.get(id=user_id)
+            if hasattr(user,'current_cart'):
+                cart = user.current_cart
+                cart.volume = round( cart.box_size.height * cart.box_size.width * cart.box_size.depth / 1000,2 )
+                print(cart.volume  )
+                cart_products = cart.cart_products.all()
+                cart.products_total = sum(
+                    item.quantity * item.product_varient.price
+                    for item in cart_products
+                )
+                cart.decorations_total = cart.get_decoration_total()
+
+                cart.grand_total = cart.box_size.price + cart.products_total + cart.decorations_total
+                
+                cart_products_json = [
+                    {
+                        "id": item.product_varient.id,
+                        "name": item.product_varient.product.name,
+                        "quantity": item.quantity,
+                        "price": float(item.product_varient.price),
+                        "total": float(item.quantity * item.product_varient.price),
+                         "variant_label": (
+                                        item.product_varient.size.name
+                                        if item.product_varient.size
+                                        else item.product_varient.color.name
+                                        if item.product_varient.color
+                                        else ""
+                                    ),
+                        
+                    }
+                    for item in cart_products
+                ]
+                cart_decorations_json = [
+                        {
+                            "name": d.decoration.name,
+                            "quantity": d.quantity,
+                            "price": float(d.decoration.price),
+                            "total": float(d.quantity * d.decoration.price),
+                            'position':d.position
+                        }
+                        for d in cart.cart_decoartion.all()
+                    ]
+                
+                cart.used_volume =cart.get_used_volume()
 
         decorations = []
         count = 0
@@ -262,7 +425,7 @@ class DecorationListView(View):
                 image = i.decoartion_image.all().first()
             decorations.append({'product':i,'image':image})
 
-        return render(request,'catalog/shop-decorations.html',{'decorations':decorations,'count':count,'total_page_num':total_page_num,})
+        return render(request,'catalog/shop-decorations.html',{'decorations':decorations,'count':count,'total_page_num':total_page_num,'cart':cart,'cart_products_json':cart_products_json,'cart_decorations_json':cart_decorations_json,})
         
         
         
@@ -300,6 +463,31 @@ class DecorationDetailView(DetailView):
         except Decoration.DoesNotExist as e:
             print(e)
         volume = round(decoartor.width * decoartor.height * decoartor.depth / 1000 , 2)
+        user_id = self.request.user.id
+        if CustomUser.objects.filter(id=user_id).exists():
+            user = CustomUser.objects.get(id=user_id)
+            if hasattr(user,'current_cart'):
+                cart = user.current_cart
+                cart_volume = cart.get_used_volume()
+                cart_max_volume = voulme_calculater(cart.box_size.height,cart.box_size.width,cart.box_size.depth)
+                outer_count = cart.cart_decoartion.filter(position='outer').count()
+                inner_qty = 0
+                outer_selected = False
+                this_inner = cart.cart_decoartion.filter(decoration=decoartor,position='inner').first()
+                this_outer = cart.cart_decoartion.filter(decoration=decoartor,position='outer').first()
+                if this_inner:
+                    inner_qty = this_inner.quantity
+                if this_outer:
+                    outer_selected = True if this_outer.quantity >= 1 else False
+                
+        
         context['volume'] = volume
         context['images'] = decoartor.decoartion_image.all()
+        context['cart_volume'] = cart_volume
+        context['cart_max_volume'] = cart_max_volume
+        context['outer_count'] = outer_count
+        context.update({
+            "inner_qty": inner_qty,
+            "outer_selected": outer_selected,
+        })
         return context

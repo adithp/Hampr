@@ -181,7 +181,7 @@
                                 alt="Premium Scented Candle" id="mainImage">
                         </figure>
                         <div class="thumbnails-row">
-                           {% for image in product_images %}
+                            {% for image in product_images %}
                             <button type="button" class="thumbnail-btn {% if forloop.first %}active{% endif %}"
                                 onclick="updateMainImage(this, '{{ image.image.url }}')">
                                 <img src="{{ image.image.url }}" alt="Box Image">
@@ -195,7 +195,8 @@
                 <div class="col-lg-4 product-info-col">
                     {% comment %} <span class="product-category-badge">Best Seller</span> {% endcomment %}
                     <h1 class="product-title display-6">{{product.name}}</h1>
-                    {% comment %} <p class="product-tagline small">Hand-poured soy wax candles for a serene ambiance.</p> {% endcomment %}
+                    {% comment %} <p class="product-tagline small">Hand-poured soy wax candles for a serene ambiance.
+                    </p> {% endcomment %}
 
                     <div class="price-display mb-3">
                         <span class="price-label">Price</span>
@@ -203,37 +204,33 @@
                     </div>
 
                     <!-- Color Selector -->
-                   <div class="mb-4">
-    <span class="size-selector-label small">
-        {% if size_color == 'size' %}
-            Select Size:
-        {% else %}
-            Select Color:
-        {% endif %}
-        <span class="fw-normal text-muted" id="selectedVariantLabel"></span>
-    </span>
+                    <div class="mb-4">
+                        <span class="size-selector-label small">
+                            {% if size_color == 'size' %}
+                            Select Size:
+                            {% else %}
+                            Select Color:
+                            {% endif %}
+                            <span class="fw-normal text-muted" id="selectedVariantLabel"></span>
+                        </span>
 
-    <div class="size-options" id="variantOptions">
-        {% for item in varients %}
-            <button
-                class="size-btn btn-sm {% if forloop.first %}active{% endif %}"
-                data-variant-id="{{ item.varient.id }}"
-                data-price="{{ item.varient.price }}"
-                data-stock="{{ item.varient.stock }}"
-                data-volume="{{ item.volume }}"
-                data-label="{% if size_color == 'size' %}{{ item.varient.size.name }}{% else %}{{ item.varient.color.name }}{% endif %}"
-                data-images="{% for img in item.images %}{{ img.image.url }}{% if not forloop.last %},{% endif %}{% endfor %}"
-                onclick="selectVariant(this)"
-            >
-                {% if size_color == 'size' %}
-                    {{ item.varient.size.name }}
-                {% else %}
-                    {{ item.varient.color.name }}
-                {% endif %}
-            </button>
-        {% endfor %}
-    </div>
-</div>
+                        <div class="size-options" id="variantOptions">
+                            {% for item in varients %}
+                            <button class="size-btn btn-sm {% if forloop.first %}active{% endif %}"
+                                data-variant-id="{{ item.varient.id }}" data-price="{{ item.varient.price }}"
+                                data-stock="{{ item.varient.stock }}" data-volume="{{ item.volume }}"
+                                data-label="{% if size_color == 'size' %}{{ item.varient.size.name }}{% else %}{{ item.varient.color.name }}{% endif %}"
+                                data-images="{% for img in item.images %}{{ img.image.url }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                                onclick="selectVariant(this)">
+                                {% if size_color == 'size' %}
+                                {{ item.varient.size.name }}
+                                {% else %}
+                                {{ item.varient.color.name }}
+                                {% endif %}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
 
 
                     <!-- Stock & Attributes -->
@@ -242,7 +239,7 @@
                             <i class="fas fa-check-circle"></i> In Stock
                         </div>
 
-                         <div class="product-attributes p-2 small">
+                        <div class="product-attributes p-2 small">
                             <div class="attribute-item">
                                 <span class="attribute-label" style="width: 80px;">Volume:</span>
                                 <span class="attribute-value" id="burnTimeDisplay">L</span>
@@ -251,7 +248,7 @@
                                 <span class="attribute-label" style="width: 80px;">Wax:</span>
                                 <span class="attribute-value">Soy Wax</span>
                             </div> {% endcomment %}
-                        </div> 
+                        </div>
                     </div>
 
                     <!-- Actions -->
@@ -285,7 +282,7 @@
                                     <h6 class="fw-bold font-heading mb-1">Your Hamper</h6>
                                     <div class="d-flex align-items-center gap-2">
                                         <span class="badge bg-light text-dark border"
-                                            style="font-size: 0.7rem;">Standard Box</span>
+                                            style="font-size: 0.7rem;">{{cart.box.name}} ({{cart.box_size.size_label}})</span>
                                     </div>
                                 </div>
                                 <div class="text-end">
@@ -309,44 +306,69 @@
 
                             <hr class="opacity-10 my-2">
 
-                            <!-- Items List -->
+                                <!-- Items List -->
                             <div class="item-list-scroll pe-2 mb-3">
-                                <!-- Box & Decor Group -->
-                                <div class="mb-2">
-                                    <h6 class="small fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem;">
-                                        Base & Decor</h6>
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="small fw-medium">Standard Box (M)</span>
-                                        <span class="small fw-bold">₹1,500</span>
-                                    </div>
-                                    <div id="decorList">
-                                        <!-- Decor items injected here -->
-                                    </div>
-                                </div>
 
-                                <!-- Products Group -->
-                                <div>
-                                    <h6 class="small fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem;">
-                                        Products</h6>
-                                    <div id="hamperProductList">
-                                        <p class="text-muted small fst-italic">No products added yet.</p>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Box Group -->
+        <div class="mb-3">
+            <h6 class="small fw-bold text-uppercase text-muted mb-2">Box</h6>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-box text-gold"></i>
+                    <span class="small fw-medium">
+                        {{ cart.box.name }} ({{ cart.box_size.size_label }})
+                    </span>
+                </div>
+                <span class="small fw-bold">₹{{ cart.box_size.price }}</span>
+            </div>
+        </div>
+
+        <!-- Decoration Group -->
+        <div class="mb-3">
+            <h6 class="small fw-bold text-uppercase text-muted mb-2">Decorations</h6>
+            <div id="decorList">
+                <p class="text-muted small fst-italic">No decorations added yet.</p>
+            </div>
+        </div>
+
+        <!-- Products Group -->
+        <div>
+            <h6 class="small fw-bold text-uppercase text-muted mb-2">Products</h6>
+            <div id="hamperProductList">
+                <p class="text-muted small fst-italic">No products added yet.</p>
+            </div>
+        </div>
+
+    </div>
 
                             <!-- Totals -->
-                            <div class="bg-light p-3 rounded-3 mb-3">
-                                <div class="d-flex justify-content-between mb-1 small">
-                                    <span class="text-muted">Total</span>
-                                    <span class="fw-bold text-primary" id="grandTotal">₹1,900</span>
-                                </div>
-                            </div>
+                             <div class="bg-light p-3 rounded-3 mb-4">
+        <div class="d-flex justify-content-between mb-1 small">
+            <span class="text-muted">Box</span>
+            <span>₹{{ cart.box_size.price }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-1 small">
+            <span class="text-muted">Decorations</span>
+            <span id="decorSubtotal">₹0</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2 small">
+            <span class="text-muted">Products</span>
+            <span id="productsSubtotal">₹0</span>
+        </div>
+        <div class="d-flex justify-content-between pt-2 border-top border-secondary-subtle">
+            <span class="fw-bold">Total</span>
+            <span class="fw-bold text-primary fs-5" id="grandTotal">₹{{ cart.box_size.price }}</span>
+        </div>
+    </div>
 
                             <!-- Actions -->
-                            <div class="d-grid gap-2">
-                                <a href="builder-step3.html" class="btn btn-outline-dark btn-sm fw-medium">
-                                    <i class="fas fa-arrow-left me-1"></i> Back to Builder
-                                </a>
+                           <div class="d-grid gap-2">
+                                <button class="btn btn-primary py-2 fw-medium" onclick="window.location.href='{% url 'shop:decoation_list' %}'">
+                                    <i class="fas fa-ribbon me-2"></i> Add Decorations
+                                </button>
+                                <button class="btn btn-outline-dark py-2 fw-medium" onclick="goToCheckout()">
+                                    Skip to Checkout <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -357,7 +379,7 @@
             <div class="row details-section">
                 <div class="col-lg-8">
                     <h2 class="section-title">Product Description</h2>
-                   {{product.description | safe}}
+                    {{product.description | safe}}
                 </div>
             </div>
         </div>
@@ -377,85 +399,261 @@
 
     <!-- Scripts -->
 
-    <script>
-const hamper = {
-    box: {
-        name: "Standard Box",
-        capacityLiters: 12,
-        basePrice: 1500
-    },
-    decorations: [],
-    products: []
-};
-</script>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-    let currentPrice = 0;
-    let currentStock = 0;
-    let currentVolume = 0;
-    let selectedVariantId = null;
-function selectVariant(btn) {
+    <script>
+        let currentPrice = 0;
+        let currentStock = 0;
+        let currentVolume = 0;
+        let selectedVariantId = null;
+        function selectVariant(btn) {
 
-    selectedVariantId = btn.dataset.variantId;
+            selectedVariantId = btn.dataset.variantId;
 
-    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
 
-    currentPrice = parseInt(btn.dataset.price, 10);
-    currentStock = parseInt(btn.dataset.stock, 10);
-    currentVolume = parseFloat(btn.dataset.volume);
+            currentPrice = parseInt(btn.dataset.price, 10);
+            currentStock = parseInt(btn.dataset.stock, 10);
+            currentVolume = parseFloat(btn.dataset.volume);
 
-    const label = btn.dataset.label;
-    const images = btn.dataset.images ? btn.dataset.images.split(',') : [];
+            const label = btn.dataset.label;
+            const images = btn.dataset.images ? btn.dataset.images.split(',') : [];
 
-    // Update UI
-    document.getElementById('displayPrice').innerText = `₹${currentPrice}`;
-    document.getElementById('mobileStickyPrice').innerText = `₹${currentPrice}`;
-    document.getElementById('selectedVariantLabel').innerText = label;
+            // Update UI
+            document.getElementById('displayPrice').innerText = `₹${currentPrice}`;
+            document.getElementById('mobileStickyPrice').innerText = `₹${currentPrice}`;
+            document.getElementById('selectedVariantLabel').innerText = label;
 
-    // ✅ UPDATE VOLUME DISPLAY
-    document.getElementById('burnTimeDisplay').innerText = currentVolume + " L";
+            // ✅ UPDATE VOLUME DISPLAY
+            document.getElementById('burnTimeDisplay').innerText = currentVolume + " L";
 
-    updateStockStatus(currentStock);
-    updateVariantImages(images);
+            updateStockStatus(currentStock);
+            updateVariantImages(images);
 
-    console.log("Variant selected:", selectedVariantId, "Volume:", currentVolume);
-}
-
-</script>
-<script>
-    function updateVariantImages(images) {
-
-        if (!images.length) return;
-
-        const mainImg = document.getElementById('mainImage');
-        const thumbs = document.querySelector('.thumbnails-row');
-
-        mainImg.src = images[0];
-        thumbs.innerHTML = "";
-
-        images.forEach((img, index) => {
-            const btn = document.createElement('button');
-            btn.className = "thumbnail-btn" + (index === 0 ? " active" : "");
-            btn.innerHTML = `<img src="${img}">`;
-            btn.onclick = () => updateMainImage(btn, img);
-            thumbs.appendChild(btn);
-        });
-    }
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const firstVariant = document.querySelector('.size-btn');
-        if (firstVariant) {
-            selectVariant(firstVariant);
+            console.log("Variant selected:", selectedVariantId, "Volume:", currentVolume);
         }
-    });
 
+    </script>
+   <script>
+const INITIAL_CART_PRODUCTS = {{ cart_products_json|safe }};
+</script>
+
+<script>
+window.CART_STATE = {
+    products: INITIAL_CART_PRODUCTS,
+    products_total: {{ cart.products_total|default:0 }},
+    grand_total: {{ cart.grand_total|default:cart.box_size.price }},
+    used_volume: {{ cart.used_volume|default:0 }},
+    volume: {{ cart.volume|default:0 }}
+};
+</script>
+<script>
+    function updateCapacityUI(used, capacity) {
+        if (!capacity || capacity <= 0) return;
+
+        const percent = Math.min((used / capacity) * 100, 100);
+
+        document.getElementById("capacityBar").style.width = percent + "%";
+        document.getElementById("capacityPercent").innerText =
+            `${Math.round(percent)}%`;
+
+        document.getElementById("volumeText").innerText =
+            `${used} / ${capacity} L used`;
+
+        document.getElementById("remainingText").innerText =
+            `${Math.round(Math.max(capacity - used, 0))} L remaining`;
+
+        // optional color change
+        const bar = document.getElementById("capacityBar");
+        if (percent >= 100) bar.style.background = "#ef4444";
+        else if (percent >= 75) bar.style.background = "#f59e0b";
+        else bar.style.background = "linear-gradient(90deg,#10b981,#059669)";
+    }
+    </script>
+ <script>
+function renderProducts(products) {
+    console.log("SIDEBAR PRODUCTS:", products);
+    const list = document.getElementById("hamperProductList");
+
+    if (!products || products.length === 0) {
+        list.innerHTML =
+            '<p class="text-muted small fst-italic">No products added yet.</p>';
+        return;
+    }
+
+    list.innerHTML = products.map(p => `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="flex-grow-1">
+                <div class="small fw-medium">${p.name}   <span class="text-muted">
+                    (${p.variant_label})
+                </span></div>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                    <button class="btn btn-sm btn-outline-secondary"
+                        onclick="updateSidebarQty(${p.id}, 'decrement')">−</button>
+
+                    <span class="fw-bold">${p.quantity}</span>
+
+                    <button class="btn btn-sm btn-outline-secondary"
+                        onclick="updateSidebarQty(${p.id}, 'increment')">+</button>
+                </div>
+            </div>
+            <span class="small fw-bold">₹${p.total}</span>
+        </div>
+    `).join("");
+}
+</script>
+
+     <script>
+    function refreshHamperSummary(cart) {
+        if (!cart) return;
+
+        // products list
+        renderProducts(cart.products);
+
+        // capacity
+        updateCapacityUI(cart.used_volume, cart.volume);
+
+        // totals
+        document.getElementById("productsSubtotal").innerText =
+            `₹${cart.products_total}`;
+        document.getElementById("grandTotal").innerText =
+            `₹${cart.grand_total}`;
+
+        // mobile header
+        const mobileCount = document.getElementById("mobileCount");
+        const mobileTotal = document.getElementById("mobileTotal");
+
+        if (mobileCount) {
+            mobileCount.innerText = `${cart.products.length} items`;
+        }
+        if (mobileTotal) {
+            mobileTotal.innerText = `₹${cart.grand_total}`;
+        }
+    }
+    </script>
+
+        <script>
+    /**
+    * Get cookie value by name
+    */
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const CSRF_TOKEN = getCookie("csrftoken");
+    </script>
+    <script>
+        function addToHamper() {
+    if (!selectedVariantId) {
+        alert("Please select a variant");
+        return;
+    }
+
+    fetch("{% url 'cart:update_cart' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": CSRF_TOKEN
+        },
+        body: JSON.stringify({
+            type: "product",
+            product_id: selectedVariantId,
+            action: "increment"
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert(data.error);
+            return;
+        }
+
+        window.CART_STATE = data.cart;
+        refreshHamperSummary(window.CART_STATE);
+    })
+    .catch(() => alert("Something went wrong"));
+}
+document.addEventListener("DOMContentLoaded", function () {
+    refreshHamperSummary(window.CART_STATE);
+});
+    </script>
+
+    <script>
+        function updateVariantImages(images) {
+
+            if (!images.length) return;
+
+            const mainImg = document.getElementById('mainImage');
+            const thumbs = document.querySelector('.thumbnails-row');
+
+            mainImg.src = images[0];
+            thumbs.innerHTML = "";
+
+            images.forEach((img, index) => {
+                const btn = document.createElement('button');
+                btn.className = "thumbnail-btn" + (index === 0 ? " active" : "");
+                btn.innerHTML = `<img src="${img}">`;
+                btn.onclick = () => updateMainImage(btn, img);
+                thumbs.appendChild(btn);
+            });
+        }
+    </script>
+    <script>
+function updateSidebarQty(variantId, action) {
+    console.log("SIDEBAR CLICK → variantId:", variantId, "action:", action);
+    fetch("{% url 'cart:update_cart' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": CSRF_TOKEN
+        },
+        body: JSON.stringify({
+            type: "product",
+            product_id: variantId,
+            action: action
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            alert(data.error);
+            return;
+        }
+
+        // 🔥 backend is the single source of truth
+        window.CART_STATE = data.cart;
+        refreshHamperSummary(window.CART_STATE);
+    })
+    .catch(() => alert("Something went wrong"));
+}
 </script>
 
     <script>
-        
+        document.addEventListener('DOMContentLoaded', () => {
+            const firstVariant = document.querySelector('.size-btn');
+            if (firstVariant) {
+                selectVariant(firstVariant);
+            }
+        });
+
+    </script>
+
+    <script>
+
         const mainImageWrapper = document.querySelector('.main-image-wrapper');
         const mainImage = document.querySelector('.main-image-wrapper img');
 
@@ -502,7 +700,7 @@ function selectVariant(btn) {
         AOS.init({ duration: 800, once: true });
 
         // --- Hamper State (Mocked) ---
-       
+
         function updateMainImage(thumbnail, newSrc) {
             const mainImg = document.getElementById('mainImage');
             mainImg.style.opacity = '0.5';
@@ -514,7 +712,7 @@ function selectVariant(btn) {
             thumbnail.classList.add('active');
         }
 
-        
+
 
         function updateStockStatus(stock) {
             const stockEl = document.getElementById('stockStatus');
@@ -545,139 +743,16 @@ function selectVariant(btn) {
             }
         }
 
-       
+
 
         // --- Hamper Logic ---
 
-       function addToHamper() {
-
-    if (!selectedVariantId) {
-        alert("Please select a variant");
-        return;
-    }
-
-    const usedVol = hamper.products.reduce(
-        (sum, p) => sum + (p.vol * p.qty), 0
-    );
-
-    if (usedVol + currentVolume > hamper.box.capacityLiters) {
-        alert("Box capacity exceeded!");
-        return;
-    }
-
-    const existingItem = hamper.products.find(
-        p => p.variantId === selectedVariantId
-    );
-
-    if (existingItem) {
-        existingItem.qty += 1;
-    } else {
-        hamper.products.push({
-            id: `p-${Date.now()}`,
-            variantId: selectedVariantId,
-            name: "{{ product.name|escapejs }}",
-            label: document.getElementById('selectedVariantLabel').innerText,
-            price: currentPrice,
-            qty: 1,
-            vol: currentVolume
-        });
-    }
-
-    updateSummary();
-}
 
 
-        function updateSummary() {
-            // Volume Calc
-            const usedVol = hamper.products.reduce((sum, p) => sum + (p.vol * p.qty), 0);
-            const maxVol = hamper.box.capacityLiters;
-            const percent = Math.min(Math.round((usedVol / maxVol) * 100), 100);
 
-            // Price Calc
-            const productsTotal = hamper.products.reduce((sum, p) => sum + (p.price * p.qty), 0);
-            const decorTotal = hamper.decorations.reduce((sum, d) => sum + (d.price * d.qty), 0);
-            const grandTotal = hamper.box.basePrice + decorTotal + productsTotal;
 
-            // Update UI - Capacity
-            const capacityBar = document.getElementById('capacityBar');
-            capacityBar.style.width = `${percent}%`;
-            document.getElementById('capacityPercent').innerText = `${percent}%`;
-            document.getElementById('volumeText').innerText = `${usedVol.toFixed(1)} / ${maxVol}L used`;
-            document.getElementById('remainingText').innerText = `${(maxVol - usedVol).toFixed(1)}L remaining`;
 
-            // Color Logic
-            if (percent > 90) capacityBar.style.background = '#dc3545';
-            else if (percent > 70) capacityBar.style.background = '#ffc107';
-            else capacityBar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
 
-            // Update UI - List
-            const list = document.getElementById('hamperProductList');
-            if (hamper.products.length === 0) {
-                list.innerHTML = '<p class="text-muted small fst-italic">No products added yet.</p>';
-            } else {
-                list.innerHTML = hamper.products.map(p => `
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="d-flex align-items-center gap-1" style="overflow: hidden; flex: 1;">
-                            <div style="min-width: 0;">
-                                <div class="small fw-medium text-dark text-truncate" style="font-size: 0.75rem;">${p.name}</div>
-                                <div class="text-muted text-truncate" style="font-size: 0.7rem;">${p.variant}</div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 ms-2">
-                            <div class="d-flex align-items-center border rounded-pill bg-light" style="padding: 1px;">
-                                <button class="btn btn-sm btn-link text-dark p-0 px-1" style="font-size: 0.7rem; text-decoration: none;" onclick="updateItemQty('${p.id}', -1)">−</button>
-                                <span class="fw-bold px-1" style="font-size: 0.7rem;">${p.qty}</span>
-                                <button class="btn btn-sm btn-link text-dark p-0 px-1" style="font-size: 0.7rem; text-decoration: none;" onclick="updateItemQty('${p.id}', 1)">+</button>
-                            </div>
-                            <span class="small fw-bold text-end" style="font-size: 0.75rem; min-width: 40px;">₹${p.price * p.qty}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // Update UI - Prices
-            document.getElementById('grandTotal').innerText = `₹${grandTotal}`;
-
-            // Mobile Summary
-            document.getElementById('mobileCount').innerText = `${hamper.products.reduce((s, p) => s + p.qty, 0)} items`;
-            document.getElementById('mobileTotal').innerText = `₹${grandTotal}`;
-        }
-
-        function updateItemQty(itemId, change) {
-            const item = hamper.products.find(p => p.id === itemId);
-            if (!item) return;
-
-            // Check Capacity if adding
-            if (change > 0) {
-                const usedVol = hamper.products.reduce((sum, p) => sum + (p.vol * p.qty), 0);
-                if (usedVol + item.vol > hamper.box.capacityLiters + 0.1) {
-                    alert("Box capacity exceeded! Cannot add more of this item.");
-                    return;
-                }
-                item.qty += 1;
-            } else {
-                item.qty -= 1;
-                if (item.qty <= 0) {
-                    hamper.products = hamper.products.filter(p => p.id !== itemId);
-                }
-            }
-
-            updateSummary();
-        }
-
-         function renderDecorations() {
-            const list = document.getElementById('decorList');
-            list.innerHTML = hamper.decorations.map(d => `
-                <div class="d-flex justify-content-between align-items-center mb-1 ps-2 border-start border-2 border-light">
-                    <span class="small text-muted" style="font-size: 0.7rem;">${d.name} <small>x${d.qty}</small></span>
-                    <span class="small fw-medium" style="font-size: 0.7rem;">₹${d.price * d.qty}</span>
-                </div>
-            `).join('');
-        }
-
-        // Init
-        renderDecorations(); 
-        updateSummary();
 
         // Mobile Toggle
         document.getElementById('mobileToggle').addEventListener('click', () => {

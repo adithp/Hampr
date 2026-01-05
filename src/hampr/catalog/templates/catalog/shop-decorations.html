@@ -28,7 +28,69 @@
     <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
     <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
     <link rel="stylesheet" href="{% static 'catalog/css/shop-decorations.css' %}">
+    <style>
+         .hamper-summary-panel {
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                position: sticky;
+                top: 100px;
+                max-height: calc(100vh - 120px);
+                overflow-y: auto;
+                z-index: 100;
+            }
+
+            .capacity-meter-container {
+                background: #f0f0f0;
+                height: 8px;
+                border-radius: 4px;
+                overflow: hidden;
+                margin-top: 8px;
+            }
+
+            .capacity-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #10b981, #059669);
+                transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+            }
+
+            .item-list-scroll {
+                max-height: 250px;
+                overflow-y: auto;
+                scrollbar-width: thin;
+            }
+
+            /* Mobile Adjustments */
+            @media (max-width: 991.98px) {
+                .hamper-summary-panel {
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    top: auto;
+                    max-height: 80vh;
+                    border-radius: 20px 20px 0 0;
+                    z-index: 1050;
+                    transform: translateY(calc(100% - 70px));
+                    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .hamper-summary-panel.expanded {
+                    transform: translateY(0);
+                }
+
+                .mobile-handle {
+                    width: 40px;
+                    height: 4px;
+                    background: #e0e0e0;
+                    border-radius: 2px;
+                    margin: 0 auto 12px;
+                }
+            }
+    </style>
 </head>
+
 
 <body>
 
@@ -212,7 +274,7 @@
                 </div>
 
                 <!-- Results Grid -->
-                <div class="col-lg-6">
+                <div class="col-lg-5">
                     <!-- Top Bar -->
                     <div
                         class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
@@ -319,12 +381,12 @@
                                     {% endif %}
                                 </a>
                                     <!-- Add to Hamper -->
-                                    <div class="add-to-hamper-overlay">
+                                    {% comment %} <div class="add-to-hamper-overlay">
                                         <button class="btn btn-primary w-100" 
                                         {% if product.product.stock == 0 %}disabled{% endif %}>
                                             {% if product.product.stock > 0 %}Add to Hamper{% else %}Out of Stock{% endif %}
                                         </button>
-                                    </div>
+                                    </div> {% endcomment %}
 
                                 </div>
 
@@ -341,7 +403,9 @@
                                     </h6>
 
                                     <span class="text-muted small mb-2">
-                                        {{ product.product.description|truncatechars:60 }}
+                                      {{ product.product.description|striptags|truncatechars:60 }}
+
+
                                     </span>
 
                                     <div class="mt-auto d-flex justify-content-between align-items-center">
@@ -404,79 +468,12 @@
                 </div>
 
                 <!-- Right Sidebar: Hamper Summary -->
-                <div class="col-lg-3">
-                    <div class="sticky-top" style="top: 100px; z-index: 900;">
-                        <div class="card hamper-sidebar-card bg-white">
-                            <div class="card-body p-4">
-                                <!-- Header -->
-                                <div class="d-flex justify-content-between align-items-start mb-4">
-                                    <div>
-                                        <h4 class="fw-bold sidebar-header-font mb-2">Your Hamper</h4>
-                                        <span class="badge bg-light text-dark border">Standard Box</span>
-                                    </div>
-                                    <div class="text-end">
-                                        <small class="text-muted d-block mb-1">Capacity</small>
-                                        <h4 class="fw-bold mb-0" id="capacity-percent">0%</h4>
-                                    </div>
-                                </div>
-
-                                <!-- Capacity Bar -->
-                                <div class="mb-2">
-                                    <div class="capacity-progress">
-                                        <div class="capacity-bar" id="summary-volume-bar" style="width: 0%"></div>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between text-muted small mb-4">
-                                    <span id="capacity-used">0.0 / 10.0L used</span>
-                                    <span id="capacity-remaining">10.0L remaining</span>
-                                </div>
-
-                                <hr class="mb-4">
-
-                                <!-- Base & Decor Section -->
-                                <div class="mb-4">
-                                    <h6 class="section-header">BASE & DECOR</h6>
-                                    <!-- Hardcoded Base Item -->
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <div>
-                                            <div class="sidebar-item-title">Standard Box (M)</div>
-                                        </div>
-                                        <div class="sidebar-item-price">₹1,500</div>
-                                    </div>
-                                    <!-- Dynamic Decor Items -->
-                                    <div id="sidebar-decor-items">
-                                        <!-- JS populated -->
-                                    </div>
-                                </div>
-
-                                <!-- Products Section -->
-                                <div class="mb-4">
-                                    <h6 class="section-header">PRODUCTS</h6>
-                                    <div id="sidebar-product-items">
-                                        <!-- JS populated -->
-                                    </div>
-                                    <div id="sidebar-empty-products" class="text-muted small fst-italic">
-                                        No products added yet
-                                    </div>
-                                </div>
-
-                                <!-- Footer -->
-                                <div class="total-box mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="h5 mb-0 text-muted">Total</span>
-                                        <span class="total-price" id="summary-subtotal">₹1,500</span>
-                                    </div>
-                                </div>
-
-                                <button class="btn btn-outline-dark w-100 py-2 fw-bold" id="btn-next-step">
-                                    <i class="fas fa-arrow-left me-2"></i> Back to Builder
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+               
+                
+            {% comment %} </div>
+           
+        </div> {% endcomment %}
+         {% include 'catalog/right_side_bar.html' %}
     </section>
 
     <!-- Offcanvas Filter (Mobile) -->
@@ -816,6 +813,200 @@ function initSearchInputs() {
         });
     });
 }
+</script>
+<script>
+const INITIAL_CART_PRODUCTS = {{ cart_products_json|safe }};
+</script>
+
+<script>
+window.CART_STATE = {
+    products: INITIAL_CART_PRODUCTS,
+    decorations: {{ cart_decorations_json|safe }},
+     decorations_total: {{ cart.decorations_total|default:0 }},
+    products_total: {{ cart.products_total|default:0 }},
+    grand_total: {{ cart.grand_total|default:cart.box_size.price }},
+    used_volume: {{ cart.used_volume|default:0 }},
+    volume: {{ cart.volume|default:0 }}
+};
+</script>
+
+<script>
+    function renderDecorations(decorations) {
+    const list = document.getElementById("decorList");
+
+    if (!decorations || decorations.length === 0) {
+        list.innerHTML =
+            '<p class="text-muted small fst-italic">No decorations added yet.</p>';
+        return;
+    }
+
+    list.innerHTML = decorations.map(d => `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-medium">
+                ${d.name}(${d.position}) × ${d.quantity}
+            </span>
+            <span class="small fw-bold">₹${d.total}</span>
+        </div>
+    `).join("");
+}
+
+</script>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const panel = document.getElementById("hamperPanel");
+    const toggle = document.getElementById("mobileToggle");
+
+    if (!panel || !toggle) return;
+
+    toggle.addEventListener("click", function () {
+        panel.classList.toggle("expanded");
+
+        // 🔥 THIS IS THE MISSING LINE
+        if (panel.classList.contains("expanded")) {
+            refreshHamperSummary(window.CART_STATE);
+        }
+    });
+});
+</script>
+
+
+   
+    <script>
+    function updateCapacityUI(used, capacity) {
+        if (!capacity || capacity <= 0) return;
+
+        const percent = Math.min((used / capacity) * 100, 100);
+
+        document.getElementById("capacityBar").style.width = percent + "%";
+        document.getElementById("capacityPercent").innerText =
+            `${Math.round(percent)}%`;
+
+        document.getElementById("volumeText").innerText =
+            `${used} / ${capacity} L used`;
+
+        document.getElementById("remainingText").innerText =
+            `${Math.round(Math.max(capacity - used, 0))} L remaining`;
+
+        // optional color change
+        const bar = document.getElementById("capacityBar");
+        if (percent >= 100) bar.style.background = "#ef4444";
+        else if (percent >= 75) bar.style.background = "#f59e0b";
+        else bar.style.background = "linear-gradient(90deg,#10b981,#059669)";
+    }
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        updateCapacityUI(
+            {{ cart.used_volume|default:0 }},
+            {{ cart.volume|default:0 }}
+        );
+    });
+    </script>
+
+    <script>
+    function renderProducts(products) {
+        const list = document.getElementById("hamperProductList");
+
+        if (!products || products.length === 0) {
+            list.innerHTML =
+                '<p class="text-muted small fst-italic">No products added yet.</p>';
+            return;
+        }
+
+        list.innerHTML = products.map(p => `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-medium">${p.name}(  <span class="text-muted">
+                    (${p.variant_label})
+                </span>) × ${p.quantity}</span>
+                <span class="small fw-bold">₹${p.total}</span>
+            </div>
+        `).join("");
+    }
+    </script>
+    
+
+    <script>
+    function updateQty(btn, action) {
+        const control = btn.closest('.qty-control');
+        const productId = control.dataset.id;
+        const qtyInput = control.querySelector('.qty-input');
+
+        fetch("{% url 'cart:update_cart' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": CSRF_TOKEN
+            },
+            body: JSON.stringify({
+                type: "product",
+                product_id: productId,
+                action: action
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                alert(data.error);
+                return;
+            }
+
+            // ✅ backend decides quantity
+        
+            qtyInput.value = data.quantity;
+
+    // 🔥 THIS LINE FIXES YOUR ISSUE
+   
+    // update totals
+    
+
+    window.CART_STATE = data.cart;
+    refreshHamperSummary(window.CART_STATE);
+        })
+        .catch(() => {
+            alert("Something went wrong. Try again.");
+        });
+    }
+    </script> 
+  <script>
+    function refreshHamperSummary(cart) {
+        if (!cart) return;
+
+        // products list
+        renderProducts(cart.products);
+        renderDecorations(cart.decorations); 
+        // capacity
+        updateCapacityUI(cart.used_volume, cart.volume);
+
+        // totals
+        document.getElementById("productsSubtotal").innerText =
+            `₹${cart.products_total}`;
+
+    document.getElementById("decorSubtotal").innerText =
+        `₹${cart.decorations_total}`;
+
+    document.getElementById("grandTotal").innerText =
+        `₹${cart.grand_total}`;
+
+        // mobile header
+        const mobileCount = document.getElementById("mobileCount");
+        const mobileTotal = document.getElementById("mobileTotal");
+
+        if (mobileCount) {
+            mobileCount.innerText = `${cart.products.length} items`;
+        }
+        if (mobileTotal) {
+            mobileTotal.innerText = `₹${cart.grand_total}`;
+        }
+    }
+    </script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 🔥 Render cart immediately on page load
+    refreshHamperSummary(window.CART_STATE);
+});
 </script>
 
 </body>
