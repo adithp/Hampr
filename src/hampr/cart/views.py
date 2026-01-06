@@ -260,6 +260,31 @@ class UpdateCartView(LoginRequiredMixin,View):
                     }
             })
             
+            
+class CartView(LoginRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        user_id = request.user.id
+        if CustomUser.objects.filter(id=user_id).exists():
+            user = CustomUser.objects.get(id=user_id)
+            if hasattr(user,'current_cart'):
+                cart = user.current_cart
+                cart.volume = round( cart.box_size.height * cart.box_size.width * cart.box_size.depth / 1000,2 )
+                cart.decorations_total = cart.get_decoration_total()
+                cart.products_total = cart.get_products_total()
+                cart.grand_total = cart.get_grand_total()
+                box_image = cart.box.box_images.filter(is_thumbnail=True).first()
+                if not box_image:
+                    box_image = cart.box_size.box_images.all().first()
+                    
+                print(box_image.image)
+                cart.box_image = box_image
+                cart_products = cart.cart_products.all()
+                
+                cart_decoration = cart.cart_decoartion.all()
+                # print(cart)
+                # cart.grand_total = cart.box_size.price + cart.products_total + cart.decorations_total
+        return render(request,'cart/cart.html',{'cart':cart,'cart_products':cart_products,'cart_decoration':cart_decoration})
+            
                 
                     
                 
