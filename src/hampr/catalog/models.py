@@ -99,7 +99,7 @@ class BoxImage(models.Model):
     display_order = models.IntegerField(null=True,blank=True)
     image = models.ImageField(upload_to='box_images/')
     is_thumbnail = models.BooleanField(default=False)
-    box_id = models.ForeignKey(HamperBox,on_delete=models.CASCADE)
+    box_id = models.ForeignKey(HamperBox,on_delete=models.CASCADE,related_name='box_images')
     
     
 class Color(models.Model):
