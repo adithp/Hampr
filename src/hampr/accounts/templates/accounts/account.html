@@ -1,0 +1,571 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+    <style>
+        .cropper-view-box,
+        .cropper-face {
+            border-radius: 50%;
+        }
+
+        .img-container img {
+            max-width: 100%;
+        }
+
+        .avatar-wrapper {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-edit-btn {
+            position: absolute !important;
+            bottom: 6px !important;
+            right: 20px !important;
+            width: 34px !important;
+            height: 34px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+
+    <!-- Account Section -->
+    <section class="py-5" style="margin-top: 80px;">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm p-3 mb-4 text-center">
+                        <div class="avatar-wrapper position-relative mx-auto mb-3" style="overflow: hidden;">
+                            {% if user.profile_picture %}
+                            <img src="{{user.profile_picture.url}}" class="rounded-circle avatar-img" alt="Avatar">
+                            {% else %}
+                            <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_1280.png"
+                                class="rounded-circle" alt="Avatar">
+                            {% endif %}
+                            <button data-bs-toggle="modal" data-bs-target="#imageUploadModal"
+                                class="btn btn-sm btn-gold rounded-circle position-absolute bottom-0 end-0 shadow-sm avatar-edit-btn"><i
+                                    class="fas fa-pencil-alt"></i></button>
+                        </div>
+                        <h5 class="fw-bold mb-1">{{user.first_name}} {{user.last_name}}</h5>
+                        <p class="text-muted small">{{user.email}}</p>
+                        {% if messages %}
+                        <div class="django-messages">
+                            {% for message in messages %}
+                            <div class="msg msg-{{ message.tags }}">
+                                <i class="icon"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="list-group list-group-flush shadow-sm rounded overflow-hidden">
+                        <a href="#orders" class="list-group-item list-group-item-action active border-0 py-3"
+                            data-bs-toggle="list"><i class="fas fa-box-open me-3 w-20"></i> My Orders</a>
+                        <a href="#addresses" class="list-group-item list-group-item-action border-0 py-3"
+                            data-bs-toggle="list"><i class="fas fa-map-marker-alt me-3 w-20"></i> Addresses</a>
+                        <a href="#settings" class="list-group-item list-group-item-action border-0 py-3"
+                            data-bs-toggle="list"><i class="fas fa-cog me-3 w-20"></i> Settings</a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 py-3 text-danger"><i
+                                class="fas fa-sign-out-alt me-3 w-20"></i> Logout</a>
+                    </div>
+                </div>
+
+
+                <!-- Content -->
+                <div class="col-lg-9">
+                    <div class="tab-content">
+                        <!-- Orders Tab -->
+                        <div class="tab-pane fade show active" id="orders">
+                            <h3 class="fw-bold mb-4">My Orders</h3>
+                            <div class="card border-0 shadow-sm mb-3">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Order #HMPR-8829</h6>
+                                            <small class="text-muted">Placed on Nov 28, 2023</small>
+                                        </div>
+                                        <span class="badge bg-gold text-dark">Shipped</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <img src="https://placehold.co/60x60/png?text=GD" class="rounded" alt="Product">
+                                        <img src="https://placehold.co/60x60/png?text=ST" class="rounded" alt="Product">
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small"
+                                            style="width: 60px; height: 60px;">+1</div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="tracking.html"
+                                            class="btn btn-outline-primary btn-sm rounded-pill px-4">Track Order</a>
+                                        <span class="fw-bold">$292.60</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Addresses Tab -->
+                        <div class="tab-pane fade" id="addresses">
+                            <h3 class="fw-bold mb-4">My Addresses</h3>
+                            <div class="row g-4">
+                                {% for item in address %}
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm h-100">
+                                        <div class="card-body p-4 position-relative">
+                                            {% if  item.is_default %}
+                                            <span
+                                                class="badge bg-gold text-dark position-absolute top-0 end-0 m-3">Default</span>
+                                            {% endif %}
+                                            <h6 class="fw-bold">{{item.get_address_type_display }}</h6>
+                                            <p class="text-muted mb-4">{{item.name}}<br>{{item.street_address}}{{item.apartment}}<br>{{item.city}},
+                                                {{item.state}} {{item.postal_code}}<br>{{item.country}}</p>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#addAddressModal" data-action="edit">Edit</button>
+                                                <button class="btn btn-outline-danger btn-sm">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                <div class="col-md-6">
+                                    <div class="card border-2 border-dashed h-100 d-flex align-items-center justify-content-center p-5 cursor-pointer hover-scale"
+                                        data-bs-toggle="modal" data-bs-target="#addAddressModal" data-action="add">
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-plus fa-2x mb-2"></i>
+                                            <p class="mb-0 fw-bold">Add New Address</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settings Tab -->
+                        <div class="tab-pane fade" id="settings">
+                            <h3 class="fw-bold mb-4">Settings</h3>
+                            <form>
+                                <div class="mb-4">
+                                    <h5 class="fw-bold mb-3">Profile Details</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">First Name</label>
+                                            <input type="text" class="form-control" value="John">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" value="Doe">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" value="john.doe@example.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <h5 class="fw-bold mb-3">Password</h5>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Current Password</label>
+                                            <input type="password" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">New Password</label>
+                                            <input type="password" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Confirm Password</label>
+                                            <input type="password" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <!-- Address Modal -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="addressModalTitle">Add New Address</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method='POST' action='{% url "accounts:add_address" %}' id="addressForm" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Address Type</label>
+                            <select class="form-select" name="address_type">
+                                <option value="H" selected>Home Address</option>
+                                <option value="O">Office Address</option>
+                            </select>
+                            {{ form.address_type.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Recipient Name</label>
+                            <input type="text" class="form-control" name="recipient_name" required>
+                            <div class="invalid-feedback">Recipient name is required.</div>
+                            {{ form.recipient_name.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control" name="street_address" placeholder="Street Address"
+                                required>
+                            <div class="invalid-feedback">Address is required.</div>
+                            {{ form.street_address.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Apartment, suite, etc.</label>
+                            <input type="text" class="form-control" name="apartment">
+                            {{ form.apartment.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Landmark <span class="text-muted">(Optional)</span></label>
+                            <input type="text" class="form-control" name="landmark" placeholder="Near...">
+                            {{ form.landmark.errors }}
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" id="addressCity" name="city" readonly required>
+                                {{ form.city.errors }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Country</label>
+                                <input type="text" class="form-control" id="addressCountry" name="country" readonly
+                                    required>
+                                {{ form.country.errors }}
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">State</label>
+                                <input type="text" class="form-control" id="addressState" name="state" readonly
+                                    required>
+                                {{ form.state.errors }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Zip</label>
+                                <input type="text" class="form-control" id="addressZip" name="postal_code" required>
+                                <div class="invalid-feedback">Zip code is required.</div>
+                                {{ form.postal_code.errors }}
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phoneInput" name="phone_number"
+                                    maxlength="10" pattern="[6-9][0-9]{9}" placeholder="10-digit mobile number"
+                                    required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid 10-digit Indian mobile number starting with 6-9.
+                                </div>
+                                {{ form.phone_number.errors }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Secondary Phone Number</label>
+                                <input type="tel" class="form-control" id="secondaryPhoneInput"
+                                    name="secondary_phone_number" maxlength="10" pattern="[6-9][0-9]{9}"
+                                    placeholder="Optional">
+                                <div class="invalid-feedback">
+                                    Please enter a valid 10-digit Indian mobile number starting with 6-9.
+                                </div>
+                                {{ form.secondary_phone_number.errors }}
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="defaultAddress" name="is_default"  
+                            {% if has_default_address %}disabled{% endif %}>
+
+                            <label class="form-check-label" for="defaultAddress">
+                                Set as default address
+                            </label>
+                            {% if has_default_address %}
+<small class="text-muted d-block mt-1">
+    You already have a default address. Edit it to change the default.
+</small>
+{% endif %}
+                            {{ form.is_default.errors }}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-gold" id="addressModalSaveBtn">Save Address</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Upload Modal -->
+    <form class="modal fade" id="imageUploadModal" action="{% url 'accounts:profile_picture_update' %}" tabindex="-1"
+        aria-hidden="true" action='' method='POST' enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Update Profile Picture</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name='image' id="imageInput" accept="image/*">
+                    </div>
+                    <div class="img-container" style="max-height: 400px; display: none;">
+                        <img id="imageToCrop" src="" alt="Picture">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-gold" id="cropAndSave">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        let cropper;
+        const imageInput = document.getElementById('imageInput');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const imgContainer = document.querySelector('.img-container');
+        const profileImage = document.querySelector('.rounded-circle[alt="Avatar"]');
+
+        imageInput.addEventListener('change', function (e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imageToCrop.src = e.target.result;
+                    imgContainer.style.display = 'block';
+
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        dragMode: 'move',
+                        autoCropArea: 1,
+                        restore: false,
+                        guides: false,
+                        center: false,
+                        highlight: false,
+                        cropBoxMovable: false,
+                        cropBoxResizable: false,
+                        toggleDragModeOnDblclick: false,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('cropAndSave').addEventListener('click', function () {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 200,
+                    height: 200,
+                });
+                profileImage.src = canvas.toDataURL();
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('imageUploadModal'));
+                modal.hide();
+            }
+        });
+
+        // Address Modal Logic
+        const addressModal = document.getElementById('addAddressModal');
+        const addressModalTitle = document.getElementById('addressModalTitle');
+        const addressModalSaveBtn = document.getElementById('addressModalSaveBtn');
+        const addressForm = document.getElementById('addressForm');
+
+        addressModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const action = button.getAttribute('data-action');
+
+            if (action === 'edit') {
+                addressModalTitle.textContent = 'Edit Address';
+                addressModalSaveBtn.textContent = 'Update Address';
+            } else {
+                addressModalTitle.textContent = 'Add New Address';
+                addressModalSaveBtn.textContent = 'Save Address';
+                addressForm.reset();
+                addressForm.classList.remove('was-validated');
+                // Reset valid/invalid classes from custom validation
+                const inputs = addressForm.querySelectorAll('input');
+                inputs.forEach(input => input.classList.remove('is-valid', 'is-invalid'));
+            }
+        });
+
+        addressModalSaveBtn.addEventListener('click', function () {
+            if (!addressForm.checkValidity()) {
+                addressForm.classList.add('was-validated');
+                return;
+            }
+            // Submit form or handle save
+            console.log('Form is valid, saving...');
+            addressForm.submit();
+        });
+
+        // Zip Code Auto-fill Logic
+        const zipInput = document.getElementById('addressZip');
+        const cityInput = document.getElementById('addressCity');
+        const stateInput = document.getElementById('addressState');
+        const countryInput = document.getElementById('addressCountry');
+
+        zipInput.addEventListener('input', function () {
+            const zip = this.value;
+
+            // Indian Pincode (6 digits)
+            if (zip.length === 6 && /^\d+$/.test(zip)) {
+                fetch(`https://api.postalpincode.in/pincode/${zip}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to fetch');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data[0].Status === 'Success') {
+                            const details = data[0].PostOffice[0];
+                            countryInput.value = details.Country;
+                            stateInput.value = details.State;
+                            cityInput.value = details.District;
+                        } else {
+                            throw new Error('Invalid Pincode');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        countryInput.value = '';
+                        stateInput.value = '';
+                        cityInput.value = '';
+                    });
+            }
+            // US Zip Code (5 digits)
+            else if (zip.length === 5 && /^\d+$/.test(zip)) {
+                fetch(`https://api.zippopotam.us/us/${zip}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Invalid Zip');
+                        return response.json();
+                    })
+                    .then(data => {
+                        countryInput.value = data.country;
+                        if (data.places && data.places.length > 0) {
+                            cityInput.value = data.places[0]['place name'];
+                            stateInput.value = data.places[0]['state'];
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        countryInput.value = '';
+                        stateInput.value = '';
+                        cityInput.value = '';
+                    });
+            }
+        });
+
+        // Phone Number Validation
+        function validatePhone(input) {
+            const value = input.value;
+            const regex = /^[6-9]\d{9}$/;
+
+            // Allow only numbers
+            input.value = value.replace(/\D/g, '');
+
+            if (input.value.length === 10) {
+                if (regex.test(input.value)) {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                } else {
+                    input.classList.remove('is-valid');
+                    input.classList.add('is-invalid');
+                }
+            } else {
+                input.classList.remove('is-valid');
+                if (input.value.length > 0) {
+                    // Don't show invalid immediately while typing, maybe only on blur? 
+                    // But for now, let's just remove valid class.
+                    // We can strictly enforce it on blur.
+                }
+            }
+        }
+
+        const phoneInputs = [document.getElementById('phoneInput'), document.getElementById('secondaryPhoneInput')];
+
+        phoneInputs.forEach(input => {
+            if (input) {
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, ''); // Enforce numbers only
+                    if (this.value.length === 10) {
+                        validatePhone(this);
+                    } else {
+                        this.classList.remove('is-valid', 'is-invalid');
+                    }
+                });
+
+                input.addEventListener('blur', function () {
+                    if (this.value.length > 0) {
+                        validatePhone(this);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

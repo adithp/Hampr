@@ -1,6 +1,5 @@
 from django.shortcuts import render,redirect
 from django.views import View
-from django.http import HttpResponse
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
@@ -14,16 +13,15 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
-import hashlib
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-from .forms import CustomUserCreationForm,EmailOrUsernameLogin
+from .forms import CustomUserCreationForm,EmailOrUsernameLogin,UserAddressForm
 from core.decorators import otp_pending_verify
-from .models import CustomUser,OTP,PasswordReset
+from .models import CustomUser,OTP,UserAddress
 from .utils import otp_send_signup,otp_block_time_verify,password_reset_link,token_checker
 from core.utils import FMT
-from core.mixins import NeverCacheMixin,GuestOnlyMixin
+from core.mixins import NeverCacheMixin,GuestOnlyMixin,OnlyForUsers
 
 
 
@@ -35,7 +33,7 @@ class UserSignupView(GuestOnlyMixin,CreateView):
     
     def form_valid(self, form):
         user = form.save()
-        obj = otp_send_signup(self.request,user)
+        otp_send_signup(self.request,user)
         response = super().form_valid(form)
         return response
     
@@ -218,13 +216,57 @@ class ResetPassword(View):
         return render(request,'accounts/password_reset_succsesfull.html')
             
 
-            
-    
-    
-    
-
 def not_active_error(req):
     return render(req,'accounts/user_inactive.html')
 
 
+
+
+
+    
+class ProfilePageView(LoginRequiredMixin,OnlyForUsers,View):
+    def get(self,request,*args, **kwargs):
+        # user_id = request.user.id
+        # try:
+        #     user = CustomUser.objects.get(id=user_id)
+        # except CustomUser.DoesNotExist as e:
+        #     print(e)
+        form = UserAddressForm()
+        address = UserAddress.objects.filter(user=request.user)
+        has_default_address = UserAddress.objects.filter(user=request.user,is_default=True).exists()
+        return render(request,'accounts/account.html',{'form':form,'address':address,'has_default_address':has_default_address})
+    
+    
+class ProfilePictureUpdate(LoginRequiredMixin,View):
+    def post(self,request,*args,**kwargs):
+        image = request.FILES.get('image','')
+        if image:
+            allowed_types = ['image/jpeg', 'image/png', 'image/webp']
+
+            if image.content_type not in allowed_types:
+                messages.error(request,'Image Type Jpg png and Webp Only Allowed')
+                return redirect('accounts:user_profile')
+            user_id = request.user.id
+            try:
+                user = CustomUser.objects.get(id=user_id)
+            except CustomUser.DoesNotExist as e:
+                print(e)
+            user.profile_picture = image
+            user.save()
+        return redirect('accounts:user_profile')
+
+class AddAddressView(LoginRequiredMixin,OnlyForUsers,View):
+    def post(self,request,*args, **kwargs):
+        form = UserAddressForm(request.POST)
+        form.usert = request.user
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+            address.save()
+
+        
+            
+            return redirect('accounts:user_profile',)
+        address = UserAddress.objects.filter(user=request.user)
+        return render(request,'accounts/account.html',{'form':form,'address':address})
     

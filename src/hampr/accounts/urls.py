@@ -2,7 +2,7 @@ from django.urls import path
 
 
 
-from .views import not_active_error,UserSignupView,Otp_Verify_View,Otp_Resend,CustomLoginView,ResetPasswordLinkSend,ResetPassword
+from .views import not_active_error,UserSignupView,Otp_Verify_View,Otp_Resend,CustomLoginView,ResetPasswordLinkSend,ResetPassword,ProfilePageView,ProfilePictureUpdate,AddAddressView
 
 app_name = 'accounts'
 
@@ -13,5 +13,8 @@ urlpatterns = [
     path('login/',CustomLoginView.as_view(),name='login'),
     path('reset_link/',ResetPasswordLinkSend.as_view(),name='reset_link'),
     path('reset_password/<uuid:id>/',ResetPassword.as_view(),name='reset_password'),
-    path('not_active_error/',not_active_error,name='not_active_error')
+    path('not_active_error/',not_active_error,name='not_active_error'),
+    path('user-profile/',ProfilePageView.as_view(),name='user_profile'),
+    path('user_profile_picture_update/',ProfilePictureUpdate.as_view(),name='profile_picture_update'),
+    path('user-add-address/',AddAddressView.as_view(),name='add_address')
 ]

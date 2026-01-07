@@ -1,3 +1,4 @@
+{% if request.user.is_authenticated %}
 <div class="col-lg-4">
     <div class="hamper-summary-panel" id="hamperPanel">
         <!-- Mobile Handle -->
@@ -112,3 +113,8 @@
 </div>
 </div>
 </div>
+{% else %}
+
+<div></div>
+
+{% endif %}

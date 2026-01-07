@@ -824,7 +824,7 @@ window.CART_STATE = {
     decorations: {{ cart_decorations_json|safe }},
      decorations_total: {{ cart.decorations_total|default:0 }},
     products_total: {{ cart.products_total|default:0 }},
-    grand_total: {{ cart.grand_total|default:cart.box_size.price }},
+    grand_total: {{ cart.grand_total|default:0 }},,
     used_volume: {{ cart.used_volume|default:0 }},
     volume: {{ cart.volume|default:0 }}
 };
