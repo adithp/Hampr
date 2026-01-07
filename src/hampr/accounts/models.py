@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from datetime import timedelta
 import uuid
-from django.core.validators import MinLengthValidator,MaxLengthValidator
+from django.core.validators import MinValueValidator,MaxValueValidator
 
 
 from core.validaters import validate_indian_phone_number,no_all_digits,username_validater
@@ -33,7 +33,7 @@ class ADDRESS_TYPE(models.TextChoices):
     
 
 class COUNTRY(models.TextChoices):
-    INDIA = "IN", "India"
+    INDIA = "India", "India"
     UNITED_STATES = "US", "United States"
     UNITED_KINGDOM = "UK", "United Kingdom"
     CANADA = "CA", "Canada"
@@ -98,13 +98,15 @@ class UserAddress(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_default = models.BooleanField(default=False)
     city = models.CharField(max_length=50)
-    country = models.CharField(max_length=3,choices=COUNTRY.choices)
+    country = models.CharField(max_length=8,choices=COUNTRY.choices)
     landmark = models.CharField(max_length=100,null=True,blank=True)
     phone_number = models.CharField(max_length=15)
     secondary_phone_number = models.CharField(max_length=15,null=True,blank=True)
-    postal_code = models.IntegerField(validators=[MinLengthValidator(100000),MaxLengthValidator(999999)])
+    postal_code = models.IntegerField(validators=[MinValueValidator(100000), MaxValueValidator(999999)])
     recipient_name = models.CharField(max_length=30)
     street_address = models.CharField(max_length=200)
+    apartment = models.CharField(max_length=60)
+    state = models.CharField(max_length=50)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     

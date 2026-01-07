@@ -1,6 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.shortcuts import redirect
+from django.http import HttpResponse
 
 
 class NeverCacheMixin:
@@ -19,3 +20,15 @@ class GuestOnlyMixin:
         if request.user.is_authenticated:
             return redirect(self.redirect_url)
         return super().dispatch(request, *args, **kwargs)
+    
+
+class OnlyForUsers:
+    
+    
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_staff:
+            return HttpResponse("Admin Can't Access User Profile")
+        
+        return super().dispatch(request, *args, **kwargs)
+    
+    

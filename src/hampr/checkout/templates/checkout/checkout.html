@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3" href="../index.html">
+                <span class="text-gold">HAM</span><span class="text-dark">PR.</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="py-5" style="margin-top: 80px;">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Left Column: Address Selection -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm p-4 mb-4">
+                        <h4 class="fw-bold mb-4">Select Delivery Address</h4>
+
+                        <!-- Address List -->
+                        <div class="list-group mb-4">
+                            <!-- Address Item 1 -->
+                            {% for item in address %}
+                            <label
+                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 cursor-pointer address-item">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input" type="radio" name="deliveryAddress" id="{{item.id}}"
+                                     {% if item.is_default %} checked{% endif %}>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="fw-bold mb-0">{% if item.address_type == 'H' %}Home{% else %}Office{% endif %}</h6>
+                                        {% if item.is_default %}
+                                        <span class="badge bg-gold text-dark">Default</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-muted mb-0 small">{{item.recipient_name}}<br>{{item.street_address}},{{item.apartment}} <br>{{item.city}},
+                                        {{item.state}}, {{item.postal_code}}<br>+91 {{item.phone_number}}</p>
+                                </div>
+                            </label>
+                            {% endfor %}
+
+                            <!-- Address Item 2 -->
+                            {% comment %} <label
+                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 cursor-pointer address-item">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input" type="radio" name="deliveryAddress" id="address2">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="fw-bold mb-0">Office</h6>
+                                    </div>
+                                    <p class="text-muted mb-0 small">John Doe<br>5678 Business Blvd, Suite 200<br>New
+                                        York, NY 10002<br>+1 987 654 3210</p>
+                                </div>
+                            </label> {% endcomment %}
+                        </div>
+
+                        <!-- Add New Address Button -->
+                        <a href="{% url 'accounts:user_profile' %}" class="btn btn-outline-dark w-100 py-2 border-dashed">
+                            <i class="fas fa-plus me-2"></i>Add New Address
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Column: Order Summary -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm bg-light p-4 sticky-top" style="top: 100px; z-index: 1;">
+                        <h5 class="fw-bold mb-4">Your Hamper</h5>
+
+                        <!-- 1. Box Selection -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3 text-gold">1. Box Selection</h6>
+                            <div class="d-flex align-items-center gap-3 bg-white p-3 rounded shadow-sm">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 fw-bold">{{cart.box.name}}</h6>
+                                    <small class="text-muted">Size: {{cart.box_size.size_label}}</small>
+                                </div>
+                                <span class="fw-bold">₹{{cart.box_size.price}}</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. Products -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3 text-gold">2. Products</h6>
+                            <div class="bg-white p-3 rounded shadow-sm">
+                                {% for item in products %}
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold">{{item.product_varient.product.name}} ({{item.product_varient.color.name}}{{item.product_varient.size.name}})</h6>
+                                        <small class="text-muted">Qty: {{item.quantity}}</small>
+                                    </div>
+                                    <span class="fw-bold">₹{% widthratio item.product_varient.price 1 item.quantity %}</span>
+                                </div>
+                                {% endfor %}
+                                {% comment %} <div class="d-flex align-items-center gap-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold">Sweet Treats</h6>
+                                        <small class="text-muted">Qty: 2</small>
+                                    </div>
+                                    <span class="fw-bold">$170.00</span>
+                                </div> {% endcomment %}
+                            </div>
+                        </div>
+
+                        <!-- 3. Decorations -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3 text-gold">3. Decorations</h6>
+                            
+                            <div class="bg-white p-3 rounded shadow-sm">
+                                {% for item in decoration %}
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold">{{item.decoration.name}} ({{item.position}})</h6>
+                                        
+                                        <small  class="text-muted">Qty: {{item.quantity}}</small>
+                                    </div>
+                                    <span class="fw-bold">₹{% widthratio item.decoration.price 1 item.quantity %}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Price Breakdown -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Box Price</span>
+                            <span>₹{{cart.box_size.price}}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Products Total</span>
+                            <span>₹{{cart.get_products_total}}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Decorations Total</span>
+                            <span>₹{{cart.get_decoration_total}}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Shipping</span>
+                            <span class="text-success fw-bold">Free</span>
+                        </div>
+
+                        <!-- Promo Code -->
+                        <div class="input-group mb-4">
+                            <input type="text" class="form-control" placeholder="Enter Promo Code">
+                            <button class="btn btn-dark" type="button">Apply</button>
+                        </div>
+
+                        <hr class="mb-4">
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="h5 fw-bold mb-0">Total</span>
+                            <span class="h4 fw-bold text-gold mb-0">₹{{cart.get_grand_total}}</span>
+                        </div>
+
+                        <!-- Payment Button -->
+                        <button class="btn btn-primary w-100 py-3 fw-bold shadow-sm">
+                            Proceed to Payment <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+</body>
+
+</html>

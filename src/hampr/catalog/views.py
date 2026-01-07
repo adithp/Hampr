@@ -150,7 +150,8 @@ class ProductListView(NeverCacheMixin,View):
          data = []
          user_id = request.user.id
          cart_products = []
-         
+         cart_products_json = []
+         cart_decorations_json = []
          cart = []
          
          if CustomUser.objects.filter(id=user_id).exists():
@@ -262,6 +263,8 @@ class ProductDetailView(DetailView):
         cart_products = []
         cart_decoations = []
         cart = []
+        cart_products_json = []
+        cart_decorations_json = []
          
         if CustomUser.objects.filter(id=user_id).exists():
             user = CustomUser.objects.get(id=user_id)
@@ -365,8 +368,8 @@ class DecorationListView(View):
             
         total_page_num = range(1,total_pages+1)
         user_id = request.user.id
-        cart_products = []
-        cart_decoations = []
+        cart_products_json = []
+        cart_decorations_json = []
         cart = []
          
         

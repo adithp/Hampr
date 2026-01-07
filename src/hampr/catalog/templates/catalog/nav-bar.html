@@ -18,7 +18,7 @@
             {% if request.user.is_authenticated %}
 
             <div class="d-flex align-items-center gap-3">
-                <a href="#" class="text-dark hover-rotate-icon fs-5"><i class="far fa-user"></i></a>
+                <a href="{% url 'accounts:user_profile' %}" class="text-dark hover-rotate-icon fs-5"><i class="far fa-user"></i></a>
 
                 <a href="{% url 'cart:cart_list' %}" class="text-dark hover-rotate-icon fs-5 position-relative">
                     <i class="fas fa-shopping-bag"></i>

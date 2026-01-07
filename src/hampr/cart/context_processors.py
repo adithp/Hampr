@@ -10,3 +10,4 @@ def cart_items_count(request):
             count += cart.cart_products.all().count()
             count += cart.cart_decoartion.all().count()
             return {'total_type_items_count':count}
+    return {}
