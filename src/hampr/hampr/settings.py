@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'admin_panel.apps.AdminPanelConfig',
     'cart.apps.CartConfig',
     'checkout.apps.CheckoutConfig',
+    'coupons.apps.CouponsConfig'
 ]
 
 
