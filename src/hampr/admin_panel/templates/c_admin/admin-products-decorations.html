@@ -246,55 +246,7 @@
     </button>
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <div class="px-4 mb-4">
-            <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
-            <p class="text-muted small">Admin Portal</p>
-        </div>
-        <div class="sidebar-sticky">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cadmin:admin_dashboard' %}">
-                        <i class="fas fa-home"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'cadmin:products_manage' %}">
-                        <i class="fas fa-box"></i>
-                        Products
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-shopping-cart"></i>
-                        Orders
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cadmin:user_management' %}">
-                        <i class="fas fa-users"></i>
-                        Customers
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-cog"></i>
-                        Settings
-                    </a>
-                </li>
-            </ul>
-
-            <div class="mt-auto px-3 pt-5">
-                <form action="{% url 'core:logout' %}" method="POST">
-                    {% csrf_token %}
-                    <button class="btn btn-outline-danger w-100">
-                        <i class="fas fa-sign-out-alt me-2"></i> Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    {% include 'c_admin/admin_main_side_nav_bar.html' %}
 
     <!-- Main Content -->
     <main class="main-content">

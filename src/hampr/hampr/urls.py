@@ -16,7 +16,8 @@ urlpatterns = [
     path('shop/', include('catalog.urls')),
     path('tinymce/', include('tinymce.urls')),
     path('cart/',include('cart.urls')),
-    path('checkout/',include('checkout.urls'))
+    path('checkout/',include('checkout.urls')),
+    path('coupons/',include('coupons.urls')),
     
     
 

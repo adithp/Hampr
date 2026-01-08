@@ -1,0 +1,79 @@
+{% with current_url=request.resolver_match.url_name %}
+
+<nav class="sidebar" id="sidebar">
+    <div class="px-4 mb-4">
+        <h3 class="fw-bold text-dark">HAM<span class="text-gold">PR.</span></h3>
+        <p class="text-muted small">Admin Portal</p>
+    </div>
+
+    <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if current_url == 'admin_dashboard' %}active{% endif %}"
+                    href="{% url 'cadmin:admin_dashboard' %}">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <!-- Products (Multiple URLs) -->
+            <li class="nav-item">
+                <a class="nav-link
+                   {% if current_url in 'products_manage box_manage interior_product_manage decoration_manage' %}
+                   active{% endif %}" href="{% url 'cadmin:products_manage' %}">
+                    <i class="fas fa-box"></i>
+                    Products
+                </a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link
+                   {% if current_url in 'manage_promo_code' %}
+                   active{% endif %}" href="{% url 'cadmin:manage_promo_code' %}">
+                   <i class="fas fa-ticket-alt"></i>
+
+                    PromoCodes
+                </a>
+            </li>
+
+            <!-- Users -->
+            <li class="nav-item">
+                <a class="nav-link {% if current_url == 'user_management' %}active{% endif %}"
+                    href="{% url 'cadmin:user_management' %}">
+                    <i class="fas fa-users"></i>
+                    Customers
+                </a>
+            </li>
+
+            <!-- Orders -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-shopping-cart"></i>
+                    Orders
+                </a>
+            </li>
+
+            <!-- Settings -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </li>
+
+        </ul>
+
+        <!-- Logout -->
+        <div class="mt-auto px-3 pt-5">
+            <form action="{% url 'core:logout' %}" method="POST">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+{% endwith %}

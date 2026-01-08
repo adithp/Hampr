@@ -18,8 +18,9 @@ from itertools import chain
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
-from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm,DecorationForm
+from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm,DecorationForm,PromoCodeForm
 from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage,DecorationImages,Decoration
+from coupons.models import PromoCode
 
 
 
@@ -1310,3 +1311,34 @@ class AdminDecorationEdit(NeverCacheMixin,StaffRequiredMixin,View):
             
             return redirect('cadmin:decoration_manage')
         return render(request,'c_admin/admin-products-decorations-add.html',{'form':form,'existing_images':exsiting_images,'edit':True})
+    
+    
+class AddPromoCode(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        form = PromoCodeForm()
+        return render(request,'c_admin/admin-promocodes-add.html',{'form':form})
+    
+    def post(self,request,*args, **kwargs):
+        form = PromoCodeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            form = PromoCodeForm()
+            return redirect('cadmin:manage_promo_code')
+        else:
+            print('not valid')
+            print(form.errors)
+        return render(request,'c_admin/admin-promocodes-add.html',{'form':form})
+    
+class AdminManagePromoCode(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        promocodes = PromoCode.custom_objects()
+        total_count = promocodes.count()
+        working_promo = PromoCode.total_working_codes()
+        count_working_promo_code = working_promo.count()
+        paginator = Paginator(promocodes,4)
+        page_number = self.request.GET.get('page')
+        promocodes =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+        total_page_num = range(1,total_pages+1)
+    
+        return render(request,'c_admin/admin-promocodes.html',{'promo_codes':promocodes,'count':total_count,'working_count':count_working_promo_code,'total_page_num':total_page_num})

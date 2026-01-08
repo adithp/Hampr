@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+from django.utils import timezone
+from django.db.models import F
 
 
 from accounts.models import CustomUser
@@ -52,13 +54,40 @@ class PromoCode(models.Model):
         default=False
     )
     usage_limit = models.IntegerField()
-    used_count = models.IntegerField()
+    used_count = models.IntegerField(default=0,blank=True)
     valid_from = models.DateTimeField()
     valid_to = models.DateTimeField()
+    
+    def valid_token(self):
+        if not self.is_active:
+            return False
+        if self.is_deleted:
+            return False
+        now = timezone.now()
+        if not self.valid_from <= now <= self.valid_to:
+            return False
+        if not self.usage_limit > self.used_count:
+            return False
+            
+        return True
+        
+    
     
     @classmethod
     def custom_objects(cls):
         return cls.objects.filter(is_deleted=False)
+    
+    @classmethod
+    def total_working_codes(cls):
+        now = timezone.now()
+        print(now)
+        print(cls.custom_objects().first().valid_from)
+        return cls.custom_objects().filter(valid_from__lte=now,valid_to__gte=now,used_count__lt=F('usage_limit'))
+    
+
+        
+        
+        
     
     
 # class PromoCodeUsage(models.Model):

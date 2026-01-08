@@ -160,6 +160,7 @@
                             <span class="text-muted">Products Total</span>
                             <span>₹{{cart.get_products_total}}</span>
                         </div>
+                        
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Decorations Total</span>
                             <span>₹{{cart.get_decoration_total}}</span>
@@ -168,19 +169,37 @@
                             <span class="text-muted">Shipping</span>
                             <span class="text-success fw-bold">Free</span>
                         </div>
+                        <div class="d-flex justify-content-between mb-2 d-none" id="discountRow">
+    <span class="text-muted">Promo Discount</span>
+    <span class="text-danger fw-bold">- ₹<span id="discountAmount">0</span></span>
+</div>
+
 
                         <!-- Promo Code -->
-                        <div class="input-group mb-4">
-                            <input type="text" class="form-control" placeholder="Enter Promo Code">
-                            <button class="btn btn-dark" type="button">Apply</button>
-                        </div>
+                       <div class="input-group mb-2">
+    <input type="text"
+           id="promoInput"
+           class="form-control"
+           placeholder="Enter Promo Code"
+           maxlength="12"
+           autocomplete="off">
+</div>
+<small id="promoMsg"></small>
+
+
 
                         <hr class="mb-4">
 
                         <!-- Total -->
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <span class="h5 fw-bold mb-0">Total</span>
-                            <span class="h4 fw-bold text-gold mb-0">₹{{cart.get_grand_total}}</span>
+                           <span class="h4 fw-bold text-gold mb-0">
+    ₹<span id="grandTotal"
+          data-original="{{ cart.get_grand_total }}">
+          {{ cart.get_grand_total }}
+    </span>
+</span>
+
                         </div>
 
                         <!-- Payment Button -->
@@ -194,6 +213,85 @@
     </section>
 
     <!-- Scripts -->
+  <script>
+const promoInput = document.getElementById('promoInput');
+const promoMsg = document.getElementById('promoMsg');
+const discountRow = document.getElementById('discountRow');
+const discountAmountEl = document.getElementById('discountAmount');
+const grandTotalEl = document.getElementById('grandTotal');
+const originalTotal = grandTotalEl.dataset.original;
+
+let debounceTimer = null;
+let promoApplied = false;
+
+promoInput.addEventListener('input', function () {
+    const code = this.value.trim().toUpperCase();
+    this.value = code; // auto uppercase
+
+    // Any change after apply → reset immediately
+    if (promoApplied) {
+        resetPromoUI();
+    }
+
+    promoMsg.textContent = '';
+
+    // Don't validate until user typed at least 3 chars
+    if (code.length < 3) {
+        resetPromoUI();
+        return;
+    }
+
+    // Debounce backend call
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        validatePromo(code);
+    }, 500);
+});
+
+function validatePromo(code) {
+    fetch("{% url 'promo:check_promo_code' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `code=${code}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            promoApplied = true;
+
+            promoMsg.textContent = data.message;
+            promoMsg.className = "text-success";
+
+            discountAmountEl.innerText = data.discount;
+            discountRow.classList.remove('d-none');
+            grandTotalEl.innerText = data.grand_total;
+        } else {
+            promoApplied = false;
+            promoMsg.textContent = data.message;
+            promoMsg.className = "text-danger";
+            resetPromoUI();
+        }
+    })
+    .catch(() => {
+        promoApplied = false;
+        promoMsg.textContent = "Something went wrong";
+        promoMsg.className = "text-danger";
+        resetPromoUI();
+    });
+}
+
+function resetPromoUI() {
+    discountRow.classList.add('d-none');
+    discountAmountEl.innerText = 0;
+    grandTotalEl.innerText = originalTotal;
+    promoApplied = false;
+}
+</script>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

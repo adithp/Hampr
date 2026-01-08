@@ -2,7 +2,10 @@ from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxSize,ProductCate
 from django import forms
 import re
 from django.core.exceptions import ValidationError
-from django.forms import modelformset_factory
+
+from django.utils import timezone
+from coupons.models import PromoCode
+
 
 class HamperBoxForm(forms.ModelForm):
     
@@ -579,3 +582,116 @@ class DecorationForm(forms.ModelForm):
             raise ValidationError('depth must be greater than 0 ')
         
         return depth
+    
+
+class PromoCodeForm(forms.ModelForm):
+
+    class Meta:
+        model = PromoCode
+        fields = [
+            'code',
+            'descroption',
+            'discount_type',
+            'discount_value',
+            'maximum_discount',
+            'minimum_order_amount',
+            'usage_limit',
+            'valid_from',
+            'valid_to',
+            'is_active',
+        ]
+        widgets = {
+            'valid_from': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'valid_to': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+   
+
+    def clean_code(self):
+        code = self.cleaned_data['code'].upper().strip()
+
+        if len(code) < 4:
+            raise ValidationError("Promo code must be at least 4 characters long.")
+
+        if PromoCode.objects.filter(code=code).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("This promo code already exists.")
+
+        return code
+
+    def clean_discount_value(self):
+        value = self.cleaned_data['discount_value']
+
+        if value <= 0:
+            raise ValidationError("Discount value must be greater than 0.")
+
+        return value
+
+    def clean_usage_limit(self):
+        usage_limit = self.cleaned_data['usage_limit']
+
+        if usage_limit <= 0:
+            raise ValidationError("Usage limit must be greater than 0.")
+
+        return usage_limit
+
+    
+
+    def clean_minimum_order_amount(self):
+        amount = self.cleaned_data['minimum_order_amount']
+
+        if amount < 0:
+            raise ValidationError("Minimum order amount cannot be negative.")
+
+        return amount
+
+    def clean_maximum_discount(self):
+        max_discount = self.cleaned_data['maximum_discount']
+
+        if max_discount <= 0:
+            raise ValidationError("Maximum discount must be greater than 0.")
+
+        return max_discount
+
+
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        discount_type = cleaned_data.get('discount_type')
+        discount_value = cleaned_data.get('discount_value')
+        max_discount = cleaned_data.get('maximum_discount')
+        usage_limit = cleaned_data.get('usage_limit')
+        used_count = cleaned_data.get('used_count')
+        valid_from = cleaned_data.get('valid_from')
+        valid_to = cleaned_data.get('valid_to')
+
+        # Discount type rules
+        if discount_type == 'PERCENT':
+            if discount_value and discount_value > 100:
+                self.add_error(
+                    'discount_value',
+                    "Percentage discount cannot exceed 100%."
+                )
+
+        if discount_type == 'AMOUNT':
+            if max_discount and discount_value and discount_value > max_discount:
+                self.add_error(
+                    'discount_value',
+                    "Flat discount cannot be greater than maximum discount."
+                )
+        now = timezone.now()
+        
+        if valid_from and valid_from < now:
+            self.add_error(
+                'valid_from',
+                "Valid from date cannot be in the past."
+            )
+
+        if valid_from and valid_to:
+            if valid_to <= valid_from:
+                self.add_error(
+                    'valid_to',
+                    "Valid to date must be after valid from date."
+                )
+
+        return cleaned_data
