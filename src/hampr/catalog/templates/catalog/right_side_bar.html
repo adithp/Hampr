@@ -104,9 +104,10 @@
                     onclick="window.location.href='{% url 'shop:decoation_list' %}'">
                     <i class="fas fa-ribbon me-2"></i> Add Decorations
                 </button>
-                <button class="btn btn-outline-dark py-2 fw-medium" onclick="goToCheckout()">
+                <a href="{% url 'checkout:checkout_page' %}" class="btn btn-outline-dark py-2 fw-medium"
+                    onclick="goToCheckout()">
                     Skip to Checkout <i class="fas fa-arrow-right ms-2"></i>
-                </button>
+                </a>
             </div>
         </div>
     </div>

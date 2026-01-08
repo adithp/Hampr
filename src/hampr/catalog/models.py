@@ -8,13 +8,26 @@ from tinymce.models import HTMLField
 from autoslug import AutoSlugField
 
 
+class ActiveOnlyManger(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+    
+
+
 class BoxMaterial(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     created_at = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
     name =  models.CharField(max_length=20)
+    is_deleted = models.BooleanField(default=False)
     
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         ordering = ['-created_at']
     
@@ -31,6 +44,14 @@ class BoxCategory(models.Model):
     is_active = models.BooleanField(default=True)
     name = models.CharField(max_length=30)
     slug = AutoSlugField(populate_from="name",unique=True)
+    is_deleted = models.BooleanField(default=False)
+
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     
     class Meta:
         ordering = ['-created_at']
@@ -63,7 +84,14 @@ class HamperBox(models.Model):
     name = models.CharField(max_length=40)
     slug = AutoSlugField(populate_from='name',unique=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
     
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         ordering = ['-created_at']
     
@@ -85,7 +113,14 @@ class BoxSize(models.Model):
     ])
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
     
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         unique_together = ('hamper_box', 'size_label')
         ordering = ['-created_at']
@@ -107,6 +142,7 @@ class Color(models.Model):
     hex = models.CharField(max_length=7, blank=True, null=True)
     
     
+    
 class Size(models.Model):
     name = models.CharField(max_length=32)
     sort_order = models.PositiveSmallIntegerField(default=0) 
@@ -121,7 +157,14 @@ class ProductCategory(models.Model):
     name = models.CharField(max_length=40)
     parent_category = models.ForeignKey('self',on_delete=models.CASCADE,null=True,blank=True, related_name='children')
     slug = AutoSlugField(populate_from='name',unique=True)
+    is_deleted = models.BooleanField(default=False)
     
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         ordering = ['-created_at']
     
@@ -142,7 +185,14 @@ class Product(models.Model):
     slug = AutoSlugField(populate_from='name',unique=True)
     total_reviews = models.IntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
     
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         ordering = ['-created_at']
         
@@ -182,7 +232,14 @@ class ProductVariant(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
     
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         ordering = ['-created_at']
         
@@ -234,8 +291,15 @@ class Decoration(models.Model):
     slug = AutoSlugField(populate_from='name',unique=True)
     is_outside = models.BooleanField(default=False)
     is_inside = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
 
+    objects = ActiveOnlyManger()
+    all_objects = models.Manager()
+    
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
     class Meta:
         ordering = ['-created_at']
         

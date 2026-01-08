@@ -483,6 +483,7 @@ class DecorationDetailView(DetailView):
                 if this_outer:
                     outer_selected = True if this_outer.quantity >= 1 else False
                 
+        context['cart'] = cart
         
         context['volume'] = volume
         context['images'] = decoartor.decoartion_image.all()

@@ -113,8 +113,11 @@
                             data-bs-toggle="list"><i class="fas fa-map-marker-alt me-3 w-20"></i> Addresses</a>
                         <a href="#settings" class="list-group-item list-group-item-action border-0 py-3"
                             data-bs-toggle="list"><i class="fas fa-cog me-3 w-20"></i> Settings</a>
-                        <a href="#" class="list-group-item list-group-item-action border-0 py-3 text-danger"><i
-                                class="fas fa-sign-out-alt me-3 w-20"></i> Logout</a>
+                            <form action='{% url 'core:logout' %}' method='POST'>
+                                {% csrf_token %}
+                        <button type='submit' class="list-group-item list-group-item-action border-0 py-3 text-danger"><i
+                                class="fas fa-sign-out-alt me-3 w-20"></i> Logout</button>
+                        </form>
                     </div>
                 </div>
 
@@ -157,17 +160,39 @@
                                 <div class="col-md-6">
                                     <div class="card border-0 shadow-sm h-100">
                                         <div class="card-body p-4 position-relative">
-                                            {% if  item.is_default %}
+                                            {% if item.is_default %}
                                             <span
                                                 class="badge bg-gold text-dark position-absolute top-0 end-0 m-3">Default</span>
                                             {% endif %}
                                             <h6 class="fw-bold">{{item.get_address_type_display }}</h6>
-                                            <p class="text-muted mb-4">{{item.name}}<br>{{item.street_address}}{{item.apartment}}<br>{{item.city}},
+                                            <p class="text-muted mb-4">
+                                                {{item.name}}<br>{{item.street_address}}{{item.apartment}}<br>{{item.city}},
                                                 {{item.state}} {{item.postal_code}}<br>{{item.country}}</p>
                                             <div class="d-flex gap-2">
                                                 <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#addAddressModal" data-action="edit">Edit</button>
-                                                <button class="btn btn-outline-danger btn-sm">Delete</button>
+                                                    data-bs-target="#addAddressModal" 
+                                                    data-action="edit"
+                                                    data-url="{% url 'accounts:address_edit' item.id %}"
+                                                    data-address-type="{{ item.address_type }}"
+                                                    data-recipient-name="{{ item.recipient_name }}"
+                                                    data-street-address="{{ item.street_address }}"
+                                                    data-apartment="{{ item.apartment|default:'' }}"
+                                                    data-landmark="{{ item.landmark|default:'' }}"
+                                                    data-city="{{ item.city }}"
+                                                    data-country="{{ item.country }}"
+                                                    data-state="{{ item.state }}"
+                                                    data-postal-code="{{ item.postal_code }}"
+                                                    data-phone-number="{{ item.phone_number }}"
+                                                    data-secondary-phone-number="{{ item.secondary_phone_number|default:'' }}"
+                                                    data-is-default="{{ item.is_default|yesno:'true,false' }}"
+                                                    >Edit</button> 
+                                                    <form 
+                                                    action="{% url 'accounts:address_delete' item.id %}"    
+                                                    method="POST"
+                                                    >      
+                                                    {% csrf_token %}                                         
+                                                    <button class="btn btn-outline-danger btn-sm">Delete</button>
+                                            </form>
                                             </div>
                                         </div>
                                     </div>
@@ -330,17 +355,17 @@
                             </div>
                         </div>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="defaultAddress" name="is_default"  
-                            {% if has_default_address %}disabled{% endif %}>
+                            <input class="form-check-input" type="checkbox" id="defaultAddress" name="is_default" 
+                            {% if  has_default_address %}disabled{% endif %}>
 
                             <label class="form-check-label" for="defaultAddress">
                                 Set as default address
                             </label>
                             {% if has_default_address %}
-<small class="text-muted d-block mt-1">
-    You already have a default address. Edit it to change the default.
-</small>
-{% endif %}
+                            <small class="text-muted d-block mt-1">
+                                You already have a default address. Edit it to change the default.
+                            </small>
+                            {% endif %}
                             {{ form.is_default.errors }}
                         </div>
                     </form>
@@ -433,93 +458,207 @@
         const addressModal = document.getElementById('addAddressModal');
         const addressModalTitle = document.getElementById('addressModalTitle');
         const addressModalSaveBtn = document.getElementById('addressModalSaveBtn');
-        const addressForm = document.getElementById('addressForm');
+
+        // Initialize listeners on page load
+        initializeAddressFormListeners();
+
+        // Store the default add URL
+        const defaultAddAction = "{% url 'accounts:add_address' %}";
+        const hasDefaultAddress = "{{ has_default_address|yesno:'true,false' }}" === 'true';
 
         addressModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const action = button.getAttribute('data-action');
+            const addressForm = document.getElementById('addressForm');
+            const defaultCheckbox = addressForm.querySelector('[name="is_default"]');
 
             if (action === 'edit') {
                 addressModalTitle.textContent = 'Edit Address';
                 addressModalSaveBtn.textContent = 'Update Address';
+                
+                // Update Form Action
+                addressForm.action = button.getAttribute('data-url');
+
+                // Populate Fields
+                addressForm.querySelector('[name="address_type"]').value = button.getAttribute('data-address-type');
+                addressForm.querySelector('[name="recipient_name"]').value = button.getAttribute('data-recipient-name');
+                addressForm.querySelector('[name="street_address"]').value = button.getAttribute('data-street-address');
+                addressForm.querySelector('[name="apartment"]').value = button.getAttribute('data-apartment');
+                addressForm.querySelector('[name="landmark"]').value = button.getAttribute('data-landmark');
+                addressForm.querySelector('[name="city"]').value = button.getAttribute('data-city');
+                addressForm.querySelector('[name="country"]').value = button.getAttribute('data-country');
+                addressForm.querySelector('[name="state"]').value = button.getAttribute('data-state');
+                addressForm.querySelector('[name="postal_code"]').value = button.getAttribute('data-postal-code');
+                addressForm.querySelector('[name="phone_number"]').value = button.getAttribute('data-phone-number');
+                addressForm.querySelector('[name="secondary_phone_number"]').value = button.getAttribute('data-secondary-phone-number');
+                
+                const isDefault = button.getAttribute('data-is-default') === 'true';
+                
+                if (defaultCheckbox) {
+                    defaultCheckbox.checked = isDefault;
+                    defaultCheckbox.disabled = false;
+                }
+
             } else {
                 addressModalTitle.textContent = 'Add New Address';
                 addressModalSaveBtn.textContent = 'Save Address';
-                addressForm.reset();
-                addressForm.classList.remove('was-validated');
-                // Reset valid/invalid classes from custom validation
-                const inputs = addressForm.querySelectorAll('input');
-                inputs.forEach(input => input.classList.remove('is-valid', 'is-invalid'));
+                
+                // Reset Form Action
+                addressForm.action = defaultAddAction;
+
+                if (addressForm) {
+                    addressForm.reset();
+                    addressForm.classList.remove('was-validated');
+                    // Reset valid/invalid classes from custom validation
+                    const inputs = addressForm.querySelectorAll('input');
+                    inputs.forEach(input => input.classList.remove('is-valid', 'is-invalid'));
+                    
+                    if (defaultCheckbox) {
+                         defaultCheckbox.checked = false;
+                         defaultCheckbox.disabled = hasDefaultAddress;
+                    }
+                }
             }
         });
 
         addressModalSaveBtn.addEventListener('click', function () {
+            const addressForm = document.getElementById('addressForm');
+            if (!addressForm) return;
+
             if (!addressForm.checkValidity()) {
                 addressForm.classList.add('was-validated');
                 return;
             }
-            // Submit form or handle save
-            console.log('Form is valid, saving...');
-            addressForm.submit();
-        });
+            
+            // AJAX Submission
+            const formData = new FormData(addressForm);
+            
+            // Disable button to prevent double submit
+            const originalBtnText = addressModalSaveBtn.textContent;
+            addressModalSaveBtn.disabled = true;
+            addressModalSaveBtn.textContent = 'Saving...';
 
-        // Zip Code Auto-fill Logic
-        const zipInput = document.getElementById('addressZip');
-        const cityInput = document.getElementById('addressCity');
-        const stateInput = document.getElementById('addressState');
-        const countryInput = document.getElementById('addressCountry');
-
-        zipInput.addEventListener('input', function () {
-            const zip = this.value;
-
-            // Indian Pincode (6 digits)
-            if (zip.length === 6 && /^\d+$/.test(zip)) {
-                fetch(`https://api.postalpincode.in/pincode/${zip}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Failed to fetch');
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data[0].Status === 'Success') {
-                            const details = data[0].PostOffice[0];
-                            countryInput.value = details.Country;
-                            stateInput.value = details.State;
-                            cityInput.value = details.District;
+            fetch(addressForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // Success! Reload to show new data
+                    window.location.reload();
+                } else {
+                    // Validation errors or other response
+                    return response.text().then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newForm = doc.getElementById('addressForm');
+                        if (newForm) {
+                            addressForm.parentNode.replaceChild(newForm, addressForm);
+                            initializeAddressFormListeners(); // Re-attach listeners
                         } else {
-                            throw new Error('Invalid Pincode');
+                            console.error('Could not find addressForm in response');
+                            // Fallback: reload if we can't parse the error form, or show a generic error
+                            // window.location.reload(); 
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        countryInput.value = '';
-                        stateInput.value = '';
-                        cityInput.value = '';
                     });
-            }
-            // US Zip Code (5 digits)
-            else if (zip.length === 5 && /^\d+$/.test(zip)) {
-                fetch(`https://api.zippopotam.us/us/${zip}`)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Invalid Zip');
-                        return response.json();
-                    })
-                    .then(data => {
-                        countryInput.value = data.country;
-                        if (data.places && data.places.length > 0) {
-                            cityInput.value = data.places[0]['place name'];
-                            stateInput.value = data.places[0]['state'];
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        countryInput.value = '';
-                        stateInput.value = '';
-                        cityInput.value = '';
-                    });
-            }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                addressModalSaveBtn.disabled = false;
+                addressModalSaveBtn.textContent = originalBtnText;
+            });
         });
 
-        // Phone Number Validation
+        // Encapsulate listeners to re-apply them after AJAX update
+        function initializeAddressFormListeners() {
+            // Zip Code Auto-fill Logic
+            const zipInput = document.getElementById('addressZip');
+            const cityInput = document.getElementById('addressCity');
+            const stateInput = document.getElementById('addressState');
+            const countryInput = document.getElementById('addressCountry');
+
+            if (zipInput) {
+                zipInput.addEventListener('input', function () {
+                    const zip = this.value;
+
+                    // Indian Pincode (6 digits)
+                    if (zip.length === 6 && /^\d+$/.test(zip)) {
+                        fetch(`https://api.postalpincode.in/pincode/${zip}`)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Failed to fetch');
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data[0].Status === 'Success') {
+                                    const details = data[0].PostOffice[0];
+                                    countryInput.value = details.Country;
+                                    stateInput.value = details.State;
+                                    cityInput.value = details.District;
+                                } else {
+                                    throw new Error('Invalid Pincode');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                countryInput.value = '';
+                                stateInput.value = '';
+                                cityInput.value = '';
+                            });
+                    }
+                    // US Zip Code (5 digits)
+                    else if (zip.length === 5 && /^\d+$/.test(zip)) {
+                        fetch(`https://api.zippopotam.us/us/${zip}`)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Invalid Zip');
+                                return response.json();
+                            })
+                            .then(data => {
+                                countryInput.value = data.country;
+                                if (data.places && data.places.length > 0) {
+                                    cityInput.value = data.places[0]['place name'];
+                                    stateInput.value = data.places[0]['state'];
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                countryInput.value = '';
+                                stateInput.value = '';
+                                cityInput.value = '';
+                            });
+                    }
+                });
+            }
+
+            // Phone Number Validation
+            const phoneInputs = [document.getElementById('phoneInput'), document.getElementById('secondaryPhoneInput')];
+            phoneInputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function () {
+                        this.value = this.value.replace(/\D/g, ''); // Enforce numbers only
+                        if (this.value.length === 10) {
+                            validatePhone(this);
+                        } else {
+                            this.classList.remove('is-valid', 'is-invalid');
+                        }
+                    });
+
+                    input.addEventListener('blur', function () {
+                        if (this.value.length > 0) {
+                            validatePhone(this);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Phone Validation Helper
         function validatePhone(input) {
             const value = input.value;
             const regex = /^[6-9]\d{9}$/;
@@ -544,27 +683,6 @@
                 }
             }
         }
-
-        const phoneInputs = [document.getElementById('phoneInput'), document.getElementById('secondaryPhoneInput')];
-
-        phoneInputs.forEach(input => {
-            if (input) {
-                input.addEventListener('input', function () {
-                    this.value = this.value.replace(/\D/g, ''); // Enforce numbers only
-                    if (this.value.length === 10) {
-                        validatePhone(this);
-                    } else {
-                        this.classList.remove('is-valid', 'is-invalid');
-                    }
-                });
-
-                input.addEventListener('blur', function () {
-                    if (this.value.length > 0) {
-                        validatePhone(this);
-                    }
-                });
-            }
-        });
     </script>
 </body>
 

@@ -5,6 +5,9 @@ from django.utils.decorators import method_decorator
 from django.contrib import messages
 import json
 from django.http import JsonResponse
+from django.views.generic import DeleteView
+from django.urls import reverse_lazy
+
 
 from .models import CustomHamper,CartProduct,CartDecoration
 from accounts.models import CustomUser
@@ -266,6 +269,9 @@ class CartView(LoginRequiredMixin,View):
         user_id = request.user.id
         if CustomUser.objects.filter(id=user_id).exists():
             user = CustomUser.objects.get(id=user_id)
+            cart = {}
+            cart_products = {}
+            cart_decoration = {}
             if hasattr(user,'current_cart'):
                 cart = user.current_cart
                 cart.volume = round( cart.box_size.height * cart.box_size.width * cart.box_size.depth / 1000,2 )
@@ -284,6 +290,18 @@ class CartView(LoginRequiredMixin,View):
                 # print(cart)
                 # cart.grand_total = cart.box_size.price + cart.products_total + cart.decorations_total
         return render(request,'cart/cart.html',{'cart':cart,'cart_products':cart_products,'cart_decoration':cart_decoration})
+    
+class CartProductDelete(LoginRequiredMixin,DeleteView):
+    model = CartProduct
+    success_url = reverse_lazy("cart:cart_list")
+    
+class CartDecorationDelete(LoginRequiredMixin,DeleteView):
+    model = CartDecoration
+    success_url = reverse_lazy("cart:cart_list")
+    
+class DeleteFullCart(LoginRequiredMixin,DeleteView):
+    model = CustomHamper
+    success_url = reverse_lazy("cart:cart_list")
             
                 
                     
