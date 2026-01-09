@@ -306,7 +306,7 @@ class DeleteFullCart(LoginRequiredMixin,DeleteView):
                 
                     
                 
-            
+
         
             
         

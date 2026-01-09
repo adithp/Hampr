@@ -112,15 +112,15 @@
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3 text-gold">2. Products</h6>
                             <div class="bg-white p-3 rounded shadow-sm">
-                                {% for item in products %}
-                                <div class="d-flex align-items-center gap-3 mb-3">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0 fw-bold">{{item.product_varient.product.name}} ({{item.product_varient.color.name}}{{item.product_varient.size.name}})</h6>
-                                        <small class="text-muted">Qty: {{item.quantity}}</small>
+                                    {% for item in products %}
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0 fw-bold">{{item.product_varient.product.name}} ({{item.product_varient.color.name}}{{item.product_varient.size.name}})</h6>
+                                            <small class="text-muted">Qty: {{item.quantity}}</small>
+                                        </div>
+                                        <span class="fw-bold">₹{{item.total_paroduct}}</span>
                                     </div>
-                                    <span class="fw-bold">₹{% widthratio item.product_varient.price 1 item.quantity %}</span>
-                                </div>
-                                {% endfor %}
+                                    {% endfor %}
                                 {% comment %} <div class="d-flex align-items-center gap-3">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-0 fw-bold">Sweet Treats</h6>
