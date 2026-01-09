@@ -19,6 +19,9 @@ class CheckoutPageView(LoginRequiredMixin,OnlyForUsers,View):
                 cart = user.current_cart
                 products = cart.cart_products.all()
                 decoration = cart.cart_decoartion.all()
+                
+                for i in products:
+                    i.total_paroduct = i.product_varient.price * i.quantity
         return render(request,'checkout/checkout.html',{'address':address,'cart':cart,'products':products,'decoration':decoration})
 
 

@@ -28,18 +28,32 @@
 <body>
 
     <!-- Header -->
-   {% include 'catalog/nav-bar.html' %}
+    {% include 'catalog/nav-bar.html' %}
 
     <!-- Cart Section -->
+    
     <section class="py-5" style="margin-top: 80px;">
+      {% if cart %}
         <div class="container">
-            <h1 class="display-5 fw-bold mb-5">Shopping Cart</h1>
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <h1 class="display-5 fw-bold mb-0">Shopping Cart</h1>
+                {% if cart %}
+                <form action="{% url 'cart:clear_cart' cart.id %}" method="POST"
+                    onsubmit="return confirm('Are you sure you want to clear your cart?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="fas fa-trash-alt me-2"></i>Clear Cart
+                    </button>
+                </form>
+                {% endif %}
+            </div>
 
             <div class="row g-5">
                 <!-- Cart Items -->
                 <div class="col-lg-8">
 
                     <!-- Box Section -->
+                    
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white border-0 py-3">
                             <h5 class="mb-0 fw-bold text-gold"><i class="fas fa-box-open me-2"></i>Your Hamper Box</h5>
@@ -58,31 +72,27 @@
                                         <h5 class="fw-bold mb-0">{{cart.box.name}} ({{cart.box_size.size_label}})</h5>
                                         <h5 class="mb-0 fw-bold">₹{{cart.box_size.price}}</h5>
                                     </div>
-                                    <p class="text-muted small mb-3">{{cart.box.category.name}}</p> 
+                                    <p class="text-muted small mb-3">{{cart.box.category.name}}</p>
 
                                     <!-- Volume Progress Bar -->
                                     <div>
-                                        
-                                       <div>
-  <div class="d-flex justify-content-between mb-1">
-    <span class="text-muted small fw-bold">Box Capacity</span>
-    <span class="text-muted small fw-bold">
-      <span id="usedVolume">0</span>L /
-      <span id="totalVolume">0</span>L
-    </span>
-  </div>
 
-  <div class="progress" style="height: 8px;">
-    <div
-      id="volumeProgressBar"
-      class="progress-bar bg-gold"
-      role="progressbar"
-      style="width: 0%"
-      aria-valuemin="0"
-      aria-valuemax="100">
-    </div>
-  </div>
-</div>
+                                        <div>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-muted small fw-bold">Box Capacity</span>
+                                                <span class="text-muted small fw-bold">
+                                                    <span id="usedVolume">0</span>L /
+                                                    <span id="totalVolume">0</span>L
+                                                </span>
+                                            </div>
+
+                                            <div class="progress" style="height: 8px;">
+                                                <div id="volumeProgressBar" class="progress-bar bg-gold"
+                                                    role="progressbar" style="width: 0%" aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -104,116 +114,111 @@
                                         style="width: 80px; height: 80px; object-fit: cover;"
                                         alt="Artisan Dark Chocolate">
                                     {% else %}
- <img src="https://placehold.co/150x150/png?text=Chocolate" class="rounded"
+                                    <img src="https://placehold.co/150x150/png?text=Chocolate" class="rounded"
                                         style="width: 80px; height: 80px; object-fit: cover;"
                                         alt="Artisan Dark Chocolate">
                                     {% endif %}
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between mb-2">
-                                            <h5 class="fw-bold mb-0">{{item.product_varient.product.name}}({{item.product_varient.size.name}}{{item.product_varient.color.name}})</h5>
-                                            <button class="btn btn-link text-muted p-0 hover-rotate-icon">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                            <h5 class="fw-bold mb-0">
+                                                {{item.product_varient.product.name}}({{item.product_varient.size.name}}{{item.product_varient.color.name}})
+                                            </h5>
+                                            <form action="{% url 'cart:cart_product_delete' item.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                    class="btn btn-link text-muted p-0 hover-rotate-icon">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
                                         </div>
-                                        <p class="text-muted small mb-2">{{item.product_varient.product.category.name}}</p>
+                                        <p class="text-muted small mb-2">{{item.product_varient.product.category.name}}
+                                        </p>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div class="input-group input-group-sm" style="width: 100px;">
-                                                <button
-  class="btn btn-outline-secondary border-end-0 qty-btn"
-  type="button"
-  data-id="{{ item.product_varient.id }}"
-  data-action="decrement"
-  data-type="product"
->-</button>
+                                                <button class="btn btn-outline-secondary border-end-0 qty-btn"
+                                                    type="button" data-id="{{ item.product_varient.id }}"
+                                                    data-action="decrement" data-type="product">-</button>
 
-<input type="text"
-  class="form-control text-center border-start-0 border-end-0 bg-white"
-  value="{{ item.quantity }}"
-  readonly>
+                                                <input type="text"
+                                                    class="form-control text-center border-start-0 border-end-0 bg-white"
+                                                    value="{{ item.quantity }}" readonly>
 
-<button
-  class="btn btn-outline-secondary border-start-0 qty-btn"
-  type="button"
-  data-id="{{ item.product_varient.id }}"
-  data-action="increment"
-  data-type="product"
->+</button>
+                                                <button class="btn btn-outline-secondary border-start-0 qty-btn"
+                                                    type="button" data-id="{{ item.product_varient.id }}"
+                                                    data-action="increment" data-type="product">+</button>
 
                                             </div>
-                                            <h5 class="mb-0 fw-bold">₹{% widthratio item.product_varient.price 1 item.quantity %}</h5>
+                                            <h5 class="mb-0 fw-bold">₹
+                                              {% widthratio item.product_varient.price 1 item.quantity %}</h5>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                           {% endfor %}
-                    </div>
-
-                    <!-- Decorations Section -->
-                    <div class="card border-0 shadow-sm mb-4">
-                        <div class="card-header bg-white border-0 py-3">
-                            <h5 class="mb-0 fw-bold text-gold"><i class="fas fa-ribbon me-2"></i>Decorations</h5>
+                            {% endfor %}
                         </div>
-                        <div class="card-body p-0">
-                            <!-- Decoration 1 -->
-                            {% for item in cart_decoration %}
-                            <div class="p-4 border-bottom">
-                                <div class="d-flex align-items-center gap-4">
-                                    {% if item.decoration.decoartion_image.first %}
-                                    <img src="{{item.decoration.decoartion_image.first.image.url}}" class="rounded"
-                                        style="width: 80px; height: 80px; object-fit: cover;" alt="Satin Ribbon">
-                                    {% else %}
-                                    <img src="https://placehold.co/150x150/png?text=Ribbon" class="rounded"
-                                        style="width: 80px; height: 80px; object-fit: cover;" alt="Satin Ribbon">
-                                    {% endif %}
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <h5 class="fw-bold mb-0">{{item.decoration.name}}</h5>
-                                            <button class="btn btn-link text-muted p-0 hover-rotate-icon">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </div>
-                                        <p class="text-muted small mb-2">{{item.position}}</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="input-group input-group-sm" style="width: 100px;">
-                                           <button
-  class="btn btn-outline-secondary border-end-0 qty-btn"
-  type="button"
-  data-id="{{ item.decoration.id }}"
-  data-action="decrement"
-  data-type="decoration"
-  data-position="{{ item.position }}"
->-</button>
 
-<input type="text"
-  class="form-control text-center border-start-0 border-end-0 bg-white"
-  value="{{ item.quantity }}"
-  readonly>
-
-<button
-  class="btn btn-outline-secondary border-start-0 qty-btn"
-  type="button"
-  data-id="{{ item.decoration.id }}"
-  data-action="increment"
-  data-type="decoration"
-  data-position="{{ item.position }}"
->+</button>
-
+                        <!-- Decorations Section -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0 fw-bold text-gold"><i class="fas fa-ribbon me-2"></i>Decorations</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <!-- Decoration 1 -->
+                                {% for item in cart_decoration %}
+                                <div class="p-4 border-bottom">
+                                    <div class="d-flex align-items-center gap-4">
+                                        {% if item.decoration.decoartion_image.first %}
+                                        <img src="{{item.decoration.decoartion_image.first.image.url}}" class="rounded"
+                                            style="width: 80px; height: 80px; object-fit: cover;" alt="Satin Ribbon">
+                                        {% else %}
+                                        <img src="https://placehold.co/150x150/png?text=Ribbon" class="rounded"
+                                            style="width: 80px; height: 80px; object-fit: cover;" alt="Satin Ribbon">
+                                        {% endif %}
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <h5 class="fw-bold mb-0">{{item.decoration.name}}</h5>
+                                                <form action="{% url 'cart:cart_decortion_delete' item.id %}"
+                                                    method="POST">
+                                                    {% csrf_token %}
+                                                    <button type="submit"
+                                                        class="btn btn-link text-muted p-0 hover-rotate-icon">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
                                             </div>
-                                            <h5 class="mb-0 fw-bold">₹{{item.decoration.price}}</h5>
+                                            <p class="text-muted small mb-2">{{item.position}}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="input-group input-group-sm" style="width: 100px;">
+                                                    <button class="btn btn-outline-secondary border-end-0 qty-btn"
+                                                        type="button" data-id="{{ item.decoration.id }}"
+                                                        data-action="decrement" data-type="decoration"
+                                                        data-position="{{ item.position }}">-</button>
+
+                                                    <input type="text"
+                                                        class="form-control text-center border-start-0 border-end-0 bg-white"
+                                                        value="{{ item.quantity }}" readonly>
+
+                                                    <button class="btn btn-outline-secondary border-start-0 qty-btn"
+                                                        type="button" data-id="{{ item.decoration.id }}"
+                                                        data-action="increment" data-type="decoration"
+                                                        data-position="{{ item.position }}">+</button>
+
+                                                </div>
+                                                <h5 class="mb-0 fw-bold">₹{{item.decoration.price}}</h5>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                {% endfor %}
+                                <!-- Decoration 2 -->
                             </div>
-                       {% endfor %}
-                            <!-- Decoration 2 -->
-                        </div>
-                                
-                            </div>
+
                         </div>
                     </div>
+                </div>
                
-            
-        
+
+
                 <!-- Summary -->
                 <div class="col-lg-4">
                     <div class="card border-0 shadow-lg bg-dark text-white p-4 sticky-top" style="top: 100px;">
@@ -236,7 +241,8 @@
                                 <span class="h5 fw-bold">Total</span>
                                 <span class="h4 fw-bold text-gold">₹{{cart.grand_total}}</span>
                             </div>
-                            <a href="checkout.html" class="btn btn-primary w-100 py-3">Proceed to Checkout</a>
+                            <a href="{% url 'checkout:checkout_page' %}" class="btn btn-primary w-100 py-3">Proceed to
+                                Checkout</a>
                             <div class="mt-4 text-center">
                                 <small class="text-white-50"><i class="fas fa-lock me-2"></i>Secure Checkout</small>
                             </div>
@@ -244,11 +250,13 @@
                     </div>
                 </div>
             </div>
+            
         </div>
+        {% endif  %}
     </section>
-
+    
     <!-- Footer -->
-    <footer class="mt-5 bg-dark text-white py-5">
+    <footer {% if not cart %}style="margin-top:25% !important"{% endif %} class="mt-5 bg-dark text-white py-5">
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-4">
@@ -258,84 +266,84 @@
             </div>
         </div>
     </footer>
-{% csrf_token %}
+    {% csrf_token %}
 
     <script>
-function updateVolumeBar(used, total) {
-  const percent = Math.min((used / total) * 100, 100);
+        function updateVolumeBar(used, total) {
+            const percent = Math.min((used / total) * 100, 100);
 
-  document.getElementById('usedVolume').innerText = used.toFixed(2);
-  document.getElementById('totalVolume').innerText = total.toFixed(2);
+            document.getElementById('usedVolume').innerText = used.toFixed(2);
+            document.getElementById('totalVolume').innerText = total.toFixed(2);
 
-  const bar = document.getElementById('volumeProgressBar');
-  bar.style.width = percent + '%';
-  bar.setAttribute('aria-valuenow', percent.toFixed(0));
+            const bar = document.getElementById('volumeProgressBar');
+            bar.style.width = percent + '%';
+            bar.setAttribute('aria-valuenow', percent.toFixed(0));
 
-  // Color change
-  bar.classList.remove('bg-gold', 'bg-danger', 'bg-success');
+            // Color change
+            bar.classList.remove('bg-gold', 'bg-danger', 'bg-success');
 
-  if (percent < 70) {
-    bar.classList.add('bg-success');
-  } else if (percent < 90) {
-    bar.classList.add('bg-gold');
-  } else {
-    bar.classList.add('bg-danger');
-  }
-}
+            if (percent < 70) {
+                bar.classList.add('bg-success');
+            } else if (percent < 90) {
+                bar.classList.add('bg-gold');
+            } else {
+                bar.classList.add('bg-danger');
+            }
+        }
 
-// INITIAL LOAD (from Django values)
-updateVolumeBar(
-  {{ cart.get_used_volume|floatformat:2 }},
-  {{ cart.box_size.height|floatformat:2 }} * {{ cart.box_size.width|floatformat:2 }} * {{ cart.box_size.depth|floatformat:2 }} / 1000
-);
-</script>
-<script>
-const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // INITIAL LOAD (from Django values)
+        updateVolumeBar(
+            {{ cart.get_used_volume|floatformat:2 }},
+            {{ cart.box_size.height|floatformat:2 }} * {{ cart.box_size.width|floatformat:2 }} * {{ cart.box_size.depth|floatformat:2 }} / 1000
+        );
+    </script>
+    <script>
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-document.querySelectorAll('.qty-btn').forEach(btn => {
-  btn.addEventListener('click', function () {
+        document.querySelectorAll('.qty-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
 
-    const payload = {
-      product_id: this.dataset.id,
-      action: this.dataset.action,
-      type: this.dataset.type
-    };
+                const payload = {
+                    product_id: this.dataset.id,
+                    action: this.dataset.action,
+                    type: this.dataset.type
+                };
 
-    if (this.dataset.type === 'decoration') {
-      payload.position = this.dataset.position;
-    }
+                if (this.dataset.type === 'decoration') {
+                    payload.position = this.dataset.position;
+                }
 
-    fetch('/cart/update-cart/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrftoken
-      },
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        if (data.success && data.cart) {
-  updateVolumeBar(
-    data.cart.used_volume,
-    data.cart.volume
-  );
-  location.reload();
+                fetch('/cart/update-cart/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.success && data.cart) {
+                                updateVolumeBar(
+                                    data.cart.used_volume,
+                                    data.cart.volume
+                                );
+                                location.reload();
 
-  // Update quantity input
-  const qtyInput = this.parentElement.querySelector('input');
-  if (qtyInput) {
-    qtyInput.value = data.quantity;
-  }
-}   // IMPORTANT
-      } else {
-        alert(data.error || data.message);
-      }
-    });
-  });
-});
-</script>
+                                // Update quantity input
+                                const qtyInput = this.parentElement.querySelector('input');
+                                if (qtyInput) {
+                                    qtyInput.value = data.quantity;
+                                }
+                            }   // IMPORTANT
+                        } else {
+                            alert(data.error || data.message);
+                        }
+                    });
+            });
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>

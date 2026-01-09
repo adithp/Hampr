@@ -165,6 +165,9 @@
                         </div>
                         <h4 class="text-gold fw-bold mb-3" id="decoPrice">₹{{product.price}}</h4>
 
+
+
+
                         <div class="row mb-4 text-muted small">
                             <div class="col-6 col-md-4 mb-2">
                                 <i class="fas fa-cube me-2"></i>Volume: <span id="decoVolume">{{volume}}</span> L
@@ -245,19 +248,44 @@
                                     </div>
                                     <div class="text-end mt-2">
                                         <small class="text-muted">Subtotal: </small>
-                                        <span class="fw-bold text-primary" id="innerSubtotal">$0.00</span>
+                                        <span class="fw-bold text-primary"
+      id="innerSubtotal"
+      data-price="{{ product.price }}">
+    ₹{{ product.price|floatformat:2 }}
+</span>
                                     </div>
                                 </div>
                                 {% endif %}
                             </div>
 
                             <!-- Footer -->
-                            <div class="total-box mb-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="h5 mb-0 text-muted">Total Addition</span>
-                                    <span class="total-price" id="totalAddition">$0.00</span>
-                                </div>
-                            </div>
+                            <div class="bg-light p-3 rounded-3 mb-4">
+               <div class="d-flex justify-content-between mb-1 small">
+    <span class="text-muted">Box</span>
+    <span id="boxPrice" data-price="{{ cart.box_size.price }}">
+        ₹{{ cart.box_size.price }}
+    </span>
+</div>
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="text-muted">Decorations</span>
+                    <span id="decorSubtotal"
+      data-base="{{ cart.get_decoration_total }}">
+    ₹{{ cart.get_decoration_total }}
+</span>
+
+                </div>
+               <div class="d-flex justify-content-between mb-2 small">
+    <span class="text-muted">Products</span>
+    <span id="productsSubtotal"
+          data-base="{{ cart.get_products_total }}">
+        ₹{{ cart.get_products_total }}
+    </span>
+</div>
+                <div class="d-flex justify-content-between pt-2 border-top border-secondary-subtle">
+                    <span class="fw-bold">Total</span>
+                    <span class="fw-bold text-primary fs-5" id="grandTotal">₹{{ cart.get_grand_total }}</span>
+                </div>
+            </div>
 
                             <!-- Actions -->
                              <div class="d-grid gap-2">
@@ -279,6 +307,15 @@
 <input type="hidden" id="usedVolume" value="{{ cart_volume }}">
 <input type="hidden" id="totalVolume" value="{{ cart_max_volume }}">
 
+<script>
+function updateInnerSubtotal(qty) {
+    const subtotalEl = document.getElementById("innerSubtotal");
+    if (!subtotalEl) return;
+
+    const price = parseFloat(subtotalEl.dataset.price) || 0;
+    subtotalEl.innerText = "₹" + (price * qty).toFixed(2);
+}
+</script>
 
 
     <!-- Scripts -->
@@ -329,7 +366,33 @@ if (outerCheckbox) {
 }
 </script>
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const qtyEl = document.getElementById("innerQty");
+    const subtotalEl = document.getElementById("innerSubtotal");
+
+    if (!qtyEl || !subtotalEl) return;
+
+    const qty = parseInt(qtyEl.value) || 0;
+    const price = parseFloat(subtotalEl.dataset.price);
+
+    subtotalEl.innerText = "₹" + (price * qty).toFixed(2);
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const qty = parseInt(document.getElementById("innerQty")?.value) || 0;
+    updateInnerSubtotal(qty);
+});
+</script>
+
+
+<script>
 function updateQty(change) {
+    const qtyInput = document.getElementById("innerQty");
+    const currentQty = parseInt(qtyInput.value) || 0;
+
+    if (change < 0 && currentQty <= 0) return;
+
     const action = change > 0 ? "increment" : "decrement";
 
     fetch("{% url 'cart:update_cart' %}", {
@@ -352,10 +415,15 @@ function updateQty(change) {
             return;
         }
 
-        // quantity comes ONLY from backend
-        document.getElementById("innerQty").value = data.quantity;
+        const qty = data.quantity;
 
-        // capacity update
+        // ✅ backend is truth
+        qtyInput.value = qty;
+
+        // ✅ always recalc subtotal
+        updateInnerSubtotal(qty);
+
+        // capacity
         updateCapacityUI(
             data.cart.used_volume,
             data.cart.volume
@@ -363,6 +431,7 @@ function updateQty(change) {
     });
 }
 </script>
+
 
      <script>
    document.addEventListener("DOMContentLoaded", function () {
@@ -456,7 +525,7 @@ function updateCapacityUI(used, capacity) {
             };
 
         })();
-    </script>
+    </>
 
 
 

@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'admin_panel.apps.AdminPanelConfig',
     'cart.apps.CartConfig',
     'checkout.apps.CheckoutConfig',
+    'coupons.apps.CouponsConfig',
+    'order.apps.OrderConfig',
+    'payment.apps.PaymentConfig'
 ]
 
 
@@ -132,7 +135,7 @@ CACHES = {
 
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata' 
 USE_I18N = True
 USE_TZ = True
 

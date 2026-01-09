@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.views import View
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView,DeleteView
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -269,4 +269,24 @@ class AddAddressView(LoginRequiredMixin,OnlyForUsers,View):
             return redirect('accounts:user_profile',)
         address = UserAddress.objects.filter(user=request.user)
         return render(request,'accounts/account.html',{'form':form,'address':address})
+    
+class EditAddressView(LoginRequiredMixin,OnlyForUsers,View):
+    def post(self,request,id,*args, **kwargs):
+        try:
+            instance = UserAddress.objects.get(id=id)
+        except UserAddress.DoesNotExist as e:
+            print(e)
+        form = UserAddressForm(self.request.POST,instance=instance)
+        form.usert = request.user
+        if form.is_valid():
+            form.save()
+            return redirect('accounts:user_profile',)
+        address = UserAddress.objects.filter(user=request.user)
+        return render(request,'accounts/account.html',{'form':form,'address':address})
+    
+
+class DeleteAddressView(DeleteView):
+    model = UserAddress
+    success_url = reverse_lazy("accounts:user_profile")
+    
     
