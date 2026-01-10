@@ -432,11 +432,12 @@ class AdminProductManage(NeverCacheMixin,StaffRequiredMixin,TemplateView):
             products = Product.objects.filter(name__icontains=q)
         else:
              products = Product.objects.all()
-        paginator = Paginator(products,4)
+        paginator = Paginator(products,2)
         page_number = self.request.GET.get('page')
         products =paginator.get_page(page_number)
         total_pages = paginator.num_pages
         context['total_page_num'] = range(1,total_pages+1)
+        context['page_num'] = page_number
         data = [
             
         ]
@@ -723,8 +724,11 @@ class AdminBoxCategoryDelete(DeleteView):
     
 class AdminMainProductDelete(DeleteView):
     model = HamperBox
-    success_url = reverse_lazy('cadmin:box_manage')
     
+    
+    def get_success_url(self):
+        page = self.request.GET.get('page')
+        return reverse('cadmin:box_manage') + f'?page={page}'
     
 class AdminBoxDelete(DeleteView):
     model = BoxSize

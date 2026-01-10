@@ -14,9 +14,12 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 
 
-from .forms import CustomUserCreationForm,EmailOrUsernameLogin,UserAddressForm
+from .forms import CustomUserCreationForm,EmailOrUsernameLogin,UserAddressForm,UserProfileEditForm
+
 from core.decorators import otp_pending_verify
 from .models import CustomUser,OTP,UserAddress
 from .utils import otp_send_signup,otp_block_time_verify,password_reset_link,token_checker
@@ -288,5 +291,31 @@ class EditAddressView(LoginRequiredMixin,OnlyForUsers,View):
 class DeleteAddressView(DeleteView):
     model = UserAddress
     success_url = reverse_lazy("accounts:user_profile")
+
+class EditProfileDetails(LoginRequiredMixin,OnlyForUsers,View):
+    def post(self,request,*args,**kwargs):
+        profile_form = UserProfileEditForm(request.POST,instance=request.user)
+        if profile_form.is_valid():
+            profile_form.save()
+            
+
+    
+            if request.POST.get('old_password',''):
+                password_form = PasswordChangeForm(user=request.user,data=request.POST)
+                if password_form.is_valid():
+                    password_form.save()
+                    update_session_auth_hash(request, request.user)
+                    
+                    return redirect('accounts:user_profile')
+                else:
+                    return render(request,'accounts/account.html',{'profile_form': profile_form,'password_form': password_form, })
+            else:
+                
+                return redirect('accounts:user_profile')
+        else:
+                return render(request,'accounts/account.html',{'profile_form': profile_form,'password_form': password_form, })  
+
+            
+        
     
     
