@@ -9,8 +9,9 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                <li class="nav-item"><a class="nav-link active" href="#">Shop</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'shop:box_list' %}">Box</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'shop:product_list' %}">Products</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'shop:decoation_list' %}">Decoration</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">About</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
             </ul>
@@ -18,7 +19,8 @@
             {% if request.user.is_authenticated %}
 
             <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'accounts:user_profile' %}" class="text-dark hover-rotate-icon fs-5"><i class="far fa-user"></i></a>
+                <a href="{% url 'accounts:user_profile' %}" class="text-dark hover-rotate-icon fs-5"><i
+                        class="far fa-user"></i></a>
 
                 <a href="{% url 'cart:cart_list' %}" class="text-dark hover-rotate-icon fs-5 position-relative">
                     <i class="fas fa-shopping-bag"></i>

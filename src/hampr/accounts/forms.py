@@ -97,4 +97,11 @@ class UserAddressForm(forms.ModelForm):
                 )
 
         return is_default
+    
+    
+    
+class UserProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name']
 

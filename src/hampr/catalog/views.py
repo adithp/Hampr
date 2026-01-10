@@ -467,6 +467,12 @@ class DecorationDetailView(DetailView):
             print(e)
         volume = round(decoartor.width * decoartor.height * decoartor.depth / 1000 , 2)
         user_id = self.request.user.id
+        cart = []
+        cart_volume = 0
+        cart_max_volume = 0.000001
+        outer_count = 0
+        inner_qty = 0
+        outer_selected = False
         if CustomUser.objects.filter(id=user_id).exists():
             user = CustomUser.objects.get(id=user_id)
             if hasattr(user,'current_cart'):

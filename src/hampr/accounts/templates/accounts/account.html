@@ -90,7 +90,7 @@
                             {% endif %}
                             <button data-bs-toggle="modal" data-bs-target="#imageUploadModal"
                                 class="btn btn-sm btn-light rounded-circle position-absolute bottom-0 end-0 shadow-sm avatar-edit-btn">
-                                 <i class="fas fa-pencil-alt"></i></button>
+                                <i class="fas fa-pencil-alt"></i></button>
                         </div>
                         <h5 class="fw-bold mb-1">{{user.first_name}} {{user.last_name}}</h5>
                         <p class="text-muted small">{{user.email}}</p>
@@ -113,10 +113,11 @@
                             data-bs-toggle="list"><i class="fas fa-map-marker-alt me-3 w-20"></i> Addresses</a>
                         <a href="#settings" class="list-group-item list-group-item-action border-0 py-3"
                             data-bs-toggle="list"><i class="fas fa-cog me-3 w-20"></i> Settings</a>
-                            <form action='{% url 'core:logout' %}' method='POST'>
-                                {% csrf_token %}
-                        <button type='submit' class="list-group-item list-group-item-action border-0 py-3 text-danger"><i
-                                class="fas fa-sign-out-alt me-3 w-20"></i> Logout</button>
+                        <form action="{% url 'core:logout' %}" method='POST'>
+                            {% csrf_token %}
+                            <button type='submit'
+                                class="list-group-item list-group-item-action border-0 py-3 text-danger"><i
+                                    class="fas fa-sign-out-alt me-3 w-20"></i> Logout</button>
                         </form>
                     </div>
                 </div>
@@ -170,29 +171,24 @@
                                                 {{item.state}} {{item.postal_code}}<br>{{item.country}}</p>
                                             <div class="d-flex gap-2">
                                                 <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
-                                                    data-bs-target="#addAddressModal" 
-                                                    data-action="edit"
+                                                    data-bs-target="#addAddressModal" data-action="edit"
                                                     data-url="{% url 'accounts:address_edit' item.id %}"
                                                     data-address-type="{{ item.address_type }}"
                                                     data-recipient-name="{{ item.recipient_name }}"
                                                     data-street-address="{{ item.street_address }}"
                                                     data-apartment="{{ item.apartment|default:'' }}"
                                                     data-landmark="{{ item.landmark|default:'' }}"
-                                                    data-city="{{ item.city }}"
-                                                    data-country="{{ item.country }}"
+                                                    data-city="{{ item.city }}" data-country="{{ item.country }}"
                                                     data-state="{{ item.state }}"
                                                     data-postal-code="{{ item.postal_code }}"
                                                     data-phone-number="{{ item.phone_number }}"
                                                     data-secondary-phone-number="{{ item.secondary_phone_number|default:'' }}"
-                                                    data-is-default="{{ item.is_default|yesno:'true,false' }}"
-                                                    >Edit</button> 
-                                                    <form 
-                                                    action="{% url 'accounts:address_delete' item.id %}"    
-                                                    method="POST"
-                                                    >      
-                                                    {% csrf_token %}                                         
+                                                    data-is-default="{{ item.is_default|yesno:'true,false' }}">Edit</button>
+                                                <form action="{% url 'accounts:address_delete' item.id %}"
+                                                    method="POST">
+                                                    {% csrf_token %}
                                                     <button class="btn btn-outline-danger btn-sm">Delete</button>
-                                            </form>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -213,38 +209,47 @@
                         <!-- Settings Tab -->
                         <div class="tab-pane fade" id="settings">
                             <h3 class="fw-bold mb-4">Settings</h3>
-                            <form>
+                            <form action="{% url 'accounts:profile_edit' %}" method="POST">
+                                {% csrf_token %}
                                 <div class="mb-4">
                                     <h5 class="fw-bold mb-3">Profile Details</h5>
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label">First Name</label>
-                                            <input type="text" class="form-control" value="John">
+                                            <input type="text" class="form-control" value="{{user.first_name}}" name="first_name">
+                                            {{profile_form.first_name.errors}}
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Last Name</label>
-                                            <input type="text" class="form-control" value="Doe">
+                                            <input type="text" class="form-control" value="{{user.last_name}}" name="last_name">
+                                            {{profile_form.last_name.errors}}
                                         </div>
                                         <div class="col-12">
                                             <label class="form-label">Email</label>
-                                            <input type="email" class="form-control" value="john.doe@example.com">
+                                            <input type="email" class="form-control" value="{{user.email}}" disabled>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mb-4">
                                     <h5 class="fw-bold mb-3">Password</h5>
+                                    {% if not user.has_usable_password %}
+                                    You signed in with Google. Password change is not available.
+                                    {% endif %}
                                     <div class="row g-3">
                                         <div class="col-12">
                                             <label class="form-label">Current Password</label>
-                                            <input type="password" class="form-control">
+                                            <input {% if not user.has_usable_password %}disabled{% endif %} type="password" class="form-control" name="old_password">
+                                            {{password_form.old_password.errors}}
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">New Password</label>
-                                            <input type="password" class="form-control">
+                                            <input type="password" {% if not user.has_usable_password %}disabled{% endif %}  class="form-control" name="new_password1">
+                                            {{password_form.new_password1.errors}}
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Confirm Password</label>
-                                            <input type="password" class="form-control">
+                                            <input type="password" {% if not user.has_usable_password %}disabled{% endif %}  class="form-control" name="new_password2">
+                                            {{password_form.new_password1.errors}}
                                         </div>
                                     </div>
                                 </div>
@@ -355,8 +360,8 @@
                             </div>
                         </div>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="defaultAddress" name="is_default" 
-                            {% if  has_default_address %}disabled{% endif %}>
+                            <input class="form-check-input" type="checkbox" id="defaultAddress" name="is_default"
+                             {% if has_default_address %}disabled{% endif %}>
 
                             <label class="form-check-label" for="defaultAddress">
                                 Set as default address
@@ -475,7 +480,7 @@
             if (action === 'edit') {
                 addressModalTitle.textContent = 'Edit Address';
                 addressModalSaveBtn.textContent = 'Update Address';
-                
+
                 // Update Form Action
                 addressForm.action = button.getAttribute('data-url');
 
@@ -491,9 +496,9 @@
                 addressForm.querySelector('[name="postal_code"]').value = button.getAttribute('data-postal-code');
                 addressForm.querySelector('[name="phone_number"]').value = button.getAttribute('data-phone-number');
                 addressForm.querySelector('[name="secondary_phone_number"]').value = button.getAttribute('data-secondary-phone-number');
-                
+
                 const isDefault = button.getAttribute('data-is-default') === 'true';
-                
+
                 if (defaultCheckbox) {
                     defaultCheckbox.checked = isDefault;
                     defaultCheckbox.disabled = false;
@@ -502,7 +507,7 @@
             } else {
                 addressModalTitle.textContent = 'Add New Address';
                 addressModalSaveBtn.textContent = 'Save Address';
-                
+
                 // Reset Form Action
                 addressForm.action = defaultAddAction;
 
@@ -512,10 +517,10 @@
                     // Reset valid/invalid classes from custom validation
                     const inputs = addressForm.querySelectorAll('input');
                     inputs.forEach(input => input.classList.remove('is-valid', 'is-invalid'));
-                    
+
                     if (defaultCheckbox) {
-                         defaultCheckbox.checked = false;
-                         defaultCheckbox.disabled = hasDefaultAddress;
+                        defaultCheckbox.checked = false;
+                        defaultCheckbox.disabled = hasDefaultAddress;
                     }
                 }
             }
@@ -529,10 +534,10 @@
                 addressForm.classList.add('was-validated');
                 return;
             }
-            
+
             // AJAX Submission
             const formData = new FormData(addressForm);
-            
+
             // Disable button to prevent double submit
             const originalBtnText = addressModalSaveBtn.textContent;
             addressModalSaveBtn.disabled = true;
@@ -545,35 +550,35 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => {
-                if (response.redirected) {
-                    // Success! Reload to show new data
-                    window.location.reload();
-                } else {
-                    // Validation errors or other response
-                    return response.text().then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const newForm = doc.getElementById('addressForm');
-                        if (newForm) {
-                            addressForm.parentNode.replaceChild(newForm, addressForm);
-                            initializeAddressFormListeners(); // Re-attach listeners
-                        } else {
-                            console.error('Could not find addressForm in response');
-                            // Fallback: reload if we can't parse the error form, or show a generic error
-                            // window.location.reload(); 
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            })
-            .finally(() => {
-                addressModalSaveBtn.disabled = false;
-                addressModalSaveBtn.textContent = originalBtnText;
-            });
+                .then(response => {
+                    if (response.redirected) {
+                        // Success! Reload to show new data
+                        window.location.reload();
+                    } else {
+                        // Validation errors or other response
+                        return response.text().then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const newForm = doc.getElementById('addressForm');
+                            if (newForm) {
+                                addressForm.parentNode.replaceChild(newForm, addressForm);
+                                initializeAddressFormListeners(); // Re-attach listeners
+                            } else {
+                                console.error('Could not find addressForm in response');
+                                // Fallback: reload if we can't parse the error form, or show a generic error
+                                // window.location.reload(); 
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                })
+                .finally(() => {
+                    addressModalSaveBtn.disabled = false;
+                    addressModalSaveBtn.textContent = originalBtnText;
+                });
         });
 
         // Encapsulate listeners to re-apply them after AJAX update
@@ -683,6 +688,30 @@
                 }
             }
         }
+
+        // Tab Persistence Logic
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Activate tab based on hash on page load
+            var hash = window.location.hash;
+            if (hash) {
+                var triggerEl = document.querySelector('.list-group-item[href="' + hash + '"]');
+                if (triggerEl) {
+                    var tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
+                }
+            }
+
+            // 2. Update hash when tab changes
+            var tabLinks = document.querySelectorAll('.list-group-item[data-bs-toggle="list"]');
+            tabLinks.forEach(function (tabLink) {
+                tabLink.addEventListener('shown.bs.tab', function (event) {
+                    var href = event.target.getAttribute('href');
+                    if (href) {
+                        history.replaceState(null, null, href);
+                    }
+                });
+            });
+        });
     </script>
 </body>
 

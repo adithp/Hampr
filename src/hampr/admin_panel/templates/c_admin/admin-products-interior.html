@@ -421,8 +421,8 @@
                                                 </a>
 
                                                 <!-- DELETE VARIANT -->
-                                                <form action="{% url 'cadmin:product_varient_delete' v.varient.id %}"
-                                                    method="POST" class="d-inline">
+                                                <form 
+                                                action="{% url 'cadmin:product_varient_delete' v.varient.id %}"?page={{page_num}} method="POST" class="d-inline">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                                         <i class="fas fa-trash"></i>

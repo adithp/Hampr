@@ -224,9 +224,8 @@
                 <div class="col-md-6 col-lg-4">
                     <div
                         class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-0">
-                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
-                            <img src="https://placehold.co/600x400/png?text=Birthdays" class="img-fluid w-100"
-                                alt="Birthdays">
+                        <div class="category-img-wrapper custom-parallax" data-speed="0.6">
+                            <img src="{% static 'core/images/11.jpg' %}" class="img-fluid w-100" alt="Birthdays">
                         </div>
                         <div
                             class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
@@ -238,9 +237,8 @@
                 <div class="col-md-6 col-lg-4">
                     <div
                         class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-100">
-                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
-                            <img src="https://placehold.co/600x400/png?text=Weddings" class="img-fluid w-100"
-                                alt="Weddings">
+                        <div class="category-img-wrapper custom-parallax" data-speed="0.6">
+                            <img src="{% static 'core/images/12.jpg' %}" class="img-fluid w-100" alt="Weddings">
                         </div>
                         <div
                             class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
@@ -252,9 +250,8 @@
                 <div class="col-md-6 col-lg-4">
                     <div
                         class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-200">
-                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
-                            <img src="https://placehold.co/600x400/png?text=Corporate" class="img-fluid w-100"
-                                alt="Corporate">
+                        <div class="category-img-wrapper custom-parallax" data-speed="0.6">
+                            <img src="{% static 'core/images/13.jpg' %}" class="img-fluid w-100" alt="Corporate">
                         </div>
                         <div
                             class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
@@ -266,9 +263,8 @@
                 <div class="col-md-6 col-lg-4">
                     <div
                         class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-0">
-                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
-                            <img src="https://placehold.co/600x400/png?text=Festivals" class="img-fluid w-100"
-                                alt="Festivals">
+                        <div class="category-img-wrapper custom-parallax" data-speed="0.6">
+                            <img src="{% static 'core/images/14.jpg' %}" class="img-fluid w-100" alt="Festivals">
                         </div>
                         <div
                             class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
@@ -280,9 +276,8 @@
                 <div class="col-md-6 col-lg-4">
                     <div
                         class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-100">
-                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
-                            <img src="https://placehold.co/600x400/png?text=Romantic" class="img-fluid w-100"
-                                alt="Romantic">
+                        <div class="category-img-wrapper custom-parallax" data-speed="0.6">
+                            <img src="{% static 'core/images/15.jpg' %}" class="img-fluid w-100" alt="Romantic">
                         </div>
                         <div
                             class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
@@ -294,9 +289,8 @@
                 <div class="col-md-6 col-lg-4">
                     <div
                         class="category-display-card position-relative overflow-hidden rounded-4 shadow-sm animate-on-scroll fade-in delay-200">
-                        <div class="category-img-wrapper parallax-element" data-speed="0.6">
-                            <img src="https://placehold.co/600x400/png?text=Wellness" class="img-fluid w-100"
-                                alt="Wellness">
+                        <div class="category-img-wrapper custom-parallax" data-speed="0.6">
+                            <img src="{% static 'core/images/16.jpg' %}" class="img-fluid w-100" alt="Wellness">
                         </div>
                         <div
                             class="category-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
@@ -473,7 +467,7 @@
     <!-- Section 8: CTA Section -->
     <section class="py-5 position-relative overflow-hidden" style="height: 600px; display: flex; align-items: center;">
         <div class="parallax-bg position-absolute top-0 start-0 w-100 h-100"
-            style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://placehold.co/1920x1080/png?text=Premium+Gift'); background-size: cover; background-position: center; transform: scale(1.1);">
+            style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{% static 'core/images/20.png' %}'); background-size: cover; background-position: center; transform: scale(1.1);">
         </div>
 
         <div class="container text-center position-relative z-1">
@@ -539,6 +533,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="{% static 'accounts/js/main.js' %}"></script>
+    <style>
+        .category-display-card .category-img-wrapper.custom-parallax {
+            height: 140%;
+            top: -20%;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.addEventListener('scroll', () => {
+                const windowHeight = window.innerHeight;
+                document.querySelectorAll('.custom-parallax').forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top < windowHeight && rect.bottom > 0) {
+                        const speed = el.getAttribute('data-speed') || 0.5;
+                        const centerOffset = (windowHeight / 2) - (rect.top + rect.height / 2);
+                        const yPos = centerOffset * speed * 0.2;
+                        const img = el.querySelector('img');
+                        if (img) {
+                            img.style.transform = `translateY(${yPos}px)`;
+                        } else {
+                            el.style.transform = `translateY(${yPos}px)`;
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
