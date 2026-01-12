@@ -59,7 +59,8 @@ class CheckPromoCode(LoginRequiredMixin,OnlyForUsers,View):
                     "success": False,
                     "message": "Promo value exceeds cart total"
                 })
-                preview_total = grand_total-discount_amount        
+                
+                preview_total = grand_total-codeobj.discount_value        
                 return JsonResponse({
                 "success": True,
                 "message": "Promo code applied successfully",

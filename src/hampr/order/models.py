@@ -4,6 +4,8 @@ from django.conf import settings
 
 from django.core.validators import MinValueValidator,MaxValueValidator
 from catalog.models import ProductVariant,HamperBox,Decoration
+from coupons.models import PromoCode
+import time
 
 
 class ADDRESS_TYPE(models.TextChoices):
@@ -23,7 +25,6 @@ class OrderAddress(models.Model):
     id = models.UUIDField(default=uuid.uuid4,primary_key=True,editable=False)
     address_type = models.CharField(max_length=1,choices=ADDRESS_TYPE.choices)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_default = models.BooleanField(default=False)
     city = models.CharField(max_length=50)
     country = models.CharField(max_length=8,choices=COUNTRY.choices)
     landmark = models.CharField(max_length=100,null=True,blank=True)
@@ -46,12 +47,12 @@ class Order(models.Model):
         ('DELIVERED', 'Delivered'),
         ('CANCELLED', 'Cancelled'),
     )
-
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False
+    PAYMENT_METHOD_CHOICES = (
+        ('COD', 'Cash on Delivery'),
+        ('ONLINE', 'Online Payment'),
     )
+
+    
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -59,10 +60,9 @@ class Order(models.Model):
     )
     order_number = models.CharField(
         max_length=50,
-        unique=True
-    )
-    recipient_name = models.CharField(
-        max_length=255
+        unique=True,
+        null=True,
+        blank=True
     )
     delivery_address = models.ForeignKey(
         OrderAddress,on_delete=models.CASCADE
@@ -72,15 +72,22 @@ class Order(models.Model):
         blank=True,
         null=True
     )
-    promo_code = models.UUIDField(
+    promo_code = models.ForeignKey(
+        PromoCode,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.SET_NULL
     )
     box_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0
     )
+    payment_method = models.CharField(
+        max_length=10,
+        choices=PAYMENT_METHOD_CHOICES
+    )
+    is_cod = models.BooleanField(default=False)
     products_total = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -104,7 +111,7 @@ class Order(models.Model):
     shipping_cost = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0
+        default=0,
     )
 
     total_amount = models.DecimalField(
@@ -142,6 +149,13 @@ class Order(models.Model):
     updated_at = models.DateTimeField(
         auto_now=True
     )
+    
+    
+    def order_number_generator(self):
+        timestamp = int(time.time())
+        id = self.id
+        return f"OD{id}{timestamp}"
+        
 
     
     

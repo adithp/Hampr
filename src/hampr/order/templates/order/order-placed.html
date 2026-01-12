@@ -1,0 +1,317 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Placed | HAMPR</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+    <style>
+        /* Page Specific Styles */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 0;
+            /* Account for fixed navbar */
+        }
+
+        .success-card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        .success-header {
+            background: linear-gradient(135deg, #fff 0%, #fcfcfc 100%);
+            padding: 3rem 2rem;
+            position: relative;
+        }
+
+        .checkmark-wrapper {
+            width: 100px;
+            height: 100px;
+            background: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .checkmark-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 1px dashed #D4AF37;
+            border-radius: 50%;
+            animation: spin 10s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .checkmark {
+            width: 50px;
+            height: 50px;
+            stroke-width: 3;
+            stroke: #D4AF37;
+            stroke-miterlimit: 10;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.2s forwards;
+        }
+
+        .checkmark-path {
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .order-details-box {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .order-details-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 4px;
+            background: #D4AF37;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .bg-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#D4AF37 0.5px, transparent 0.5px), radial-gradient(#D4AF37 0.5px, #fafafa 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            opacity: 0.05;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+    <main class="position-relative">
+        <div class="bg-pattern"></div>
+        <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+        <div class="container position-relative z-1">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="success-card text-center" data-aos="fade-up" data-aos-duration="1000">
+                        <div class="success-header">
+                            <div class="checkmark-wrapper">
+                                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                    <path class="checkmark-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                                </svg>
+                            </div>
+
+                            <h1 class="display-5 fw-bold mb-3 font-heading">Order Placed!</h1>
+                            <p class="text-muted lead mb-0">Thank you for choosing HAMPR.</p>
+                        </div>
+
+                        <div class="p-4 p-md-5 pt-0">
+                            <p class="text-muted mb-4">Your order has been successfully placed and is being processed.
+                                We've sent a confirmation email to your inbox.</p>
+
+                            <div class="order-details-box text-start">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small text-uppercase letter-spacing-1">Order Number</span>
+                                    <span
+                                        class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Confirmed</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fs-4 fw-bold font-monospace text-dark">#{{
+                                        order_id|default:"ORD-8592-XJ" }}</span>
+                                    <button class="btn btn-link text-gold p-0 text-decoration-none small"
+                                        onclick="navigator.clipboard.writeText('{{ order_id|default:'ORD-8592-XJ' }}')">
+                                        <i class="far fa-copy me-1"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-column gap-3">
+                                <a href="" class="btn btn-dark btn-lg rounded-pill w-100 py-3 shadow-sm hover-scale-up">
+                                    Track Your Order
+                                </a>
+
+                                <a href="../index.html"
+                                    class="btn btn-outline-dark btn-lg rounded-pill w-100 py-3 hover-scale-up">
+                                    Continue Shopping
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark pt-5 pb-3 mt-auto">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h3 class="text-white mb-4">HAM<span class="text-gold">PR.</span></h3>
+                    <p class="text-white-50">Premium gift hampers for all occasions. Curated with love and care.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Shop</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">All
+                                Products</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">New
+                                Arrivals</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">Best
+                                Sellers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Company</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">About
+                                Us</a></li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">Contact</a></li>
+                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none hover-text-gold">Privacy
+                                Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="text-white mb-3">Newsletter</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Your email">
+                        <button class="btn btn-primary hover-ripple">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center text-white-50">
+                <small>&copy; 2023 HAMPR. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            once: true,
+            offset: 50,
+            duration: 800,
+        });
+
+        // Trigger confetti on load
+        window.addEventListener('load', () => {
+            const canvas = document.getElementById('confetti-canvas');
+            const myConfetti = confetti.create(canvas, {
+                resize: true,
+                useWorker: true
+            });
+
+            // Fire confetti with gold/premium colors
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                // launch a few confetti from the left edge
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#D4AF37', '#000000', '#ffffff']
+                });
+                // and launch a few from the right edge
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#D4AF37', '#000000', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        });
+    </script>
+</body>
+
+</html>
