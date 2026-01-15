@@ -28,18 +28,13 @@
 <body>
 
     <!-- Header -->
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold fs-3" href="../index.html">
-                <span class="text-gold">HAM</span><span class="text-dark">PR.</span>
-            </a>
-        </div>
-    </nav>
+    {% include 'catalog/nav-bar.html' %}
 
     <!-- Checkout Section -->
     <section class="py-5" style="margin-top: 80px;">
         <div class="container">
-            <div class="row g-5">
+            <form action="{% url 'order:order' %}" method="POST" class="row g-5">
+                {% csrf_token %}
                 <!-- Left Column: Address Selection -->
                 <div class="col-lg-7">
                     <div class="card border-0 shadow-sm p-4 mb-4">
@@ -47,47 +42,101 @@
 
                         <!-- Address List -->
                         <div class="list-group mb-4">
-                            <!-- Address Item 1 -->
                             {% for item in address %}
                             <label
-                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 cursor-pointer address-item">
+                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 address-item {% if item.available %}cursor-pointer{% else %}bg-light opacity-75 border-danger{% endif %}">
                                 <div class="form-check d-flex align-items-center">
                                     <input class="form-check-input" type="radio" name="deliveryAddress" id="{{item.id}}"
-                                     {% if item.is_default %} checked{% endif %}>
+                                        {% if item.available and item.is_default %} checked{% endif %}
+                                        value="{{item.id}}" {% if not item.available %}disabled{% endif %}>
                                 </div>
                                 <div class="flex-grow-1">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="fw-bold mb-0">{% if item.address_type == 'H' %}Home{% else %}Office{% endif %}</h6>
-                                        {% if item.is_default %}
+                                        <h6 class="fw-bold mb-0 {% if not item.available %}text-danger{% endif %}">
+                                            {% if item.address_type == 'H' %}Home{% else %}Office{% endif %}
+                                            {% if not item.available %}<span class="ms-2 badge bg-danger text-white">Not
+                                                Serviceable</span>{% endif %}
+                                        </h6>
+                                        {% if item.available and item.is_default %}
                                         <span class="badge bg-gold text-dark">Default</span>
                                         {% endif %}
                                     </div>
-                                    <p class="text-muted mb-0 small">{{item.recipient_name}}<br>{{item.street_address}},{{item.apartment}} <br>{{item.city}},
-                                        {{item.state}}, {{item.postal_code}}<br>+91 {{item.phone_number}}</p>
+                                    <p class="text-muted mb-0 small">
+                                        {{item.full_address}}</p>
+                                    <p class="text-muted mb-0 small">
+                                        {{item.city}}, {{item.state}} -
+                                        {{item.postal_code}}</p>
+                                    <p class="text-muted mb-0 small">Phone:
+                                        {{item.phone_number}}</p>
+
+                                    {% if item.available %}
+                                    <p class="text-success mb-0 small mt-2">
+                                        <i class="fas fa-truck me-1"></i> Delivery in {{item.expected_data}} Days
+                                    </p>
+                                    {% else %}
+                                    <p class="text-danger mb-0 small mt-2">
+                                        <i class="fas fa-times-circle me-1"></i> Delivery not available for this pincode
+                                    </p>
+                                    {% endif %}
                                 </div>
                             </label>
                             {% endfor %}
 
-                            <!-- Address Item 2 -->
-                            {% comment %} <label
-                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 cursor-pointer address-item">
+                            <small id="addressError" class="text-danger d-none">
+                                Please select a delivery address
+                            </small>
+
+                            {% if not address %}
+                            <p class="text-muted small mb-3">
+                                Please add an address to continue with your order
+                            </p>
+                            {% endif %}
+                            <a href="{% url 'accounts:user_profile' %}" class="btn btn-dark px-4">
+                                <i class="fas fa-plus me-2"></i>Add Address
+                            </a>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="card border-0 shadow-sm p-4 mb-4">
+                        <h4 class="fw-bold mb-4">Select Payment Method</h4>
+                        <div class="list-group">
+                            <label
+                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 cursor-pointer">
                                 <div class="form-check d-flex align-items-center">
-                                    <input class="form-check-input" type="radio" name="deliveryAddress" id="address2">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCOD"
+                                        value="COD">
                                 </div>
                                 <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="fw-bold mb-0">Office</h6>
-                                    </div>
-                                    <p class="text-muted mb-0 small">John Doe<br>5678 Business Blvd, Suite 200<br>New
-                                        York, NY 10002<br>+1 987 654 3210</p>
+                                    <h6 class="fw-bold mb-0">Cash on Delivery</h6>
+                                    <p class="text-muted mb-0 small">Pay when your order arrives.</p>
                                 </div>
-                            </label> {% endcomment %}
+                            </label>
+                            <label
+                                class="list-group-item d-flex gap-3 border shadow-sm mb-3 rounded p-3 cursor-pointer">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentOnline"
+                                        value="ONLINE" checked>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-0">Online Payment</h6>
+                                    <p class="text-muted mb-0 small">Pay securely with Credit/Debit Card, UPI, or
+                                        Netbanking.</p>
+                                </div>
+                            </label>
                         </div>
+                    </div>
 
-                        <!-- Add New Address Button -->
-                        <a href="{% url 'accounts:user_profile' %}" class="btn btn-outline-dark w-100 py-2 border-dashed">
-                            <i class="fas fa-plus me-2"></i>Add New Address
-                        </a>
+                    <!-- Gift Message -->
+                    <div class="card border-0 shadow-sm p-4 mb-4">
+                        <h4 class="fw-bold mb-4">Gift Message</h4>
+                        <div class="mb-3">
+                            <label for="giftMessage" class="form-label text-muted small">Add a personal message to your
+                                order (optional)</label>
+                            <textarea class="form-control" id="giftMessage" name="gift_message" rows="3"
+                                placeholder="Write your message here..."></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -112,36 +161,29 @@
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3 text-gold">2. Products</h6>
                             <div class="bg-white p-3 rounded shadow-sm">
-                                    {% for item in products %}
-                                    <div class="d-flex align-items-center gap-3 mb-3">
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-0 fw-bold">{{item.product_varient.product.name}} ({{item.product_varient.color.name}}{{item.product_varient.size.name}})</h6>
-                                            <small class="text-muted">Qty: {{item.quantity}}</small>
-                                        </div>
-                                        <span class="fw-bold">₹{{item.total_paroduct}}</span>
-                                    </div>
-                                    {% endfor %}
-                                {% comment %} <div class="d-flex align-items-center gap-3">
+                                {% for item in products %}
+                                <div class="d-flex align-items-center gap-3 mb-3">
                                     <div class="flex-grow-1">
-                                        <h6 class="mb-0 fw-bold">Sweet Treats</h6>
-                                        <small class="text-muted">Qty: 2</small>
+                                        <h6 class="mb-0 fw-bold">{{item.product_varient.product.name}}
+                                            ({{item.product_varient.color.name}}{% if item.product_varient.size.name %},
+                                            {{item.product_varient.size.name}}{% endif %})</h6>
+                                        <small class="text-muted">Qty: {{item.quantity}}</small>
                                     </div>
-                                    <span class="fw-bold">$170.00</span>
-                                </div> {% endcomment %}
+                                    <span class="fw-bold">₹{{item.total_paroduct}}</span>
+                                </div>
+                                {% endfor %}
                             </div>
                         </div>
 
                         <!-- 3. Decorations -->
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3 text-gold">3. Decorations</h6>
-                            
                             <div class="bg-white p-3 rounded shadow-sm">
                                 {% for item in decoration %}
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-0 fw-bold">{{item.decoration.name}} ({{item.position}})</h6>
-                                        
-                                        <small  class="text-muted">Qty: {{item.quantity}}</small>
+                                        <small class="text-muted">Qty: {{item.quantity}}</small>
                                     </div>
                                     <span class="fw-bold">₹{% widthratio item.decoration.price 1 item.quantity %}</span>
                                 </div>
@@ -160,7 +202,6 @@
                             <span class="text-muted">Products Total</span>
                             <span>₹{{cart.get_products_total}}</span>
                         </div>
-                        
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Decorations Total</span>
                             <span>₹{{cart.get_decoration_total}}</span>
@@ -170,36 +211,27 @@
                             <span class="text-success fw-bold">Free</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 d-none" id="discountRow">
-    <span class="text-muted">Promo Discount</span>
-    <span class="text-danger fw-bold">- ₹<span id="discountAmount">0</span></span>
-</div>
-
+                            <span class="text-muted">Promo Discount</span>
+                            <span class="text-danger fw-bold">- ₹<span id="discountAmount">0</span></span>
+                        </div>
 
                         <!-- Promo Code -->
-                       <div class="input-group mb-2">
-    <input type="text"
-           id="promoInput"
-           class="form-control"
-           placeholder="Enter Promo Code"
-           maxlength="12"
-           autocomplete="off">
-</div>
-<small id="promoMsg"></small>
-
-
+                        <div class="input-group mb-2">
+                            <input type="text" id="promoInput" class="form-control" placeholder="Enter Promo Code"
+                                maxlength="12" autocomplete="off" name="promo">
+                        </div>
+                        <small id="promoMsg"></small>
 
                         <hr class="mb-4">
 
                         <!-- Total -->
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <span class="h5 fw-bold mb-0">Total</span>
-                           <span class="h4 fw-bold text-gold mb-0">
-    ₹<span id="grandTotal"
-          data-original="{{ cart.get_grand_total }}">
-          {{ cart.get_grand_total }}
-    </span>
-</span>
-
+                            <span class="h4 fw-bold text-gold mb-0">
+                                ₹<span id="grandTotal" data-original="{{ cart.get_grand_total }}">
+                                    {{ cart.get_grand_total }}
+                                </span>
+                            </span>
                         </div>
 
                         <!-- Payment Button -->
@@ -208,89 +240,105 @@
                         </button>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </section>
 
     <!-- Scripts -->
-  <script>
-const promoInput = document.getElementById('promoInput');
-const promoMsg = document.getElementById('promoMsg');
-const discountRow = document.getElementById('discountRow');
-const discountAmountEl = document.getElementById('discountAmount');
-const grandTotalEl = document.getElementById('grandTotal');
-const originalTotal = grandTotalEl.dataset.original;
+    <script>
+        const promoInput = document.getElementById('promoInput');
+        const promoMsg = document.getElementById('promoMsg');
+        const discountRow = document.getElementById('discountRow');
+        const discountAmountEl = document.getElementById('discountAmount');
+        const grandTotalEl = document.getElementById('grandTotal');
+        const originalTotal = grandTotalEl.dataset.original;
 
-let debounceTimer = null;
-let promoApplied = false;
+        let debounceTimer = null;
+        let promoApplied = false;
 
-promoInput.addEventListener('input', function () {
-    const code = this.value.trim().toUpperCase();
-    this.value = code; // auto uppercase
+        promoInput.addEventListener('input', function () {
+            const code = this.value.trim().toUpperCase();
+            this.value = code; // auto uppercase
 
-    // Any change after apply → reset immediately
-    if (promoApplied) {
-        resetPromoUI();
-    }
+            // Any change after apply → reset immediately
+            if (promoApplied) {
+                resetPromoUI();
+            }
 
-    promoMsg.textContent = '';
+            promoMsg.textContent = '';
 
-    // Don't validate until user typed at least 3 chars
-    if (code.length < 3) {
-        resetPromoUI();
-        return;
-    }
+            // Don't validate until user typed at least 3 chars
+            if (code.length < 3) {
+                resetPromoUI();
+                return;
+            }
 
-    // Debounce backend call
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        validatePromo(code);
-    }, 500);
-});
+            // Debounce backend call
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                validatePromo(code);
+            }, 500);
+        });
 
-function validatePromo(code) {
-    fetch("{% url 'promo:check_promo_code' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `code=${code}`
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            promoApplied = true;
+        function validatePromo(code) {
+            fetch("{% url 'promo:check_promo_code' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `code=${code}`
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        promoApplied = true;
 
-            promoMsg.textContent = data.message;
-            promoMsg.className = "text-success";
+                        promoMsg.textContent = data.message;
+                        promoMsg.className = "text-success";
 
-            discountAmountEl.innerText = data.discount;
-            discountRow.classList.remove('d-none');
-            grandTotalEl.innerText = data.grand_total;
-        } else {
-            promoApplied = false;
-            promoMsg.textContent = data.message;
-            promoMsg.className = "text-danger";
-            resetPromoUI();
+                        discountAmountEl.innerText = data.discount;
+                        discountRow.classList.remove('d-none');
+                        grandTotalEl.innerText = data.grand_total;
+                    } else {
+                        promoApplied = false;
+                        promoMsg.textContent = data.message;
+                        promoMsg.className = "text-danger";
+                        resetPromoUI();
+                    }
+                })
+                .catch(() => {
+                    promoApplied = false;
+                    promoMsg.textContent = "Something went wrong";
+                    promoMsg.className = "text-danger";
+                    resetPromoUI();
+                });
         }
-    })
-    .catch(() => {
-        promoApplied = false;
-        promoMsg.textContent = "Something went wrong";
-        promoMsg.className = "text-danger";
-        resetPromoUI();
-    });
-}
 
-function resetPromoUI() {
-    discountRow.classList.add('d-none');
-    discountAmountEl.innerText = 0;
-    grandTotalEl.innerText = originalTotal;
-    promoApplied = false;
-}
-</script>
+        function resetPromoUI() {
+            discountRow.classList.add('d-none');
+            discountAmountEl.innerText = 0;
+            grandTotalEl.innerText = originalTotal;
+            promoApplied = false;
+        }
+    </script>
+    <script>
+        document.querySelector("form").addEventListener("submit", function (e) {
+            const addressSelected = document.querySelector(
+                'input[name="deliveryAddress"]:checked'
+            );
 
+            const errorEl = document.getElementById("addressError");
+
+            if (!addressSelected) {
+                e.preventDefault(); // stop form submit
+                errorEl.classList.remove("d-none");
+                errorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            } else {
+                errorEl.classList.add("d-none");
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>

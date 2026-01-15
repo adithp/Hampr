@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'checkout.apps.CheckoutConfig',
     'coupons.apps.CouponsConfig',
     'order.apps.OrderConfig',
-    'payment.apps.PaymentConfig'
+    'payment.apps.PaymentConfig',
+    'courier.apps.CourierConfig'
 ]
 
 
@@ -212,3 +213,11 @@ TINYMCE_DEFAULT_CONFIG = {
     "images_upload_handler": None,
     "file_picker_types": "",
 }
+
+# SHIPROCKET_EMAIL=config('SHIPROCKET_EMAIL')
+
+# SHIPROCKET_PASSWORD = config('SHIPROCKET_PASSWORD')
+
+# EASYSHIP_API_KEY = config('EASYSHIP_API_KEY')
+
+SHIPPO_API_KEY = config('SHIPPO_API_KEY')
