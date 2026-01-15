@@ -8,7 +8,6 @@ def check_availability(request):
     pincode = request.GET.get('pincode')
     result  = check_serviceability(delivery_pincode=pincode)
     return JsonResponse({
-            "success": result[0],
-            "days": result[1],
+            "success": result,
     })
     

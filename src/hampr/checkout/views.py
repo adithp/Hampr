@@ -14,9 +14,9 @@ class CheckoutPageView(LoginRequiredMixin,OnlyForUsers,View):
         address = UserAddress.objects.filter(user=request.user)
         for item in address:
             result = check_serviceability(delivery_pincode=item.postal_code)
-            print(result[0])
-            item.available = result[0]
-            item.expected_data = result[1]
+            
+            item.available = result
+            
             
         print(address)
         if CustomUser.objects.filter(id=request.user.id).exists():

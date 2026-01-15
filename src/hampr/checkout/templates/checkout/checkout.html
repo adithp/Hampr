@@ -33,7 +33,7 @@
     <!-- Checkout Section -->
     <section class="py-5" style="margin-top: 80px;">
         <div class="container">
-            <form action="" method="POST" class="row g-5">
+            <form action="{% url 'order:order' %}" method="POST" class="row g-5">
                 {% csrf_token %}
                 <!-- Left Column: Address Selection -->
                 <div class="col-lg-7">

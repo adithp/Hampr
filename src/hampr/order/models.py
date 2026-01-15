@@ -3,7 +3,7 @@ import uuid
 from django.conf import settings
 
 from django.core.validators import MinValueValidator,MaxValueValidator
-from catalog.models import ProductVariant,HamperBox,Decoration
+from catalog.models import ProductVariant,HamperBox,Decoration,BoxSize
 from coupons.models import PromoCode
 import time
 
@@ -61,6 +61,11 @@ class Order(models.Model):
     order_number = models.CharField(
         max_length=50,
         unique=True,
+        null=True,
+        blank=True
+    )
+    shipment_id = models.CharField(
+        max_length=100,
         null=True,
         blank=True
     )
@@ -224,7 +229,7 @@ class OrderHamper(models.Model):
 
     
     hamper = models.ForeignKey(
-        HamperBox,
+        BoxSize,
         on_delete=models.SET_NULL,
         null=True,
         blank=True
@@ -285,4 +290,9 @@ class OrderDecoration(models.Model):
         max_digits=10,
         decimal_places=2
     )
+    image = models.ImageField(
+    upload_to='order_items/',
+    null=True,
+    blank=True
+)
     

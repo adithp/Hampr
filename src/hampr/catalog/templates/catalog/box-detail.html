@@ -681,7 +681,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            pincodeResult.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Delivery available in ${data.days} days.</span>`;
+                            pincodeResult.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Delivery available.</span>`;
                         } else {
                             pincodeResult.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> Delivery not available for this pincode.</span>';
                         }
