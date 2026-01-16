@@ -553,7 +553,7 @@ class AdminProductVarientAdd(NeverCacheMixin,StaffRequiredMixin,View):
                         response =  self.updating_data(request=request,pending_id=pending_id,color=color,color_form=color_form)
                         return response
                     else:
-                                    
+                        print("Not Valid")         
                         return render(request,'c_admin/admin-products-interior-add-variants.html',{'form':form,'color_form':color_form})
             except Exception as e:
                  print("Error:", e)

@@ -1,16 +1,23 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
-from datetime import timedelta
+from django.http import JsonResponse
+import uuid
 from django.db import transaction
-from django.utils import timezone
+from django.shortcuts import redirect,render
+from django.contrib import messages
+from django.conf import settings
+from django.http import JsonResponse
+import json
 
 
-from order.models import Order,OrderAddress
+from order.models import Order
 from accounts.models import UserAddress
-from coupons.models import PromoCode
-from .services import generate_order_number,create_order_address,build_shiprocket_payload,check_serviceability_with_cod,create_shiprocket_order,create_order_items
+from coupons.models import PromoCode,PromoCodeUsage
+from courier.services import check_serviceability
+from .services import generate_order_number,create_order_items,create_order_address,promo_apply_validation
+from payment.razorpay_client import create_razorpay_order
+from payment.models import Payment,PaymentGatewayLog
 
 
 # Create your views here.
@@ -19,7 +26,9 @@ from .services import generate_order_number,create_order_address,build_shiprocke
 
 class CreateOrderView(LoginRequiredMixin,View):
     def post(self,request,*args, **kwargs):
+        order_obj = None
         data = request.POST
+        print(data)
         user = request.user
         if hasattr(user,'current_cart'):
                 cart = user.current_cart
@@ -27,7 +36,7 @@ class CreateOrderView(LoginRequiredMixin,View):
                 products_total = cart.get_products_total()
                 decorations_total = cart.get_decoration_total()
                 discount_amount = 0
-                work_pomo = None
+                work_promo = None
                 subtotal=cart.get_grand_total()
         else:
             #return the error message
@@ -35,70 +44,133 @@ class CreateOrderView(LoginRequiredMixin,View):
         if data.get('deliveryAddress',''):
             try:
                 address_id = data.get('deliveryAddress','')
-                address_obj = UserAddress.objects.get(id=address_id)
+                address_obj = UserAddress.objects.get(id=address_id, user=request.user)
+        
                 
             except UserAddress.DoesNotExist as e:
                 print(e)
+            is_serviceable = check_serviceability(address_obj.postal_code)
+            if not is_serviceable:
+                messages.error(request, "Address is not deliverable.")
+                return redirect('checkout:checkout_page')
+
             if data.get('paymentMethod') == 'COD':
                 with transaction.atomic():
-                    address = OrderAddress.objects.create(
-                        address_type=address_obj.address_type,
-                        city=address_obj.city,
-                        country=address_obj.country,
-                        landmark=address_obj.landmark,
-                        phone_number=address_obj.phone_number,
-                        secondary_phone_number=address_obj.secondary_phone_number,
-                        postal_code=address_obj.postal_code,
-                        recipient_name=address_obj.recipient_name,
-                        street_address=address_obj.street_address,
-                        apartment=address_obj.apartment,
-                        state=address_obj.state,
-                        user=request.user
-                    )
-                    if data.get('promo',''):
-                        promo = data.get('promo')
-                        if promo:
-                            promo_obj = PromoCode.custom_objects().filter(code=promo).first()
-                            if promo_obj:
-                                if promo_obj.valid_token:
-                                    grand_total = cart.get_grand_total()
-                                    if  promo_obj.minimum_order_amount <= grand_total:
-                                        if promo_obj.discount_type == 'PERCENT':
-                                            discount_amount = (promo_obj.discount_value / 100) * grand_total
-                                            if discount_amount > promo_obj.maximum_discount:
-                                                discount_amount = promo_obj.maximum_discount
-                                            grand_total = grand_total-discount_amount
-                                            work_pomo = promo_obj
-                                        elif promo_obj.discount_type == 'AMOUNT':
-                                            if not grand_total < promo_obj.discount_value: 
-                                                grand_total = grand_total-promo_obj.discount_value
-                                                discount_amount = promo_obj.discount_value 
-                                                work_pomo = promo_obj
-                        
-                    
-                    order_obj = Order(user=request.user,delivery_address=address,gift_message=data.get('gift_message',''),promo_code=work_pomo if work_pomo else None,box_price=cart.box_size.price,products_total =products_total,decorations_total=decorations_total,subtotal=subtotal,discount=discount_amount,total_amount=grand_total,payment_method='COD',is_cod=True)
-                    
+                    address = create_order_address(address_obj,request.user)
+                    if data.get('promo', ''):
+                        result = promo_apply_validation(request,cart,data.get('promo',''))
+                        if not isinstance(result,tuple):
+                            return result
+                        grand_total, discount_amount, work_promo = result
+                    order_obj = Order(user=request.user,delivery_address=address,gift_message=data.get('gift_message',''),promo_code=work_promo if work_promo else None,box_price=cart.box_size.price,products_total =products_total,decorations_total=decorations_total,subtotal=subtotal,discount=discount_amount,total_amount=grand_total,payment_method='COD',is_cod=True,)
                     order_obj.save()
                     order_no = generate_order_number(order_obj.id)
                     order_obj.order_number = order_no
                     order_obj.save()
-                    # token = get_shiprocket_token()
-                    is_serviceable, eta_days  = check_serviceability_with_cod(token,'673328',address.postal_code,order_obj.is_cod)
-                    print(is_serviceable,eta_days)
-                    if not is_serviceable:
-                        return HttpResponse("Address Not Deliverable")
-                    if eta_days:
-                        order_obj.expected_delivery = timezone.now() + timedelta(days=eta_days)
-                        order_obj.save(update_fields=["expected_delivery"])
-                    create_order_items(cart,order_obj)
-                    payload = build_shiprocket_payload(order_obj,address,cart)
-                    # token = get_shiprocket_token()
-                    result = create_shiprocket_order(token, payload)
-                    order_obj.shipment_id = result.get("shipment_id")
-                    order_obj.save(update_fields=["shipment_id"])
-                    cart.delete()
+            elif data.get('paymentMethod') == 'ONLINE':
+                with transaction.atomic():
+                    address = create_order_address(address_obj,request.user)
+                    if data.get('promo', ''):
+                        result = promo_apply_validation(request,cart,data.get('promo',''))
+                        if not isinstance(result,tuple):
+                            return result
+                        grand_total, discount_amount, work_promo = result
+                    order_obj = Order(user=request.user,delivery_address=address,gift_message=data.get('gift_message',''),promo_code=work_promo if work_promo else None,box_price=cart.box_size.price,products_total =products_total,decorations_total=decorations_total,subtotal=subtotal,discount=discount_amount,total_amount=grand_total,payment_method='ONLINE',is_cod=False,)
+                    order_obj.save()
+                    order_no = generate_order_number(order_obj.id)
+                    order_obj.order_number = order_no
+                    order_obj.save()
+                    payment = Payment.objects.create(
+                        user=user,
+                        order=order_obj,
+                        amount=order_obj.total_amount,
+                        payment_method="RAZORPAY",
+                        transaction_id=f"INIT-{uuid.uuid4()}",
+                        status="PENDING"
+                    )
+
+                    rp_order = create_razorpay_order(payment.amount)
+
+                    payment.gateway_response_id = rp_order["id"]
+                    payment.save()
+
                 
+                    PaymentGatewayLog.objects.create(
+                        payment=payment,
+                        gateway_name="RAZORPAY",
+                        request_data={"amount": str(payment.amount)},
+                        response_data=rp_order,
+                        status_code="ORDER_CREATED"
+                    )
+            if order_obj.is_cod == True:
+                create_order_items(cart,order_obj)
+                cart.delete()
+                order_obj.status = "CONFIRMED"
+                if order_obj.promo_code:
+                    promousage_obj =PromoCodeUsage(discount_given=discount_amount,promo_code=work_promo,user=request.user,order=order_obj)
+                    promousage_obj.save()
+                    work_promo.used_count = work_promo.used_count + 1
+                    work_promo.save()
+                order_obj.save()
+                return redirect('order:order_succsess',order_id=order_obj.order_number)
+            elif order_obj.is_cod == False:
+                return JsonResponse({
+                            "payment_type": "RAZORPAY",
+                            "order_id": rp_order["id"],
+                            "amount": rp_order["amount"],
+                            "key": settings.RAZORPAY_KEY_ID
+                        })
                 
                 
         else:
             print('must add delivery address')
+            
+            
+class OrderSuccsessView(LoginRequiredMixin,View):
+    def get(self,request,order_id,*args, **kwargs):
+        user = request.user 
+        try:
+            order = Order.objects.get(user=user,order_number=order_id,status='CONFIRMED')
+        except Order.DoesNotExist as e:
+            print(e)
+            return redirect('core:landing_page')
+        return render(request,'order/order-placed.html',{'order_id':order.order_number})
+        
+    
+    
+    
+
+
+def razorpay_verify(request):
+    data = json.loads(request.body)
+
+    payment = Payment.objects.get(
+        gateway_response_id=data["razorpay_order_id"]
+    )
+
+    # mark payment success
+    payment.transaction_id = data["razorpay_payment_id"]
+    payment.status = "SUCCESS"
+    payment.save()
+
+    order = payment.order
+    if order.promo_code:
+        PromoCodeUsage.objects.create(
+            discount_given=order.discount,
+            promo_code=order.promo_code,
+            user=order.user,
+            order=order
+        )
+        order.promo_code.used_count += 1
+        order.promo_code.save()
+    create_order_items(order.user.current_cart, order)
+    order.user.current_cart.delete()
+
+    order.status = "CONFIRMED"
+    order.save()
+    
+
+    return JsonResponse({
+        "status": "success",
+        "order_number": order.order_number
+    })

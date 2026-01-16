@@ -5,6 +5,7 @@ from django.db.models import F
 
 
 from accounts.models import CustomUser
+# from order.models import Order
 # Create your models here.
 
 
@@ -90,23 +91,30 @@ class PromoCode(models.Model):
         
     
     
-# class PromoCodeUsage(models.Model):
-#     id = models.UUIDField(
-#         default=uuid.uuid4,
-#         primary_key=True,
-#         editable=False
-#         )
-#     discount_given = models.DecimalField(
-#         max_digits=10,
-#         decimal_places=2
-#     )
-#     promo_code = models.ForeignKey(
-#         PromoCode,on_delete=models.CASCADE
-#     )
-#     used_at = models.DateTimeField(
-#         auto_now=True
-#     )
-#     user = models.ForeignKey(
-#         CustomUser,on_delete=models.SET_NULL
-#     )
-#     order = models.ForeignKey()
+class PromoCodeUsage(models.Model):
+    id = models.UUIDField(
+        default=uuid.uuid4,
+        primary_key=True,
+        editable=False
+        )
+    discount_given = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+    promo_code = models.ForeignKey(
+        PromoCode,on_delete=models.CASCADE
+    )
+    used_at = models.DateTimeField(
+        auto_now=True
+    )
+    user = models.ForeignKey(
+        CustomUser,on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    order = models.ForeignKey(
+        'order.Order',
+        on_delete=models.SET_NULL,
+        null=True,      # ✅ REQUIRED
+        blank=True
+    )

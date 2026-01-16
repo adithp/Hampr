@@ -191,10 +191,9 @@
                                         class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Confirmed</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fs-4 fw-bold font-monospace text-dark">#{{
-                                        order_id|default:"ORD-8592-XJ" }}</span>
+                                    <span class="fs-4 fw-bold font-monospace text-dark">#{{order_id}}</span>
                                     <button class="btn btn-link text-gold p-0 text-decoration-none small"
-                                        onclick="navigator.clipboard.writeText('{{ order_id|default:'ORD-8592-XJ' }}')">
+                                        onclick="navigator.clipboard.writeText('{{order_id}}')">
                                         <i class="far fa-copy me-1"></i> Copy
                                     </button>
                                 </div>
@@ -205,7 +204,7 @@
                                     Track Your Order
                                 </a>
 
-                                <a href="../index.html"
+                                <a href="{% url 'core:landing_page' %}"
                                     class="btn btn-outline-dark btn-lg rounded-pill w-100 py-3 hover-scale-up">
                                     Continue Shopping
                                 </a>

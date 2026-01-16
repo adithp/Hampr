@@ -2,17 +2,14 @@ from django.db import models
 import uuid
 from django.core.exceptions import ValidationError
 
+
 from tinymce.models import HTMLField
-
-
 from autoslug import AutoSlugField
 
 
 class ActiveOnlyManger(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_deleted=False)
-    
-
 
 class BoxMaterial(models.Model):
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
