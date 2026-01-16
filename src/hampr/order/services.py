@@ -1,16 +1,12 @@
 from datetime import datetime
 from order.models import OrderAddress
-from courier.services import build_shiprocket_items
-import requests
-
-
+from django.contrib import messages
+from django.shortcuts import redirect
 
 
 from .models import OrderItem,OrderDecoration,OrderHamper
-
-
-
-
+from coupons.models import PromoCode
+from .exceptions import insufficientStockException
 
 
 def generate_order_number(order_id):
@@ -18,118 +14,64 @@ def generate_order_number(order_id):
     return f"HMP-{date_str}-{order_id:04d}"
 
 
-def check_serviceability_with_cod(token, pickup_pincode, delivery_pincode, is_cod):
-    url = "https://apiv2.shiprocket.in/v1/external/courier/serviceability/"
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+def create_order_address(address_obj,user):
+    address = OrderAddress.objects.create(
+            address_type=address_obj.address_type,
+            city=address_obj.city,
+            country=address_obj.country,
+            landmark=address_obj.landmark,
+            phone_number=address_obj.phone_number,
+            secondary_phone_number=address_obj.secondary_phone_number,
+            postal_code=address_obj.postal_code,
+            recipient_name=address_obj.recipient_name,
+            street_address=address_obj.street_address,
+            apartment=address_obj.apartment,
+            state=address_obj.state,
+            user=user
+                    )
+    return address
 
-    params = {
-        "pickup_postcode": pickup_pincode,
-        "delivery_postcode": delivery_pincode,
-        "cod": 1 if is_cod else 0,
-        "weight": 1.0
-    }
+def promo_apply_validation(request,cart,promo):
+    
+    promo_obj = PromoCode.custom_objects().filter(code=promo).first()
 
-    response = requests.get(url, headers=headers, params=params, timeout=30)
-    response.raise_for_status()
-    result = response.json()
-    data = result.get("data", {})
-    couriers = data.get("available_courier_companies", [])
+    if not promo_obj:
+        messages.error(request, "Invalid promo code.")
+        return redirect('checkout:checkout_page')
 
-   
-    if not couriers:
-        return False, None
+    if not promo_obj.valid_token:
+        messages.error(request, "This promo code is expired or inactive.")
+        return redirect('checkout:checkout_page')
 
-    recommended_id = data.get("recommended_courier_company_id")
+    grand_total = cart.get_grand_total()
+
+    if promo_obj.minimum_order_amount > grand_total:
+        messages.error(
+            request,
+            f"Minimum order amount ₹{promo_obj.minimum_order_amount} required for this promo code."
+        )
+        return redirect('checkout:checkout_page')
 
     
-    courier = next(
-        (c for c in couriers if c.get("courier_company_id") == recommended_id),
-        couriers[0]
-    )
+    if promo_obj.discount_type == 'PERCENT':
+        discount_amount = (promo_obj.discount_value / 100) * grand_total
+        if discount_amount > promo_obj.maximum_discount:
+            discount_amount = promo_obj.maximum_discount
+        grand_total -= discount_amount
+        work_pomo = promo_obj
 
-    eta_days = int(courier.get("estimated_delivery_days", 0))
+    elif promo_obj.discount_type == 'AMOUNT':
+        if grand_total < promo_obj.discount_value:
+            messages.error(request, "Promo discount exceeds order amount.")
+            return redirect('checkout:checkout_page')
 
-    return True, eta_days
+        discount_amount = promo_obj.discount_value
+        grand_total -= discount_amount
+        work_pomo = promo_obj
 
+    return grand_total, discount_amount, promo_obj
 
-
-
-def create_order_address(user_address,user):
-    order_address = OrderAddress.objects.create(
-        address_type=user_address.address_type,
-        city=user_address.city,
-        country=user_address.country,
-        landmark=user_address.landmark,
-        phone_number=user_address.phone_number,
-        secondary_phone_number=user_address.secondary_phone_number,
-        postal_code=user_address.postal_code,
-        recipient_name=user_address.recipient_name,
-        street_address=user_address.street_address,
-        apartment=user_address.apartment,
-        state=user_address.state,
-        user=user,
-    )
-    return order_address
-
-
-def build_shiprocket_payload(order,address,cart):
-    
-    return {
-        "order_id": order.order_number,
-        "order_date": order.created_at.strftime("%Y-%m-%d"),
-        "pickup_location": "warehouse",
-        "billing_customer_name": address.recipient_name,
-        "billing_address": address.street_address,
-        "billing_city": address.city,
-        "billing_pincode": address.postal_code,
-        "billing_state": address.state,
-        "billing_country": "India",
-        "billing_phone": address.phone_number,
-        "billing_email": order.user.email,
-        
-        "shipping_is_billing": True,
-        "order_items": build_shiprocket_items(order),
-        
-        "payment_method": "COD" if order.is_cod else "Prepaid",
-        "sub_total": float(order.total_amount),
-        
-        "length": float(cart.box_size.width),
-        "breadth":  float(cart.box_size.depth),
-        "height": float(cart.box_size.height),
-        "weight": 1.0,
-        
-    }
-    
-    
-
-
-SHIPROCKET_CREATE_ORDER_URL = (
-    "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc"
-)
-
-def create_shiprocket_order(token, payload):
-   
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-    }
-
-    response = requests.post(
-        SHIPROCKET_CREATE_ORDER_URL,
-        json=payload,
-        headers=headers,
-        timeout=30
-    )
-    print("STATUS CODE:", response.status_code)
-    print("RESPONSE TEXT:", response.text)  
-
-   
-    # response.raise_for_status()
-
-    return response.json()
 
 
 def create_order_items(cart,order_obj):
@@ -139,7 +81,12 @@ def create_order_items(cart,order_obj):
         image = product.product_varient.variants_images.filter(is_thumbnail=True).first().image
         if not image:
             image = product.product_varient.variants_images.all().first().image
-
+        if product.product_varient.stock < product.quantity:
+            if product.product_varient.stock == 0:
+                raise insufficientStockException(f"{product.product_varient.product.name} out of stock")
+            else:
+                raise insufficientStockException(f"{product.product_varient.product.name} only stock available {product.product_varient.stock}")
+            
         OrderItem.objects.create(
             order=order_obj,
             product =product.product_varient,
@@ -155,11 +102,17 @@ def create_order_items(cart,order_obj):
             subtotal=product.product_varient.price * product.quantity,
             product_image=image
         )
+        product.product_varient.stock -= product.quantity
+        product.product_varient.save()
     for decoration in decorations:
         image = decoration.decoration.decoartion_image.filter(is_thumbnail=True).first().image
         if not image:
             image = decoration.decoration.decoartion_image.all().first().image
-        
+        if decoration.decoration.stock < decoration.quantity:
+            if decoration.decoration.stock == 0:
+                raise insufficientStockException(f"{decoration.decoration.name} out of stock")
+            else:
+                raise insufficientStockException(f"{decoration.decoration.name} only stock available {decoration.decoration.stock}")
         OrderDecoration.objects.create(
             order=order_obj,
             decoration=decoration.decoration,
@@ -174,6 +127,13 @@ def create_order_items(cart,order_obj):
             subtotal=decoration.quantity * decoration.decoration.price,
             image=image
         )
+        decoration.decoration.stock -= decoration.quantity
+        decoration.decoration.save()
+        
+    if cart.box_size.stock == 0:
+         raise insufficientStockException(f"{cart.box_size.box.name} out of stock")
+    cart.box_size.stock -= 1
+    cart.box_size.save()
     box_image = cart.box.box_images.filter(is_thumbnail=True).first().image
     if not box_image:
         box_image = cart.box.box_images.all().first().image
@@ -191,6 +151,6 @@ def create_order_items(cart,order_obj):
     )
     
         
+
     
-        
-    
+

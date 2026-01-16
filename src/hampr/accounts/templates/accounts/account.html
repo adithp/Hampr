@@ -129,28 +129,30 @@
                         <!-- Orders Tab -->
                         <div class="tab-pane fade show active" id="orders">
                             <h3 class="fw-bold mb-4">My Orders</h3>
+                            {% for item in orders %}
                             <div class="card border-0 shadow-sm mb-3">
-                                <div class="card-body p-4">
+                                
+                                <div class="card-bodorder in ordersy p-4">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
-                                            <h6 class="fw-bold mb-1">Order #HMPR-8829</h6>
-                                            <small class="text-muted">Placed on Nov 28, 2023</small>
+                                            <h6 class="fw-bold mb-1">Order #{{item.order_number}}</h6>
+                                            <small class="text-muted">Placed on {{item.created_at}}</small>
                                         </div>
-                                        <span class="badge bg-gold text-dark">Shipped</span>
+                                        <span class="badge bg-gold text-dark">{{item.status}}</span>
                                     </div>
                                     <div class="d-flex align-items-center gap-3 mb-3">
-                                        <img src="https://placehold.co/60x60/png?text=GD" class="rounded" alt="Product">
-                                        <img src="https://placehold.co/60x60/png?text=ST" class="rounded" alt="Product">
-                                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small"
-                                            style="width: 60px; height: 60px;">+1</div>
+                                        <img src="{{item.order_hampers.all.first.box_image.url}}" width="60" height="60" class="rounded" alt="Product">
+                                        
+                                        
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <a href="tracking.html"
                                             class="btn btn-outline-primary btn-sm rounded-pill px-4">Track Order</a>
-                                        <span class="fw-bold">$292.60</span>
+                                        <span class="fw-bold">₹{{item.total_amount}}</span>
                                     </div>
-                                </div>
+                                </div> 
                             </div>
+                           {% endfor %}
                         </div>
 
                         <!-- Addresses Tab -->

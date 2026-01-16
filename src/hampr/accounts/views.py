@@ -18,8 +18,9 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
 
-from .forms import CustomUserCreationForm,EmailOrUsernameLogin,UserAddressForm,UserProfileEditForm
 
+from .forms import CustomUserCreationForm,EmailOrUsernameLogin,UserAddressForm,UserProfileEditForm
+from order.models import Order
 from core.decorators import otp_pending_verify
 from .models import CustomUser,OTP,UserAddress
 from .utils import otp_send_signup,otp_block_time_verify,password_reset_link,token_checker
@@ -235,9 +236,14 @@ class ProfilePageView(LoginRequiredMixin,OnlyForUsers,View):
         # except CustomUser.DoesNotExist as e:
         #     print(e)
         form = UserAddressForm()
+        orders = Order.objects.filter(user=request.user)
+        for item in orders:
+            item.order_hampers.all().first()
+            
         address = UserAddress.objects.filter(user=request.user)
         has_default_address = UserAddress.objects.filter(user=request.user,is_default=True).exists()
-        return render(request,'accounts/account.html',{'form':form,'address':address,'has_default_address':has_default_address})
+        print(address)
+        return render(request,'accounts/account.html',{'form':form,'address':address,'has_default_address':has_default_address,'orders':orders})
     
     
 class ProfilePictureUpdate(LoginRequiredMixin,View):

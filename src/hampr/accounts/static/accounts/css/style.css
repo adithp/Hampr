@@ -60,16 +60,14 @@ input[type="password"]:focus {
     outline: none !important;
     box-shadow: none !important;
 }
-    
+
 
 h1,
 h2,
 h3,
 h4,
 h5,
-h6 {
-    font-family: var(--font-heading);
-}
+h6 {}
 
 .text-gold {
     color: var(--primary-gold) !important;
