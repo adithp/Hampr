@@ -30,7 +30,7 @@ class CheckoutPageView(LoginRequiredMixin,OnlyForUsers,View):
                     i.total_paroduct = i.product_varient.price * i.quantity
             else:
                 return HttpResponse("First Add Products To Cart")
-        print(address[0].available)
+        
         return render(request,'checkout/checkout.html',{'address':address,'cart':cart,'products':products,'decoration':decoration})
     def post(self,request,*args, **kwargs):
         print(request.POST)

@@ -27,11 +27,11 @@
                     Products
                 </a>
             </li>
-             <li class="nav-item">
+            <li class="nav-item">
                 <a class="nav-link
                    {% if current_url in 'manage_promo_code' %}
                    active{% endif %}" href="{% url 'cadmin:manage_promo_code' %}">
-                   <i class="fas fa-ticket-alt"></i>
+                    <i class="fas fa-ticket-alt"></i>
 
                     PromoCodes
                 </a>
@@ -48,7 +48,8 @@
 
             <!-- Orders -->
             <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link {% if current_url == 'manage_order' or  current_url == 'order_detail' %}active{% endif %}"
+                    href=" {% url 'cadmin:manage_order' %}">
                     <i class="fas fa-shopping-cart"></i>
                     Orders
                 </a>
