@@ -13,7 +13,11 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.db import transaction
 from django.core.paginator import Paginator
+from datetime import timedelta
 from itertools import chain
+import openpyxl
+from django.http import HttpResponse
+from django.utils import timezone
 
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
@@ -21,7 +25,7 @@ from core.mixins import NeverCacheMixin
 from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm,DecorationForm,PromoCodeForm
 from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage,DecorationImages,Decoration
 from coupons.models import PromoCode
-
+from order.models import Order
 
 
 class AdminLoginView(NeverCacheMixin,LoginInRedirectMixin,View):
@@ -1346,3 +1350,78 @@ class AdminManagePromoCode(NeverCacheMixin,StaffRequiredMixin,View):
         total_page_num = range(1,total_pages+1)
     
         return render(request,'c_admin/admin-promocodes.html',{'promo_codes':promocodes,'count':total_count,'working_count':count_working_promo_code,'total_page_num':total_page_num})
+    
+class AdminOrderManage(NeverCacheMixin,StaffRequiredMixin,View):
+    
+    def get(self,request,*args, **kwargs):
+        orders = Order.objects.all()
+        search = request.GET.get('search')
+        date = request.GET.get('date')
+        status = request.GET.get('status')
+        active_filters = []
+        if search:
+            
+            orders = orders.filter(
+            Q(order_number__icontains=search) | 
+            Q(user__username__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(user__first_name__icontains=search) 
+            )
+            active_filters.append(f"Search: {search}")
+        if date and date == 'today':
+            active_filters.append("Date: Today")
+            today = timezone.now().date()
+            orders = orders.filter(created_at__date=today)
+        elif date and date == 'last7':
+            active_filters.append("Date: Last 7 Days")
+            last_week = timezone.now().date() - timedelta(days=7)
+            orders = orders.filter(created_at__date__gte=last_week)
+        elif date and date == 'custom':
+            
+            start = request.GET.get('start')
+            end = request.GET.get('end')
+            active_filters.append(f"Range: {start} to {end}")
+            if start and end:
+                orders = orders.filter(created_at__date__range=[start, end])
+        if status and status == 'unfulfilled':
+            active_filters.append("Status: Unfulfilled")
+            orders.filter(status__in=['PENDING', 'CONFIRMED', 'SHIPPED'])
+        elif status and status == 'completed':
+            active_filters.append("Status: Completed")
+            orders = Order.objects.filter(status='DELIVERED')
+            
+        export = request.GET.get('export','')
+        orders = orders.order_by('-created_at')
+        if export:
+            workbook = openpyxl.Workbook()
+            sheet = workbook.active
+            for i in active_filters:
+                sheet.append([i])
+            sheet.title = "Orders"
+            headers = ['Order ID', 'Customer', 'Email', 'Date', 'Status', 'Total Price']
+            sheet.append(headers)
+            for order in orders:
+                sheet.append([
+                    order.order_number,
+                    order.user.username,
+                    order.user.email,
+                    order.created_at.strftime('%Y-%m-%d %H:%M'),
+                    order.status,
+                    order.total_amount 
+                ])
+            response = HttpResponse(
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                )
+            response['Content-Disposition'] = 'attachment; filename="orders.xlsx"'
+            workbook.save(response)
+            return response
+        return render(request,'c_admin/admin-orders.html',{'orders':orders})
+    
+    
+class AdminOrderDetail(NeverCacheMixin,StaffRequiredMixin,View):
+    def get(self,request,id,*args, **kwargs):
+        try:
+            order = Order.objects.get(order_number=id)
+        except Order.DoesNotExist as e:
+            print(e)
+        return render(request,'c_admin/admin-order-detail.html',{'order':order})

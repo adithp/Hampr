@@ -1,0 +1,663 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Management | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+    <style>
+        /* Dashboard Specific Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .table-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-confirmed {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+
+        .status-shipped {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+
+        .status-delivered {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        /* Bulk Actions Bar */
+        .bulk-actions-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .bulk-actions-bar.active {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    {% include 'c_admin/admin_main_side_nav_bar.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                <div class="mb-3 mb-md-0">
+                    <h2 class="fw-bold mb-1">Orders Management</h2>
+                    <p class="text-muted mb-0">View and manage customer orders</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-dark d-md-none" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn btn-success" onclick="exportData()">
+                        <i class="fas fa-file-export me-2"></i>Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="searchInput" class="form-control border-start-0 ps-0"
+                                    placeholder="Search Order ID, Customer, Email...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="dateFilter">
+                                <option value="all">All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="last7">Last 7 Days</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="statusFilter" id="statusAll" value="all"
+                                    autocomplete="off" checked>
+                                <label class="btn btn-outline-secondary" for="statusAll">All</label>
+
+                                <input type="radio" class="btn-check" name="statusFilter" id="statusUnfulfilled"
+                                    value="unfulfilled" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="statusUnfulfilled">Unfulfilled</label>
+
+                                <input type="radio" class="btn-check" name="statusFilter" id="statusCompleted"
+                                    value="completed" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="statusCompleted">Completed</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Custom Date Range Inputs -->
+                    <div class="row g-3 mt-2 d-none" id="customDateRange">
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">Start Date</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small text-muted">End Date</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" onclick="applyCustomDate()">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="card table-card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3" style="width: 40px;">
+                                        <input class="form-check-input" type="checkbox" id="selectAll"
+                                            onclick="toggleSelectAll()">
+                                    </th>
+                                    <th class="py-3">Order ID</th>
+                                    <th class="py-3">Customer</th>
+                                    <th class="py-3">Date</th>
+                                    <th class="py-3">Total</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Tracking</th>
+                                    <th class="py-3 text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td class="ps-4"><input class="form-check-input order-checkbox" type="checkbox"
+                                            onclick="updateBulkBar()"></td>
+                                    <td class="fw-bold">#{{order.order_number}}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-2 d-flex align-items-center justify-content-center"
+                                                style="width: 35px; height: 35px;">
+
+                                                {% if order.user.profile_picture %}
+                                                <img src="{{order.user.profile_picture.url}}" width="35px" height="35px" style="overflow: hidden;border-radius: 50%;object-fit: cover;" alt="">
+                                                {% else %}
+                                                <i class="fas fa-user text-muted"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{order.user.first_name}} {{order.user.last_name}}</div>
+                                                <div class="small text-muted">{{order.user.email}}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td>₹{{order.total_amount}}</td>
+                                    {% if order.status == "PENDING" %}
+                                    <td><span class="status-badge status-pending">Pending</span></td>
+                                    {% elif order.status == 'CONFIRMED' %}
+                                    <td><span class="status-badge status-confirmed">Confirmed</span></td>
+                                    {% elif order.status == 'SHIPPED' %}
+                                    <td><span class="status-badge status-shipped">Shipped</span></td>
+                                    {% elif order.status == 'DELIVERED' %}
+                                    <td><span class="status-badge status-delivered">Delivered</span></td>
+                                    {% elif order.status == 'CANCELLED'  %}
+                                    <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                                    {% endif %}
+
+
+                                    <td><span class="text-muted small">--</span></td>
+                                    <td class="text-end pe-4">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-light" type="button"
+                                                data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{% url 'cadmin:order_detail' order.order_number %}"><i
+                                                            class="fas fa-eye me-2 text-primary"></i> View Details</a>
+                                                </li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="openStatusModal('#{{order.order_number}}', '{{order.status}}')"><i
+                                                            class="fas fa-edit me-2 text-warning"></i> Update Status</a>
+                                                </li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="openTrackingModal('#ORD-7829')"><i
+                                                            class="fas fa-truck me-2 text-info"></i> Add Tracking</a>
+                                                </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item" href="#" onclick="printDoc('Invoice')"><i
+                                                            class="fas fa-file-invoice me-2"></i> Print Invoice</a></li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="printDoc('Packing Slip')"><i
+                                                            class="fas fa-box-open me-2"></i> Print Packing Slip</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 py-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-end mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#"
+                                    onclick="changePage(1); return false;">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#"
+                                    onclick="changePage(2); return false;">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#"
+                                    onclick="changePage(3); return false;">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#" onclick="changePage(2); return false;">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+        <span class="fw-bold"><span id="selectedCount">0</span> Selected</span>
+        <div class="vr bg-secondary opacity-50"></div>
+        <button class="btn btn-sm btn-outline-light" onclick="bulkUpdateStatus()">Update Status</button>
+        <button class="btn btn-sm btn-outline-light" onclick="bulkPrint()">Print Invoices</button>
+        <button class="btn btn-sm btn-danger ms-2" onclick="bulkCancel()">Cancel Orders</button>
+    </div>
+
+    <!-- Edit Status Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">Update Order Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="statusForm">
+                        <div class="mb-3">
+                            <label for="orderIdDisplay" class="form-label">Order ID</label>
+                            <input type="text" class="form-control" id="orderIdDisplay" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="statusSelect" class="form-label">New Status</label>
+                            <select class="form-select" id="statusSelect">
+                                <option value="PENDING">Pending</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="SHIPPED">Shipped</option>
+                                <option value="DELIVERED">Delivered</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                            <div id="statusHelp" class="form-text text-danger d-none">You cannot revert to a previous
+                                status.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveStatus()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Modal -->
+    <div class="modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tracking Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="trackingForm">
+                        <input type="hidden" id="trackingOrderId">
+                        <div class="mb-3">
+                            <label class="form-label">Courier Service</label>
+                            <select class="form-select">
+                                <option>FedEx</option>
+                                <option>UPS</option>
+                                <option>DHL</option>
+                                <option>USPS</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tracking Number</label>
+                            <input type="text" class="form-control" placeholder="e.g. 1Z999AA10123456784">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTracking()">Save Tracking</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+        const trackingModal = new bootstrap.Modal(document.getElementById('trackingModal'));
+        let currentOrderId = null;
+
+        // Status Logic
+        const statusOrder = {
+            'PENDING': 0,
+            'CONFIRMED': 1,
+            'SHIPPED': 2,
+            'DELIVERED': 3,
+            'CANCELLED': 4
+        };
+
+        function openStatusModal(orderId, currentStatus) {
+            currentOrderId = orderId;
+            document.getElementById('orderIdDisplay').value = orderId;
+            const select = document.getElementById('statusSelect');
+            select.value = currentStatus;
+
+            const currentLevel = statusOrder[currentStatus];
+            const options = select.options;
+            const helpText = document.getElementById('statusHelp');
+            helpText.classList.add('d-none');
+
+            for (let i = 0; i < options.length; i++) {
+                const optionValue = options[i].value;
+                const optionLevel = statusOrder[optionValue];
+                options[i].disabled = false;
+
+                if (currentStatus === 'CANCELLED' || currentStatus === 'DELIVERED') {
+                    options[i].disabled = true;
+                    if (optionValue === currentStatus) options[i].disabled = false;
+                    continue;
+                }
+
+                if (optionLevel < currentLevel) {
+                    options[i].disabled = true;
+                }
+
+                if (optionValue === 'CANCELLED') {
+                    options[i].disabled = false;
+                }
+            }
+            statusModal.show();
+        }
+
+        function saveStatus() {
+            const newStatus = document.getElementById('statusSelect').value;
+            alert(`Status for ${currentOrderId} updated to ${newStatus}`);
+            statusModal.hide();
+        }
+
+        // Tracking Logic
+        function openTrackingModal(orderId) {
+            document.getElementById('trackingOrderId').value = orderId;
+            trackingModal.show();
+        }
+
+        function saveTracking() {
+            alert("Tracking information saved!");
+            trackingModal.hide();
+        }
+
+        // Print Logic
+        function printDoc(type) {
+            alert(`Generating ${type}...`);
+        }
+
+        function exportData() {
+            const params = new URLSearchParams(window.location.search);
+            params.set('export', 'true');
+            window.location.href = `${window.location.pathname}?${params.toString()}`;
+        }
+
+        // Bulk Actions Logic
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkBar();
+        }
+
+        function updateBulkBar() {
+            const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+            const count = checkboxes.length;
+            const bar = document.getElementById('bulkActionsBar');
+            document.getElementById('selectedCount').innerText = count;
+
+            if (count > 0) {
+                bar.classList.add('active');
+            } else {
+                bar.classList.remove('active');
+                document.getElementById('selectAll').checked = false;
+            }
+        }
+
+        function bulkUpdateStatus() {
+            alert(`Updating status for ${document.getElementById('selectedCount').innerText} orders`);
+        }
+
+        function bulkPrint() {
+            alert(`Printing invoices for ${document.getElementById('selectedCount').innerText} orders`);
+        }
+
+        function bulkCancel() {
+            if (confirm("Are you sure you want to cancel these orders?")) {
+                alert("Orders cancelled");
+            }
+        }
+
+        // URL State Management (Django DTL Compatible - Reloads Page)
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromURL();
+
+            // Search: Trigger on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    updateURL();
+                }
+            });
+
+            // Date Filter: Trigger on Change
+            document.getElementById('dateFilter').addEventListener('change', (e) => {
+                const customRange = document.getElementById('customDateRange');
+                if (e.target.value === 'custom') {
+                    customRange.classList.remove('d-none');
+                    // Don't reload yet, wait for user to pick dates and click Apply
+                } else {
+                    customRange.classList.add('d-none');
+                    updateURL(); // Reload immediately for non-custom options
+                }
+            });
+
+            // Status Filter: Trigger on Change
+            document.querySelectorAll('input[name="statusFilter"]').forEach(radio => {
+                radio.addEventListener('change', updateURL);
+            });
+        });
+
+        function applyCustomDate() {
+            updateURL();
+        }
+
+        function updateURL() {
+            const params = new URLSearchParams(window.location.search);
+
+            // Search
+            const search = document.getElementById('searchInput').value;
+            if (search) params.set('search', search);
+            else params.delete('search');
+
+            // Date
+            const dateFilter = document.getElementById('dateFilter').value;
+            params.set('date', dateFilter);
+            if (dateFilter === 'custom') {
+                const start = document.getElementById('startDate').value;
+                const end = document.getElementById('endDate').value;
+                if (start) params.set('start', start);
+                if (end) params.set('end', end);
+            } else {
+                params.delete('start');
+                params.delete('end');
+            }
+
+            // Status
+            const status = document.querySelector('input[name="statusFilter"]:checked').value;
+            if (status !== 'all') params.set('status', status);
+            else params.delete('status');
+
+            // Reset page on filter change
+            params.set('page', '1');
+
+            // TRIGGER PAGE RELOAD
+            window.location.href = `${window.location.pathname}?${params.toString()}`;
+        }
+
+        function changePage(page) {
+            const params = new URLSearchParams(window.location.search);
+            params.set('page', page);
+            window.location.href = `${window.location.pathname}?${params.toString()}`;
+        }
+
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+
+            // Search
+            if (params.has('search')) {
+                document.getElementById('searchInput').value = params.get('search');
+            }
+
+            // Date
+            if (params.has('date')) {
+                const dateVal = params.get('date');
+                document.getElementById('dateFilter').value = dateVal;
+                if (dateVal === 'custom') {
+                    document.getElementById('customDateRange').classList.remove('d-none');
+                    if (params.has('start')) document.getElementById('startDate').value = params.get('start');
+                    if (params.has('end')) document.getElementById('endDate').value = params.get('end');
+                }
+            }
+
+            // Status
+            if (params.has('status')) {
+                const statusVal = params.get('status');
+                const radio = document.querySelector(`input[name="statusFilter"][value="${statusVal}"]`);
+                if (radio) radio.checked = true;
+            }
+
+            // Page
+            if (params.has('page')) {
+                const page = params.get('page');
+                document.querySelectorAll('.pagination .page-item').forEach(item => item.classList.remove('active'));
+                const links = document.querySelectorAll('.pagination .page-link');
+                links.forEach(link => {
+                    if (link.textContent == page) link.parentElement.classList.add('active');
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

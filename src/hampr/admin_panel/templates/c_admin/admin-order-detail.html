@@ -1,0 +1,522 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #ORD-7829 | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+   
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+
+    <style>
+        /* Dashboard Specific Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-confirmed {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+
+        .status-shipped {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+
+        .status-delivered {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            padding-bottom: 20px;
+            border-left: 2px solid #e9ecef;
+        }
+
+        .timeline-item:last-child {
+            border-left: transparent;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-gold);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border-radius: 12px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    {% include 'c_admin/admin_main_side_nav_bar.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Breadcrumb & Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'cadmin:manage_order' %}"
+                                class="text-decoration-none text-muted">Orders</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">#{{order.order_number}}</li>
+                    </ol>
+                </nav>
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                    <div>
+                        <h2 class="fw-bold mb-1">Order #{{order.order_number}}</h2>
+                        <div class="d-flex align-items-center gap-2 text-muted">
+                            <span><i class="far fa-calendar me-1"></i> Oct 24, 2023 at 10:30 AM</span>
+                            <span>&bull;</span>
+                            {% if order.status == "PENDING" %}
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            {% elif order.status == 'CONFIRMED' %}
+                            <td><span class="status-badge status-confirmed">Confirmed</span></td>
+                            {% elif order.status == 'SHIPPED' %}
+                            <td><span class="status-badge status-shipped">Shipped</span></td>
+                            {% elif order.status == 'DELIVERED' %}
+                            <td><span class="status-badge status-delivered">Delivered</span></td>
+                            {% elif order.status == 'CANCELLED' %}
+                            <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-3 mt-md-0 d-flex gap-2">
+                        <button class="btn btn-outline-secondary" onclick="printInvoice()">
+                            <i class="fas fa-print me-2"></i>Print Invoice
+                        </button>
+                        <button class="btn btn-primary" onclick="openStatusModal()">
+                            <i class="fas fa-edit me-2"></i>Update Status
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Order Items & Payment -->
+                <div class="col-lg-8">
+
+                    <!-- Hamper Details (Box + Decorations) -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Hamper Configuration</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3">Item</th>
+                                            <th class="py-3">Type</th>
+                                            <th class="py-3 text-end">Price</th>
+                                            <th class="py-3 text-center">Qty</th>
+                                            <th class="py-3 text-end pe-4">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- OrderHamper -->
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+                                                        <img src="{{order.order_hampers.first.box_image.url}}" alt="Box"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">{{order.order_hampers.first.hamper_name}}</div>
+                                                        <div class="small text-muted">Size: {{order.order_hampers.first.size_label}} 
+                                                           ({{ order.order_hampers.first.height|floatformat:0 }}x{{ order.order_hampers.first.width|floatformat:0 }}x{{ order.order_hampers.first.depth|floatformat:0 }})</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-secondary-subtle text-secondary">Box</span></td>
+                                            <td class="text-end">₹{{order.order_hampers.first.box_price_at_order_time}}</td>
+                                            <td class="text-center">1</td>
+                                            <td class="text-end pe-4">₹{{order.order_hampers.first.box_price_at_order_time}}</td>
+                                        </tr>
+                                      {% for item in order.order_decorations.all %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+                                                        <img src="{{item.image.url}}" alt="Deco"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">{{item.decoration_name}}</div>
+                                                        <div class="small text-muted">Position: {%if item.is_inside%}Inside{% else %}Outside{%endif%}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-info-subtle text-info">Decoration</span></td>
+                                            <td class="text-end">₹{{item.price_at_order_time}}</td>
+                                            <td class="text-center">{{item.quantity}}</td>
+                                            <td class="text-end pe-4">₹{{item.subtotal}}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items (Products) -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Order Items (Products)</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3">Product</th>
+                                            <th class="py-3 text-end">Price</th>
+                                            <th class="py-3 text-center">Quantity</th>
+                                            <th class="py-3 text-end pe-4">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- OrderItem -->
+                                        {% for item in order.items.all %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+                                                        <img src="{{item.product_image.url}}" alt="Product"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">{{item.product_name}}</div>
+                                                        <div class="small text-muted">Brand: {{item.product_brand}}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td class="text-end">₹{{item.price_at_order_time}}</td>
+                                            <td class="text-center">{{item.quantity}}</td>
+                                            <td class="text-end pe-4">$50.00</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+                                                        <img src="https://via.placeholder.com/50" alt="Product"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">Scented Candle</div>
+                                                        <div class="small text-muted">Scent: Vanilla</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end">$15.00</td>
+                                            <td class="text-center">1</td>
+                                            <td class="text-end pe-4">$15.00</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="border-top">
+                                        <tr>
+                                            <td colspan="3" class="text-end py-2 text-muted">Box Price</td>
+                                            <td class="text-end pe-4 py-2">$15.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end py-2 text-muted">Decorations Total</td>
+                                            <td class="text-end pe-4 py-2">$2.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end py-2 text-muted">Products Total</td>
+                                            <td class="text-end pe-4 py-2">$65.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end py-2 fw-bold">Subtotal</td>
+                                            <td class="text-end pe-4 py-2 fw-bold">$82.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end py-2 text-muted">Discount</td>
+                                            <td class="text-end pe-4 py-2 text-danger">-$5.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end py-2 text-muted">Shipping Cost</td>
+                                            <td class="text-end pe-4 py-2">$10.00</td>
+                                        </tr>
+                                        <tr class="fw-bold fs-5 bg-light">
+                                            <td colspan="3" class="text-end py-3">Total Amount</td>
+                                            <td class="text-end pe-4 py-3">$87.00</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Info -->
+                    <div class="card">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Payment Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3">
+                                        <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">Visa ending in 4242</div>
+                                        <div class="small text-muted">Online Payment</div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-success-subtle text-success">Paid</span>
+                            </div>
+                            <div class="row g-3 text-sm">
+                                <div class="col-6">
+                                    <div class="text-muted small">Transaction ID</div>
+                                    <div class="fw-medium">TXN_123456789</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-muted small">Payment Date</div>
+                                    <div class="fw-medium">Oct 24, 2023</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Customer & Timeline -->
+                <div class="col-lg-4">
+                    <!-- Customer Info -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Customer</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="bg-light rounded-circle p-3 me-3">
+                                    <i class="fas fa-user fa-lg text-secondary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">John Doe</div>
+                                    <div class="text-muted small">john@example.com</div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-2 text-uppercase small text-muted">Delivery Address</h6>
+                                <p class="mb-0 small">
+                                    <strong>John Doe</strong><br>
+                                    123 Main Street, Apt 4B<br>
+                                    New York, NY 10001<br>
+                                    United States<br>
+                                    <i class="fas fa-phone-alt me-1 mt-2"></i> +1 (555) 123-4567
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Timeline -->
+                    <div class="card">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold">Order History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="fw-medium">Order Placed</div>
+                                    <div class="small text-muted">Oct 24, 2023 at 10:30 AM</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="fw-medium">Payment Confirmed</div>
+                                    <div class="small text-muted">Oct 24, 2023 at 10:31 AM</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="fw-medium">Processing Started</div>
+                                    <div class="small text-muted">Oct 24, 2023 at 11:00 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Status Modal (Reused) -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Order Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">New Status</label>
+                            <select class="form-select">
+                                <option value="PENDING" selected>Pending</option>
+                                <option value="CONFIRMED">Confirmed</option>
+                                <option value="SHIPPED">Shipped</option>
+                                <option value="DELIVERED">Delivered</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Note (Optional)</label>
+                            <textarea class="form-control" rows="3"
+                                placeholder="Add a note about this status change..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveStatus()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+
+        function openStatusModal() {
+            statusModal.show();
+        }
+
+        function saveStatus() {
+            alert("Status updated successfully!");
+            statusModal.hide();
+        }
+
+        function printInvoice() {
+            alert("Printing invoice...");
+        }
+    </script>
+</body>
+
+</html>
