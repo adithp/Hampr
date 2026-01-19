@@ -20,121 +20,160 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
 
 
     <style>
-        /* Dashboard Specific Styles */
-        body {
-            background-color: #f8f9fa;
+        :root {
+            --primary-gold: #D4AF37;
+            --primary-gold-hover: #c5a028;
+            --dark-bg: #1a1a1a;
+            --card-bg: #ffffff;
+            --text-main: #2c2c2c;
+            --text-muted: #6c757d;
+            --border-color: #e9ecef;
         }
 
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Playfair Display', serif;
+            color: #1a1a1a;
+        }
+
+        /* Sidebar */
         .sidebar {
             position: fixed;
             top: 0;
             bottom: 0;
             left: 0;
             z-index: 100;
-            padding: 48px 0 0;
-            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            padding: 0;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
             background-color: var(--white);
-            width: 240px;
-            transition: all 0.3s;
-        }
-
-        .sidebar-sticky {
-            position: relative;
-            top: 0;
-            height: calc(100vh - 48px);
-            padding-top: .5rem;
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-
-        .sidebar .nav-link {
-            font-weight: 500;
-            color: #333;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-        }
-
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: var(--primary-gold);
-            background-color: rgba(212, 175, 55, 0.05);
-            border-right: 3px solid var(--primary-gold);
-        }
-
-        .sidebar .nav-link i {
-            width: 20px;
-            text-align: center;
+            width: 260px;
+            transition: all 0.3s ease;
         }
 
         .main-content {
-            margin-left: 240px;
-            padding: 2rem;
-            transition: all 0.3s;
+            margin-left: 260px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
         }
 
-        .kpi-card {
+        /* Cards */
+        .card {
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
+            border-radius: 16px;
+            background: var(--card-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
         }
 
-        .kpi-card:hover {
+        .kpi-card:hover,
+        .action-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.15);
         }
 
         .kpi-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
+            transition: all 0.3s ease;
         }
 
-        .table-card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        .kpi-card:hover .kpi-icon {
+            transform: scale(1.1);
         }
 
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+        /* Typography & Elements */
+        .fw-bold {
+            font-weight: 600 !important;
+        }
+
+        .text-gold {
+            color: var(--primary-gold) !important;
+        }
+
+        .bg-gold-subtle {
+            background-color: rgba(212, 175, 55, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-gold);
+            border-color: var(--primary-gold);
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
             font-weight: 500;
+            transition: all 0.3s;
         }
 
-        .status-completed {
-            background-color: #d1e7dd;
-            color: #0f5132;
+        .btn-primary:hover {
+            background-color: var(--primary-gold-hover);
+            border-color: var(--primary-gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
         }
 
-        .status-pending {
-            background-color: #fff3cd;
-            color: #664d03;
+        .btn-white {
+            background: #fff;
+            border: 1px solid transparent;
+            color: var(--text-main);
         }
 
-        .status-processing {
-            background-color: #cff4fc;
-            color: #055160;
+        .btn-white:hover {
+            background: #f8f9fa;
+            border-color: #e9ecef;
         }
 
-        .status-cancelled {
-            background-color: #f8d7da;
-            color: #842029;
+        /* Alerts */
+        .alert-item {
+            border-left: 4px solid transparent;
+            padding: 1.2rem;
+            background: #fff;
+            border-radius: 10px;
+            margin-bottom: 0.8rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s;
         }
 
-        /* Mobile Responsive */
+        .alert-item:hover {
+            transform: translateX(5px);
+        }
+
+        .alert-warning {
+            border-left-color: #ffc107;
+        }
+
+        .alert-danger {
+            border-left-color: #dc3545;
+        }
+
+        .alert-info {
+            border-left-color: #0dcaf0;
+        }
+
+        /* Mobile */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -146,6 +185,7 @@
 
             .main-content {
                 margin-left: 0;
+                padding: 1.5rem;
             }
 
             .mobile-nav-toggle {
@@ -156,14 +196,15 @@
         .mobile-nav-toggle {
             display: none;
             position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 101;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
             background: var(--white);
             border: none;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            color: var(--primary-gold);
         }
     </style>
 </head>
@@ -172,36 +213,45 @@
 
     <!-- Mobile Toggle -->
     <button class="mobile-nav-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
+        <i class="fas fa-bars fa-lg"></i>
     </button>
 
     <!-- Sidebar -->
     {% include 'c_admin/admin_main_side_nav_bar.html' %}
+
     <!-- Main Content -->
     <main class="main-content">
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4 pt-3 pt-md-0">
+        <div class="d-flex justify-content-between align-items-center mb-5 pt-3 pt-md-0">
             <div>
-                <h2 class="fw-bold">Welcome back, Admin</h2>
-                <p class="text-muted">Here's what's happening with your store today.</p>
+                <h2 class="fw-bold mb-1">Dashboard</h2>
+                <p class="text-muted mb-0">Overview of your store's performance.</p>
             </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-white shadow-sm"><i class="far fa-bell"></i></button>
+            <div class="d-flex gap-3 align-items-center">
+                <button class="btn btn-white shadow-sm rounded-circle p-2" style="width: 45px; height: 45px;">
+                    <i class="far fa-bell fa-lg text-muted"></i>
+                </button>
                 <div class="dropdown">
-                    <button class="btn btn-white shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <button class="btn btn-white shadow-sm rounded-pill pe-3 ps-2 py-1 d-flex align-items-center"
+                        type="button" data-bs-toggle="dropdown">
                         <img src="https://ui-avatars.com/api/?name=Admin+User&background=D4AF37&color=fff"
-                            class="rounded-circle me-1" width="32" height="32" alt="Admin">
+                            class="rounded-circle me-2" width="32" height="32" alt="Admin">
+                        <span class="small fw-bold text-muted">Admin</span>
+                        <i class="fas fa-chevron-down ms-2 small text-muted"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">Profile</a></li>
-                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 rounded-3">
+                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-user me-2 text-gold"></i>
+                                Profile</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-cog me-2 text-gold"></i>
+                                Settings</a></li>
                         <li>
-                            <hr class="dropdown-divider">
+                            <hr class="dropdown-divider my-1">
                         </li>
                         <li>
                             <form action="{% url 'core:logout' %}" method="POST">
                                 {% csrf_token %}
-                                <button class="dropdown-item text-danger">Logout</button>
+                                <button class="dropdown-item py-2 text-danger"><i class="fas fa-sign-out-alt me-2"></i>
+                                    Logout</button>
                             </form>
                         </li>
                     </ul>
@@ -209,7 +259,208 @@
             </div>
         </div>
 
+        <!-- Key Metrics (KPI Cards) -->
+        <div class="row g-4 mb-5">
+            <!-- Total Revenue -->
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="kpi-icon bg-gold-subtle text-gold">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                            <i class="fas fa-arrow-up me-1"></i> 12.5%
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Total Revenue</p>
+                        <h3 class="fw-bold mb-0">₹42,500</h3>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Total Orders -->
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                            <i class="fas fa-arrow-up me-1"></i> 8.2%
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Total Orders</p>
+                        <h3 class="fw-bold mb-0">1,240</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Customers -->
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="kpi-icon bg-info bg-opacity-10 text-info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                            <i class="fas fa-arrow-up me-1"></i> 5.3%
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Total Customers</p>
+                        <h3 class="fw-bold mb-0">850</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Today -->
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card kpi-card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">
+                            15 Orders
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Sales Today</p>
+                        <h3 class="fw-bold mb-0">₹1,250</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Analytics (Charts) -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-8">
+                <div class="card chart-card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Revenue Analytics</h5>
+                        <select class="form-select form-select-sm w-auto border-0 bg-light">
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>This Year</option>
+                        </select>
+                    </div>
+                    <canvas id="salesChart" height="300"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card chart-card h-100 p-4">
+                    <h5 class="fw-bold mb-4">Orders Overview</h5>
+                    <div class="position-relative" style="height: 300px;">
+                        <canvas id="ordersChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Reports & Exports -->
+            <div class="col-lg-6">
+                <div class="card h-100 p-4">
+                    <h5 class="fw-bold mb-4">Reports & Exports</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div
+                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
+                                <div class="mb-3 text-success"><i class="fas fa-file-csv fa-2x"></i></div>
+                                <h6 class="fw-bold mb-1">Sales Report</h6>
+                                <p class="small text-muted mb-0">Download CSV</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div
+                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
+                                <div class="mb-3 text-success"><i class="fas fa-file-excel fa-2x"></i></div>
+                                <h6 class="fw-bold mb-1">Order Report</h6>
+                                <p class="small text-muted mb-0">Download Excel</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div
+                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
+                                <div class="mb-3 text-primary"><i class="fas fa-file-invoice-dollar fa-2x"></i></div>
+                                <h6 class="fw-bold mb-1">Tax / GST Report</h6>
+                                <p class="small text-muted mb-0">Download PDF</p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div
+                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
+                                <div class="mb-3 text-info"><i class="fas fa-users fa-2x"></i></div>
+                                <h6 class="fw-bold mb-1">Customer List</h6>
+                                <p class="small text-muted mb-0">Download CSV</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications & Alerts -->
+            <div class="col-lg-6">
+                <div class="card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Notifications</h5>
+                        <span class="badge bg-danger rounded-pill px-3">3 New</span>
+                    </div>
+
+                    <div class="alert-list">
+                        <div class="alert-item alert-warning d-flex align-items-start">
+                            <div class="me-3 mt-1">
+                                <span
+                                    class="bg-warning bg-opacity-10 text-warning rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
+                                    style="width: 32px; height: 32px;">
+                                    <i class="fas fa-bell fa-sm"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">New Order Received</h6>
+                                <p class="small text-muted mb-1">Order #ORD-7830 received from John Doe.</p>
+                                <small class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>
+                                    2 mins ago</small>
+                            </div>
+                        </div>
+
+                        <div class="alert-item alert-danger d-flex align-items-start">
+                            <div class="me-3 mt-1">
+                                <span
+                                    class="bg-danger bg-opacity-10 text-danger rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
+                                    style="width: 32px; height: 32px;">
+                                    <i class="fas fa-exclamation-triangle fa-sm"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Low Stock Warning</h6>
+                                <p class="small text-muted mb-1">Product "Premium Gift Box" is running low (Qty: 3).</p>
+                                <small class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>
+                                    1 hour ago</small>
+                            </div>
+                        </div>
+
+                        <div class="alert-item alert-info d-flex align-items-start">
+                            <div class="me-3 mt-1">
+                                <span
+                                    class="bg-info bg-opacity-10 text-info rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
+                                    style="width: 32px; height: 32px;">
+                                    <i class="fas fa-credit-card fa-sm"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Payment Failed</h6>
+                                <p class="small text-muted mb-1">Payment for Order #ORD-7829 failed.</p>
+                                <small class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>
+                                    3 hours ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </main>
 
@@ -219,6 +470,123 @@
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
+
+        // Chart.js Initialization
+        document.addEventListener('DOMContentLoaded', function () {
+            Chart.defaults.font.family = "'Outfit', sans-serif";
+            Chart.defaults.color = '#6c757d';
+
+            // Sales Chart (Line)
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+
+            // Gradient for Line Chart
+            const gradient = salesCtx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(212, 175, 55, 0.2)');
+            gradient.addColorStop(1, 'rgba(212, 175, 55, 0)');
+
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [12000, 19000, 30000, 50000, 23000, 34000, 42500],
+                        borderColor: '#D4AF37',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#D4AF37',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1a1a1a',
+                            titleFont: { family: 'Outfit', size: 13 },
+                            bodyFont: { family: 'Outfit', size: 13 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    return 'Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f0f0f0',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                }
+            });
+
+            // Orders Chart (Bar)
+            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            new Chart(ordersCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: [12, 19, 3, 5, 2, 3, 15],
+                        backgroundColor: '#D4AF37',
+                        borderRadius: 6,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1a1a1a',
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f0f0f0',
+                                borderDash: [5, 5]
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
     </script>
     <script>
         window.addEventListener("beforeunload", function () { });

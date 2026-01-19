@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Custom CSS -->
-   
+
     <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
 
 
@@ -181,7 +181,7 @@
                     <div>
                         <h2 class="fw-bold mb-1">Order #{{order.order_number}}</h2>
                         <div class="d-flex align-items-center gap-2 text-muted">
-                            <span><i class="far fa-calendar me-1"></i> Oct 24, 2023 at 10:30 AM</span>
+                            <span><i class="far fa-calendar me-1"></i> {{ order.created_at }}</span>
                             <span>&bull;</span>
                             {% if order.status == "PENDING" %}
                             <td><span class="status-badge status-pending">Pending</span></td>
@@ -200,9 +200,9 @@
                         <button class="btn btn-outline-secondary" onclick="printInvoice()">
                             <i class="fas fa-print me-2"></i>Print Invoice
                         </button>
-                        <button class="btn btn-primary" onclick="openStatusModal()">
+                        {% comment %} <button class="btn btn-primary" onclick="openStatusModal()">
                             <i class="fas fa-edit me-2"></i>Update Status
-                        </button>
+                        </button> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -239,18 +239,24 @@
                                                             class="img-fluid rounded">
                                                     </div>
                                                     <div>
-                                                        <div class="fw-medium">{{order.order_hampers.first.hamper_name}}</div>
-                                                        <div class="small text-muted">Size: {{order.order_hampers.first.size_label}} 
-                                                           ({{ order.order_hampers.first.height|floatformat:0 }}x{{ order.order_hampers.first.width|floatformat:0 }}x{{ order.order_hampers.first.depth|floatformat:0 }})</div>
+                                                        <div class="fw-medium">{{order.order_hampers.first.hamper_name}}
+                                                        </div>
+                                                        <div class="small text-muted">Size:
+                                                            {{order.order_hampers.first.size_label}}
+                                                            ({{ order.order_hampers.first.height|floatformat:0 }}
+                                                            x{{order.order_hampers.first.width|floatformat:0 }}
+                                                            x{{order.order_hampers.first.depth|floatformat:0 }})</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td><span class="badge bg-secondary-subtle text-secondary">Box</span></td>
-                                            <td class="text-end">₹{{order.order_hampers.first.box_price_at_order_time}}</td>
+                                            <td class="text-end">₹{{order.order_hampers.first.box_price_at_order_time}}
+                                            </td>
                                             <td class="text-center">1</td>
-                                            <td class="text-end pe-4">₹{{order.order_hampers.first.box_price_at_order_time}}</td>
+                                            <td class="text-end pe-4">
+                                                ₹{{order.order_hampers.first.box_price_at_order_time}}</td>
                                         </tr>
-                                      {% for item in order.order_decorations.all %}
+                                        {% for item in order.order_decorations.all %}
                                         <tr>
                                             <td class="ps-4">
                                                 <div class="d-flex align-items-center">
@@ -261,7 +267,8 @@
                                                     </div>
                                                     <div>
                                                         <div class="fw-medium">{{item.decoration_name}}</div>
-                                                        <div class="small text-muted">Position: {%if item.is_inside%}Inside{% else %}Outside{%endif%}</div>
+                                                        <div class="small text-muted">Position:
+                                                            {%if item.is_inside%}Inside{% else %}Outside{%endif%}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -306,63 +313,49 @@
                                                     </div>
                                                     <div>
                                                         <div class="fw-medium">{{item.product_name}}</div>
-                                                        <div class="small text-muted">Brand: {{item.product_brand}}</div>
+                                                        <div class="small text-muted">Brand: {{item.product_brand}}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
 
                                             <td class="text-end">₹{{item.price_at_order_time}}</td>
                                             <td class="text-center">{{item.quantity}}</td>
-                                            <td class="text-end pe-4">$50.00</td>
+                                            <td class="text-end pe-4">₹{{item.subtotal}}</td>
                                         </tr>
                                         {% endfor %}
-                                        <tr>
-                                            <td class="ps-4">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="bg-light rounded p-1 me-3"
-                                                        style="width: 50px; height: 50px;">
-                                                        <img src="https://via.placeholder.com/50" alt="Product"
-                                                            class="img-fluid rounded">
-                                                    </div>
-                                                    <div>
-                                                        <div class="fw-medium">Scented Candle</div>
-                                                        <div class="small text-muted">Scent: Vanilla</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-end">$15.00</td>
-                                            <td class="text-center">1</td>
-                                            <td class="text-end pe-4">$15.00</td>
-                                        </tr>
+
                                     </tbody>
                                     <tfoot class="border-top">
                                         <tr>
                                             <td colspan="3" class="text-end py-2 text-muted">Box Price</td>
-                                            <td class="text-end pe-4 py-2">$15.00</td>
+                                            <td class="text-end pe-4 py-2">
+                                                ₹{{order.order_hampers.first.box_price_at_order_time}}</td>
                                         </tr>
                                         <tr>
                                             <td colspan="3" class="text-end py-2 text-muted">Decorations Total</td>
-                                            <td class="text-end pe-4 py-2">$2.00</td>
+                                            <td class="text-end pe-4 py-2">₹{{order.decorations_total}}</td>
                                         </tr>
                                         <tr>
                                             <td colspan="3" class="text-end py-2 text-muted">Products Total</td>
-                                            <td class="text-end pe-4 py-2">$65.00</td>
+                                            <td class="text-end pe-4 py-2">₹{{order.products_total}}</td>
                                         </tr>
                                         <tr>
                                             <td colspan="3" class="text-end py-2 fw-bold">Subtotal</td>
-                                            <td class="text-end pe-4 py-2 fw-bold">$82.00</td>
+                                            <td class="text-end pe-4 py-2 fw-bold">₹{{order.subtotal}}</td>
                                         </tr>
                                         <tr>
                                             <td colspan="3" class="text-end py-2 text-muted">Discount</td>
-                                            <td class="text-end pe-4 py-2 text-danger">-$5.00</td>
+                                            <td class="text-end pe-4 py-2 text-danger">-₹{{order.discount}}</td>
                                         </tr>
                                         <tr>
                                             <td colspan="3" class="text-end py-2 text-muted">Shipping Cost</td>
-                                            <td class="text-end pe-4 py-2">$10.00</td>
+                                            <td class="text-end pe-4 py-2"><span
+                                                    class="text-success fw-bold">Free</span></td>
                                         </tr>
                                         <tr class="fw-bold fs-5 bg-light">
                                             <td colspan="3" class="text-end py-3">Total Amount</td>
-                                            <td class="text-end pe-4 py-3">$87.00</td>
+                                            <td class="text-end pe-4 py-3">₹{{order.total_amount}}</td>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -371,7 +364,8 @@
                     </div>
 
                     <!-- Payment Info -->
-                    <div class="card">
+                    <div class="card" style="display: none;">
+
                         <div class="card-header bg-white py-3">
                             <h5 class="mb-0 fw-bold">Payment Information</h5>
                         </div>
@@ -382,7 +376,17 @@
                                         <i class="fab fa-cc-visa fa-2x text-primary"></i>
                                     </div>
                                     <div>
+
                                         <div class="fw-medium">Visa ending in 4242</div>
+                                        <div class="small text-muted">Online Payment</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3">
+                                        <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                                    </div>
+                                    <div>
+
                                         <div class="small text-muted">Online Payment</div>
                                     </div>
                                 </div>
@@ -415,19 +419,19 @@
                                     <i class="fas fa-user fa-lg text-secondary"></i>
                                 </div>
                                 <div>
-                                    <div class="fw-bold">John Doe</div>
-                                    <div class="text-muted small">john@example.com</div>
+                                    <div class="fw-bold">{{order.delivery_address.recipient_name}}</div>
+                                    <div class="text-muted small">{{order.user.email}}</div>
                                 </div>
                             </div>
                             <hr>
                             <div class="mb-4">
                                 <h6 class="fw-bold mb-2 text-uppercase small text-muted">Delivery Address</h6>
                                 <p class="mb-0 small">
-                                    <strong>John Doe</strong><br>
-                                    123 Main Street, Apt 4B<br>
-                                    New York, NY 10001<br>
-                                    United States<br>
-                                    <i class="fas fa-phone-alt me-1 mt-2"></i> +1 (555) 123-4567
+                                    <strong>{{order.delivery_address.recipient_name}}</strong><br>
+                                    {{order.delivery_address.apartment}}, {{order.delivery_address.street_address}}<br>
+                                    {{order.delivery_address.city}}, {{order.delivery_address.postal_code}} <br>
+                                    {{order.delivery_address.country}}<br>
+                                    <i class="fas fa-phone-alt me-1 mt-2"></i> {{order.delivery_address.phone_number}}
                                 </p>
                             </div>
                         </div>
@@ -442,15 +446,21 @@
                             <div class="timeline">
                                 <div class="timeline-item">
                                     <div class="fw-medium">Order Placed</div>
-                                    <div class="small text-muted">Oct 24, 2023 at 10:30 AM</div>
+                                    <div class="small text-muted">{{order.created_at}}</div>
                                 </div>
                                 <div class="timeline-item">
                                     <div class="fw-medium">Payment Confirmed</div>
-                                    <div class="small text-muted">Oct 24, 2023 at 10:31 AM</div>
+                                    <div class="small text-muted">{{order.payments.first.updated_at}}</div>
                                 </div>
                                 <div class="timeline-item">
                                     <div class="fw-medium">Processing Started</div>
-                                    <div class="small text-muted">Oct 24, 2023 at 11:00 AM</div>
+                                    <div class="small text-muted">
+                                        {% if order.created_at == order.updated_at %}
+                                        Not Started
+                                        {% else %}
+                                        {{ order.updated_at }}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -514,7 +524,9 @@
         }
 
         function printInvoice() {
-            alert("Printing invoice...");
+            const url = new URL(window.location.href);
+            url.searchParams.set("invoice", "true");
+            window.location.href = url.toString();
         }
     </script>
 </body>

@@ -248,6 +248,7 @@
                                     <th class="py-3">Order ID</th>
                                     <th class="py-3">Customer</th>
                                     <th class="py-3">Date</th>
+                                    <th class="py-3">Last Updated</th>
                                     <th class="py-3">Total</th>
                                     <th class="py-3">Status</th>
                                     <th class="py-3">Tracking</th>
@@ -256,7 +257,7 @@
                             </thead>
                             <tbody>
                                 {% for order in orders %}
-                                <tr>
+                                <tr id="order-row-{{order.order_number}}">
                                     <td class="ps-4"><input class="form-check-input order-checkbox" type="checkbox"
                                             onclick="updateBulkBar()"></td>
                                     <td class="fw-bold">#{{order.order_number}}</td>
@@ -266,18 +267,22 @@
                                                 style="width: 35px; height: 35px;">
 
                                                 {% if order.user.profile_picture %}
-                                                <img src="{{order.user.profile_picture.url}}" width="35px" height="35px" style="overflow: hidden;border-radius: 50%;object-fit: cover;" alt="">
+                                                <img src="{{order.user.profile_picture.url}}" width="35px" height="35px"
+                                                    style="overflow: hidden;border-radius: 50%;object-fit: cover;"
+                                                    alt="">
                                                 {% else %}
                                                 <i class="fas fa-user text-muted"></i>
                                                 {% endif %}
                                             </div>
                                             <div>
-                                                <div class="fw-medium">{{order.user.first_name}} {{order.user.last_name}}</div>
+                                                <div class="fw-medium">{{order.user.first_name}}
+                                                    {{order.user.last_name}}</div>
                                                 <div class="small text-muted">{{order.user.email}}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td class="last-updated">{{ order.updated_at|date:"M d, Y H:i" }}</td>
                                     <td>₹{{order.total_amount}}</td>
                                     {% if order.status == "PENDING" %}
                                     <td><span class="status-badge status-pending">Pending</span></td>
@@ -287,7 +292,7 @@
                                     <td><span class="status-badge status-shipped">Shipped</span></td>
                                     {% elif order.status == 'DELIVERED' %}
                                     <td><span class="status-badge status-delivered">Delivered</span></td>
-                                    {% elif order.status == 'CANCELLED'  %}
+                                    {% elif order.status == 'CANCELLED' %}
                                     <td><span class="status-badge status-cancelled">Cancelled</span></td>
                                     {% endif %}
 
@@ -300,10 +305,11 @@
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="{% url 'cadmin:order_detail' order.order_number %}"><i
+                                                <li><a class="dropdown-item"
+                                                        href="{% url 'cadmin:order_detail' order.order_number %}"><i
                                                             class="fas fa-eye me-2 text-primary"></i> View Details</a>
                                                 </li>
-                                                <li><a class="dropdown-item" href="#"
+                                                <li><a class="dropdown-item update-status-btn" href="#"
                                                         onclick="openStatusModal('#{{order.order_number}}', '{{order.status}}')"><i
                                                             class="fas fa-edit me-2 text-warning"></i> Update Status</a>
                                                 </li>
@@ -325,7 +331,7 @@
                                     </td>
                                 </tr>
                                 {% endfor %}
-                                
+
                             </tbody>
                         </table>
                     </div>
@@ -371,6 +377,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="statusForm">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="orderIdDisplay" class="form-label">Order ID</label>
                             <input type="text" class="form-control" id="orderIdDisplay" readonly>
@@ -485,10 +492,83 @@
             statusModal.show();
         }
 
-        function saveStatus() {
+                function saveStatus() {
             const newStatus = document.getElementById('statusSelect').value;
-            alert(`Status for ${currentOrderId} updated to ${newStatus}`);
-            statusModal.hide();
+            const orderId = document.getElementById('orderIdDisplay').value;
+            const form = document.getElementById('statusForm');
+            const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Show loading state
+            const saveBtn = document.querySelector('#statusModal .btn-primary');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = 'Saving...';
+            saveBtn.disabled = true;
+
+            console.log('Sending update for:', orderId, 'Status:', newStatus);
+
+            fetch("{% url 'cadmin:order_update' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    'order_id': orderId,
+                    'order_number': orderId.replace('#', ''),
+                    'status': newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    // Update DOM
+                    const rowId = `order-row-${orderId.replace('#', '')}`;
+                    const row = document.getElementById(rowId);
+                    console.log('Target Row:', rowId, row);
+
+                    if (row) {
+                        // Update Status Badge
+                        const statusCell = row.querySelector('.status-badge');
+                        if (statusCell) {
+                            statusCell.className = `status-badge status-${newStatus.toLowerCase()}`;
+                            statusCell.innerText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).toLowerCase();
+                        } else {
+                            console.error('Status badge not found in row');
+                        }
+                        
+                        // Update Last Updated Time
+                        const updatedCell = row.querySelector('.last-updated');
+                        if (updatedCell && data.updated_at) {
+                            updatedCell.innerText = data.updated_at;
+                        }
+
+                        // Update the 'Update Status' button onclick to reflect new status
+                        const updateBtn = row.querySelector('.update-status-btn');
+                        if (updateBtn) {
+                            updateBtn.setAttribute('onclick', `openStatusModal('${orderId}', '${newStatus}')`);
+                        }
+                    } else {
+                        console.error('Row not found in DOM');
+                        alert('Internal Error: Could not find table row to update.');
+                    }
+                    
+                    // Close modal and show success
+                    statusModal.hide();
+                    // alert(`Status for ${orderId} updated to ${newStatus}`);
+                } else {
+                    alert('Error updating status: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating status.');
+            })
+            .finally(() => {
+                // Reset button
+                saveBtn.innerText = originalText;
+                saveBtn.disabled = false;
+            });
         }
 
         // Tracking Logic
