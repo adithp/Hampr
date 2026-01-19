@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+
+            @frame footer_frame {
+                -pdf-frame-content: footerContent;
+                bottom: 0cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 1cm;
+            }
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 11px;
+            color: #333333;
+            line-height: 1.4;
+        }
+
+        /* Top Strip */
+        .top-strip {
+            width: 100%;
+            height: 5px;
+            background-color: #C5A059;
+            /* Gold */
+            margin-bottom: 30px;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            vertical-align: top;
+            padding: 5px;
+        }
+
+        /* Header */
+        .brand {
+            font-size: 28px;
+            font-weight: bold;
+            color: #C5A059;
+            text-transform: lowercase;
+        }
+
+        .invoice-title {
+            font-size: 24px;
+            font-weight: normal;
+            text-align: right;
+            text-transform: uppercase;
+            color: #333333;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .invoice-meta {
+            text-align: right;
+            font-size: 10px;
+            color: #555555;
+        }
+
+        .meta-label {
+            color: #888888;
+            text-transform: uppercase;
+            font-size: 9px;
+            margin-right: 5px;
+        }
+
+        /* Bill To */
+        .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            color: #888888;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .address {
+            font-size: 11px;
+            color: #333333;
+        }
+
+        .recipient-name {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        /* Items Table */
+        .items-table {
+            margin-top: 20px;
+            border-bottom: 2px solid #C5A059;
+        }
+
+        .items-header th {
+            background-color: #f9f9f9;
+            color: #555555;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px 5px;
+            text-align: left;
+            border-top: 1px solid #eeeeee;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .items-row td {
+            padding: 12px 5px;
+            border-bottom: 1px solid #f5f5f5;
+            color: #333333;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        /* Totals */
+        .totals-container {
+            margin-top: 20px;
+        }
+
+        .totals-row td {
+            padding: 6px 0;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        .totals-label {
+            color: #666666;
+            padding-right: 20px;
+        }
+
+        .grand-total td {
+            padding-top: 15px;
+            padding-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333333;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .grand-total .value {
+            color: #C5A059;
+        }
+
+        .green-text {
+            color: #10b981;
+        }
+
+        /* Footer */
+        #footerContent {
+            text-align: center;
+            font-size: 9px;
+            color: #aaaaaa;
+            border-top: 1px solid #eeeeee;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Strip -->
+    <div class="top-strip"></div>
+
+    <div class="container">
+        <!-- Header Table -->
+        <table border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="50%">
+                    <div class="brand">hampr.</div>
+                </td>
+                <td width="50%">
+                    <div class="invoice-title">Invoice</div>
+                    <div class="invoice-meta">
+                        <span class="meta-label">Order #</span> <strong>{{ order.order_number }}</strong><br>
+                        <span class="meta-label">Date</span> <strong>{{ order.created_at|date:"d M Y" }}</strong>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Spacer -->
+        <div style="height: 40px;"></div>
+
+        <!-- Bill To -->
+        <div class="section-title">Billed To</div>
+        <div class="address">
+            <div class="recipient-name">{{ order.delivery_address.recipient_name }}</div>
+            {{ order.delivery_address.apartment}}, {{order.delivery_address.street_address}}<br>
+            {{order.delivery_address.city}} {{order.delivery_address.postal_code}}
+        </div>
+
+        <!-- Spacer -->
+        <div style="height: 30px;"></div>
+
+        <!-- Items Table -->
+        <table class="items-table" border="0" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr class="items-header">
+                    <th width="50%">Product / Service</th>
+                    <th width="10%" class="text-center">Qty</th>
+                    <th width="20%" class="text-right">Rate</th>
+                    <th width="20%" class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if order.order_hampers.first %}
+                <tr class="items-row">
+                    <td>
+                        <strong>{{ order.order_hampers.first.hamper_name }}</strong>
+                    </td>
+                    <td class="text-center">{{ order.order_hampers.first.quantity }}</td>
+                    <td class="text-right">Rs. {{ order.order_hampers.first.box_price_at_order_time }}</td>
+                    <td class="text-right font-bold">Rs. {{ order.order_hampers.first.box_price_at_order_time }}</td>
+                </tr>
+                {% endif %}
+
+                {% for item in order.items.all %}
+                <tr class="items-row">
+                    <td>
+                        <strong>{{ item.product_name }}</strong>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">Rs. {{ item.box_price_at_order_time }}</td>
+                    <td class="text-right font-bold">Rs. {{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+
+                {% for item in order.order_decorations.all %}
+
+                <tr class="items-row">
+                    <td>
+                        <strong>{{ item.decoration_name }}</strong>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">Rs. {{ item.box_price_at_order_time }}</td>
+                    <td class="text-right font-bold">Rs. {{ item.subtotal }}</td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Totals Table -->
+        <table class="totals-container" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td width="60%"></td> <!-- Spacer column -->
+                <td width="40%">
+                    <table border="0" cellpadding="0" cellspacing="0">
+                        <tr class="totals-row">
+                            <td class="totals-label">Total Products</td>
+                            <td width="100">Rs. {{ order.subtotal }}</td>
+                        </tr>
+                        <tr class="totals-row">
+                            <td class="totals-label">Box Price</td>
+                            <td>Rs. {{ order.box_price }}</td>
+                        </tr>
+                        <tr class="totals-row">
+                            <td class="totals-label">Total Decoration</td>
+                            <td>Rs. {{ order.decorations_total }}</td>
+                        </tr>
+                        <tr class="totals-row">
+                            <td class="totals-label">Shipping</td>
+                            <td>Free</td>
+                        </tr>
+                        {% if order.discount %}
+                        <tr class="totals-row green-text">
+                            <td class="totals-label">Discount</td>
+                            <td>- Rs. {{ order.discount }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="totals-row grand-total">
+                            <td class="totals-label">Total Amount</td>
+                            <td class="value">Rs. {{ order.total_amount }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Footer Frame Content -->
+        <div id="footerContent">
+            Thank you for shopping with <strong>hampr</strong>. For support, please contact us.<br>
+            This is a computer generated invoice.
+        </div>
+    </div>
+</body>
+
+</html>

@@ -7,17 +7,15 @@ from django.urls import reverse,reverse_lazy
 from accounts.models import CustomUser
 from django.db.models import Q
 from django.contrib.auth import login
-from django.db.models import Q
-from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator
 from datetime import timedelta
-from itertools import chain
 import openpyxl
-from django.http import HttpResponse
 from django.utils import timezone
+import json
+
 
 
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
@@ -26,6 +24,7 @@ from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductC
 from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxCategoryImage,BoxSize,BoxImage,ProductCategory,Product,Color,Size,ProductVariant,ProductImage,DecorationImages,Decoration
 from coupons.models import PromoCode
 from order.models import Order
+from core.utils import invoice_generator
 
 
 class AdminLoginView(NeverCacheMixin,LoginInRedirectMixin,View):
@@ -1424,4 +1423,42 @@ class AdminOrderDetail(NeverCacheMixin,StaffRequiredMixin,View):
             order = Order.objects.get(order_number=id)
         except Order.DoesNotExist as e:
             print(e)
+            
+        invoice = request.GET.get('invoice')
+        invoice_html = None
+        if invoice == "true":
+            return invoice_generator(order)
+            
         return render(request,'c_admin/admin-order-detail.html',{'order':order})
+    
+    
+class AdminUpdateOrderStatus(StaffRequiredMixin,View):
+    def post(self,request,*args, **kwargs):
+        data = json.loads(request.body)
+        try:
+            order = Order.objects.get(order_number=data.get('order_number'))
+        except Order.DoesNotExist as e:
+            print(e)
+        print(data)
+        status =data.get('status')
+        allowed_transitions = {
+            "PENDING": ["CONFIRMED","SHIPPED","DELIVERED", "CANCELLED"],
+            "CONFIRMED": ["SHIPPED", "CANCELLED","DELIVERED"],
+            "SHIPPED": ["DELIVERED","CANCELLED"],
+            "DELIVERED": [],
+            "CANCELLED": [],
+        }
+        if not status in allowed_transitions.get(order.status):
+            return JsonResponse(
+                    {
+                        "error": f"Invalid status change: {order.status} → {status}"
+                    },
+                    status=400
+                )
+        order.status = status
+        order.save()
+        return JsonResponse({"success": "Order status updated"})
+            
+        
+        
+        

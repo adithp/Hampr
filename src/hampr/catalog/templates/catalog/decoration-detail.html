@@ -75,19 +75,19 @@
             transition: transform 0.2s ease;
             will-change: transform;
         }
+
         .capacity-meter-container {
-    background: #f0f0f0;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-}
+            background: #f0f0f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
 
-.capacity-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #10b981, #059669);
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
-}
-
+        .capacity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+        }
     </style>
 </head>
 
@@ -160,7 +160,8 @@
                         <div class="d-flex align-items-center gap-2 mb-2">
                             <h2 class="fw-bold mb-0" id="decoName">{{product.name}}</h2>
                             <span class="badge badge-both" id="decoTypeBadge">
-                                {% if product.is_outside and product.is_inside %}Outer + Inner{% elif product.is_inside %}
+                                {% if product.is_outside and product.is_inside %}Outer + Inner{% elif product.is_inside
+                                %}
                                 Inner{% else %}Outer{% endif %}</span>
                         </div>
                         <h4 class="text-gold fw-bold mb-3" id="decoPrice">₹{{product.price}}</h4>
@@ -173,7 +174,8 @@
                                 <i class="fas fa-cube me-2"></i>Volume: <span id="decoVolume">{{volume}}</span> L
                             </div>
                             <div class="col-6 col-md-4 mb-2">
-                                <i class="fas fa-ruler-combined me-2"></i>Dims: <span id="decoDims">{{product.width}}x{{product.height}}x{{product.depth}}</span> cm
+                                <i class="fas fa-ruler-combined me-2"></i>Dims: <span
+                                    id="decoDims">{{product.width}}x{{product.height}}x{{product.depth}}</span> cm
                             </div>
                         </div>
 
@@ -199,14 +201,14 @@
                             </div>
 
                             <!-- Capacity Bar -->
-<div class="capacity-meter-container">
-    <div class="capacity-fill" id="capacityBar"></div>
-</div>
+                            <div class="capacity-meter-container">
+                                <div class="capacity-fill" id="capacityBar"></div>
+                            </div>
 
-<div class="d-flex justify-content-between text-muted small mb-4">
-    <span id="volumeText">0 / 10L used</span>
-    <span id="remainingText">10L remaining</span>
-</div>
+                            <div class="d-flex justify-content-between text-muted small mb-4">
+                                <span id="volumeText">0 / 10L used</span>
+                                <span id="remainingText">10L remaining</span>
+                            </div>
 
                             <small class="text-danger d-none fw-bold mt-1" id="capacityWarning"><i
                                     class="fas fa-exclamation-triangle me-1"></i>Capacity Exceeded!</small>
@@ -221,11 +223,9 @@
                                 {% if product.is_outside %}
                                 <div class="mb-3 p-3 border rounded bg-light" id="outerConfigSection">
                                     <div class="form-check">
-<input class="form-check-input"
-       type="checkbox"
-       id="useAsOuter"
-       {% if outer_selected %}checked{% endif %}>                                        
-       <label class="form-check-label fw-bold" for="useAsOuter">
+                                        <input class="form-check-input" type="checkbox" id="useAsOuter" 
+                                        {% if outer_selected %}checked{% endif %}>
+                                        <label class="form-check-label fw-bold" for="useAsOuter">
                                             Use as Outer Decoration
                                         </label>
                                     </div>
@@ -248,11 +248,10 @@
                                     </div>
                                     <div class="text-end mt-2">
                                         <small class="text-muted">Subtotal: </small>
-                                        <span class="fw-bold text-primary"
-      id="innerSubtotal"
-      data-price="{{ product.price }}">
-    ₹{{ product.price|floatformat:2 }}
-</span>
+                                        <span class="fw-bold text-primary" id="innerSubtotal"
+                                            data-price="{{ product.price }}">
+                                            ₹{{ product.price|floatformat:2 }}
+                                        </span>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -260,43 +259,43 @@
 
                             <!-- Footer -->
                             <div class="bg-light p-3 rounded-3 mb-4">
-               <div class="d-flex justify-content-between mb-1 small">
-    <span class="text-muted">Box</span>
-    <span id="boxPrice" data-price="{{ cart.box_size.price }}">
-        ₹{{ cart.box_size.price }}
-    </span>
-</div>
-                <div class="d-flex justify-content-between mb-1 small">
-                    <span class="text-muted">Decorations</span>
-                    <span id="decorSubtotal"
-      data-base="{{ cart.get_decoration_total }}">
-    ₹{{ cart.get_decoration_total }}
-</span>
+                                <div class="d-flex justify-content-between mb-1 small">
+                                    <span class="text-muted">Box</span>
+                                    <span id="boxPrice" data-price="{{ cart.box_size.price }}">
+                                        ₹{{ cart.box_size.price }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1 small">
+                                    <span class="text-muted">Decorations</span>
+                                    <span id="decorSubtotal" data-base="{{ cart.get_decoration_total }}">
+                                        ₹{{ cart.get_decoration_total }}
+                                    </span>
 
-                </div>
-               <div class="d-flex justify-content-between mb-2 small">
-    <span class="text-muted">Products</span>
-    <span id="productsSubtotal"
-          data-base="{{ cart.get_products_total }}">
-        ₹{{ cart.get_products_total }}
-    </span>
-</div>
-                <div class="d-flex justify-content-between pt-2 border-top border-secondary-subtle">
-                    <span class="fw-bold">Total</span>
-                    <span class="fw-bold text-primary fs-5" id="grandTotal">₹{{ cart.get_grand_total }}</span>
-                </div>
-            </div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2 small">
+                                    <span class="text-muted">Products</span>
+                                    <span id="productsSubtotal" data-base="{{ cart.get_products_total }}">
+                                        ₹{{ cart.get_products_total }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between pt-2 border-top border-secondary-subtle">
+                                    <span class="fw-bold">Total</span>
+                                    <span class="fw-bold text-primary fs-5" id="grandTotal">
+                                        ₹{{ cart.get_grand_total }}</span>
+                                </div>
+                            </div>
 
                             <!-- Actions -->
-                             <div class="d-grid gap-2">
-                <button class="btn btn-primary py-2 fw-medium"
-                    onclick="window.location.href='{% url 'shop:decoation_list' %}'">
-                    <i class="fas fa-ribbon me-2"></i> Add Decorations
-                </button>
-                <button class="btn btn-outline-dark py-2 fw-medium" onclick="goToCheckout()">
-                    Skip to Checkout <i class="fas fa-arrow-right ms-2"></i>
-                </button>
-            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary py-2 fw-medium"
+                                    onclick="window.location.href='{% url 'shop:decoation_list' %}'">
+                                    <i class="fas fa-ribbon me-2"></i> Add Decorations
+                                </button>
+                                <a href="{% url 'checkout:checkout_page' %}"
+                                    class="btn btn-outline-dark py-2 fw-medium">
+                                    Skip to Checkout <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -304,167 +303,167 @@
         </div>
     </section>
 
-<input type="hidden" id="usedVolume" value="{{ cart_volume }}">
-<input type="hidden" id="totalVolume" value="{{ cart_max_volume }}">
+    <input type="hidden" id="usedVolume" value="{{ cart_volume }}">
+    <input type="hidden" id="totalVolume" value="{{ cart_max_volume }}">
 
-<script>
-function updateInnerSubtotal(qty) {
-    const subtotalEl = document.getElementById("innerSubtotal");
-    if (!subtotalEl) return;
+    <script>
+        function updateInnerSubtotal(qty) {
+            const subtotalEl = document.getElementById("innerSubtotal");
+            if (!subtotalEl) return;
 
-    const price = parseFloat(subtotalEl.dataset.price) || 0;
-    subtotalEl.innerText = "₹" + (price * qty).toFixed(2);
-}
-</script>
+            const price = parseFloat(subtotalEl.dataset.price) || 0;
+            subtotalEl.innerText = "₹" + (price * qty).toFixed(2);
+        }
+    </script>
 
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script>
-const DECORATION_ID = {{ product.id }};
-const CSRF_TOKEN = "{{ csrf_token }}";
+        const DECORATION_ID = {{ product.id }};
+        const CSRF_TOKEN = "{{ csrf_token }}";
 
-const outerCheckbox = document.getElementById("useAsOuter");
+        const outerCheckbox = document.getElementById("useAsOuter");
 
-if (outerCheckbox) {
-    outerCheckbox.addEventListener("change", function () {
-        const action = this.checked ? "increment" : "decrement";
+        if (outerCheckbox) {
+            outerCheckbox.addEventListener("change", function () {
+                const action = this.checked ? "increment" : "decrement";
 
-        fetch("{% url 'cart:update_cart' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": CSRF_TOKEN
-            },
-            body: JSON.stringify({
-                type: "decoration",
-                product_id: DECORATION_ID,
-                position: "outer",
-                action: action
+                fetch("{% url 'cart:update_cart' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": CSRF_TOKEN
+                    },
+                    body: JSON.stringify({
+                        type: "decoration",
+                        product_id: DECORATION_ID,
+                        position: "outer",
+                        action: action
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert(data.error);
+                            this.checked = false;
+                            return;
+                        }
+
+                        // update capacity
+                        updateCapacityUI(
+                            data.cart.used_volume,
+                            data.cart.volume
+                        );
+
+                        // update outer count (already from backend)
+                        document.getElementById("outerCountText").innerText =
+                            `${data.cart.outer_count}/2 currently selected.`;
+                    });
+            });
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const qtyEl = document.getElementById("innerQty");
+            const subtotalEl = document.getElementById("innerSubtotal");
+
+            if (!qtyEl || !subtotalEl) return;
+
+            const qty = parseInt(qtyEl.value) || 0;
+            const price = parseFloat(subtotalEl.dataset.price);
+
+            subtotalEl.innerText = "₹" + (price * qty).toFixed(2);
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const qty = parseInt(document.getElementById("innerQty")?.value) || 0;
+            updateInnerSubtotal(qty);
+        });
+    </script>
+
+
+    <script>
+        function updateQty(change) {
+            const qtyInput = document.getElementById("innerQty");
+            const currentQty = parseInt(qtyInput.value) || 0;
+
+            if (change < 0 && currentQty <= 0) return;
+
+            const action = change > 0 ? "increment" : "decrement";
+
+            fetch("{% url 'cart:update_cart' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": CSRF_TOKEN
+                },
+                body: JSON.stringify({
+                    type: "decoration",
+                    product_id: DECORATION_ID,
+                    position: "inner",
+                    action: action
+                })
             })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (!data.success) {
-                alert(data.error);
-                this.checked = false;
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    const qty = data.quantity;
+
+                    // ✅ backend is truth
+                    qtyInput.value = qty;
+
+                    // ✅ always recalc subtotal
+                    updateInnerSubtotal(qty);
+
+                    // capacity
+                    updateCapacityUI(
+                        data.cart.used_volume,
+                        data.cart.volume
+                    );
+                });
+        }
+    </script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const used = parseFloat(document.getElementById("usedVolume")?.value) || 0;
+            const capacity = parseFloat(document.getElementById("totalVolume")?.value) || 0;
+
+            updateCapacityUI(used, capacity);
+        });
+
+        function updateCapacityUI(used, capacity) {
+            if (!capacity) return;
+
+            const percent = Math.min((used / capacity) * 100, 100);
+            const bar = document.getElementById("capacityBar");
+
+            if (!bar) {
+                console.error("capacityBar not found");
                 return;
             }
 
-            // update capacity
-            updateCapacityUI(
-                data.cart.used_volume,
-                data.cart.volume
-            );
+            bar.style.width = percent + "%";
+            document.getElementById("capacityPercent").innerText = `${Math.round(percent)}%`;
+            document.getElementById("volumeText").innerText =
+                `${used} / ${capacity} L used`;
+            document.getElementById("remainingText").innerText =
+                `${Math.max(capacity - used, 0).toFixed(1)} L remaining`;
 
-            // update outer count (already from backend)
-            document.getElementById("outerCountText").innerText =
-                `${data.cart.outer_count}/2 currently selected.`;
-        });
-    });
-}
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const qtyEl = document.getElementById("innerQty");
-    const subtotalEl = document.getElementById("innerSubtotal");
-
-    if (!qtyEl || !subtotalEl) return;
-
-    const qty = parseInt(qtyEl.value) || 0;
-    const price = parseFloat(subtotalEl.dataset.price);
-
-    subtotalEl.innerText = "₹" + (price * qty).toFixed(2);
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const qty = parseInt(document.getElementById("innerQty")?.value) || 0;
-    updateInnerSubtotal(qty);
-});
-</script>
-
-
-<script>
-function updateQty(change) {
-    const qtyInput = document.getElementById("innerQty");
-    const currentQty = parseInt(qtyInput.value) || 0;
-
-    if (change < 0 && currentQty <= 0) return;
-
-    const action = change > 0 ? "increment" : "decrement";
-
-    fetch("{% url 'cart:update_cart' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": CSRF_TOKEN
-        },
-        body: JSON.stringify({
-            type: "decoration",
-            product_id: DECORATION_ID,
-            position: "inner",
-            action: action
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (!data.success) {
-            alert(data.error);
-            return;
+            if (percent >= 100) bar.style.background = "#ef4444";
+            else if (percent >= 75) bar.style.background = "#f59e0b";
+            else bar.style.background = "linear-gradient(90deg,#10b981,#059669)";
         }
 
-        const qty = data.quantity;
-
-        // ✅ backend is truth
-        qtyInput.value = qty;
-
-        // ✅ always recalc subtotal
-        updateInnerSubtotal(qty);
-
-        // capacity
-        updateCapacityUI(
-            data.cart.used_volume,
-            data.cart.volume
-        );
-    });
-}
-</script>
-
-
-     <script>
-   document.addEventListener("DOMContentLoaded", function () {
-    const used = parseFloat(document.getElementById("usedVolume")?.value) || 0;
-    const capacity = parseFloat(document.getElementById("totalVolume")?.value) || 0;
-
-    updateCapacityUI(used, capacity);
-});
-
-function updateCapacityUI(used, capacity) {
-    if (!capacity) return;
-
-    const percent = Math.min((used / capacity) * 100, 100);
-    const bar = document.getElementById("capacityBar");
-
-    if (!bar) {
-        console.error("capacityBar not found");
-        return;
-    }
-
-    bar.style.width = percent + "%";
-    document.getElementById("capacityPercent").innerText = `${Math.round(percent)}%`;
-    document.getElementById("volumeText").innerText =
-        `${used} / ${capacity} L used`;
-    document.getElementById("remainingText").innerText =
-        `${Math.max(capacity - used, 0).toFixed(1)} L remaining`;
-
-    if (percent >= 100) bar.style.background = "#ef4444";
-    else if (percent >= 75) bar.style.background = "#f59e0b";
-    else bar.style.background = "linear-gradient(90deg,#10b981,#059669)";
-}
-
-</script>
+    </script>
 
     <script>
         (function () {
@@ -529,6 +528,6 @@ function updateCapacityUI(used, capacity) {
 
 
 
-</body>
+</body >
 
-</html>
+</html >
