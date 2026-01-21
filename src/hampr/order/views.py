@@ -18,6 +18,8 @@ from courier.services import check_serviceability
 from .services import generate_order_number,create_order_items,create_order_address,promo_apply_validation
 from payment.razorpay_client import create_razorpay_order
 from payment.models import Payment,PaymentGatewayLog
+from core.utils import invoice_generator
+from reviews.models import ProductReviews,DecorationReviews,BoxReviews
 
 
 # Create your views here.
@@ -174,3 +176,55 @@ def razorpay_verify(request):
         "status": "success",
         "order_number": order.order_number
     })
+    
+    
+class OrderDetail(LoginRequiredMixin,View):
+    def get(self,request,order_id,*args, **kwargs):
+        try:
+            order = Order.objects.get(order_number=order_id)
+        except Order.DoesNotExist as e:
+            print(e)
+             
+
+        order_items = list(order.items.all())
+        order_hampers = list(order.order_hampers.all())
+        order_decorations = list(order.order_decorations.all())
+
+        product_reviews = ProductReviews.objects.filter(
+            user=request.user,
+            product__in=[item.product.product for item in order_items]
+        )
+        product_review_map = {r.product_id: r for r in product_reviews}
+
+        box_reviews = BoxReviews.objects.filter(
+            user=request.user,
+            box__in=[h.hamper.hamper_box for h in order_hampers]
+        )
+        box_review_map = {r.box_id: r for r in box_reviews}
+
+        decoration_reviews = DecorationReviews.objects.filter(
+            user=request.user,
+            decoration__in=[d.decoration for d in order_decorations]
+        )
+        decoration_review_map = {r.decoration_id: r for r in decoration_reviews}
+
+        for item in order_items:
+            item.user_review = product_review_map.get(item.product.product.id)
+
+        for hamper in order_hampers:
+            hamper.user_review = box_review_map.get(hamper.hamper.hamper_box.id)
+
+        for decoration in order_decorations:
+            decoration.user_review = decoration_review_map.get(decoration.decoration.id)
+
+        invoice = request.GET.get('invoice')
+        if invoice == "true":
+            return invoice_generator(order)
+
+        context = {
+            'order': order,
+            'order_items': order_items,           
+            'order_hampers': order_hampers,
+            'order_decorations': order_decorations,
+        }
+        return render(request, 'order/order-detail.html', context)

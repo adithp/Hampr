@@ -19,7 +19,8 @@ urlpatterns = [
     path('checkout/',include('checkout.urls')),
     path('coupons/',include('coupons.urls')),
     path('courier/',include('courier.urls')),
-    path('order/',include('order.urls'))
+    path('order/',include('order.urls')),
+    path('review/',include('reviews.urls'))
     
     
 
