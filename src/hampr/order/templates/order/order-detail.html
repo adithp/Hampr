@@ -1,0 +1,939 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order #{{order.order_number}} | HAMPR</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+    <style>
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        .status-confirmed {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+        .status-shipped {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+        .status-delivered {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            padding-bottom: 20px;
+            border-left: 2px solid #e9ecef;
+        }
+        .timeline-item:last-child {
+            border-left: transparent;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-gold);
+        }
+        /* HAMPR SweetAlert Theme */
+.swal2-popup {
+    border-radius: 14px !important;
+    font-family: 'Inter', sans-serif;
+}
+
+.swal2-title {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #1c1c1c !important;
+}
+
+.swal2-html-container {
+    font-size: 14px !important;
+    color: #4b4b4b !important;
+}
+
+.swal2-confirm {
+    background-color: #c9a23f !important; /* Gold */
+    color: #000 !important;
+    border-radius: 8px !important;
+    padding: 10px 18px !important;
+    font-weight: 500;
+}
+
+.swal2-confirm:hover {
+    background-color: #b89334 !important;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+    <!-- Main Content -->
+    <section class="py-5" style="margin-top: 80px;">
+        <div class="container">
+            <!-- Breadcrumb & Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a
+                                href="{% url 'accounts:user_profile' %}#orders"
+                                class="text-decoration-none text-muted">My Orders</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            #{{order.order_number}}</li>
+                    </ol>
+                </nav>
+                <div
+                    class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                    <div>
+                        <h2 class="fw-bold mb-1">Order #{{order.order_number}}</h2>
+                        <div class="d-flex align-items-center gap-2 text-muted">
+                            <span><i class="far fa-calendar me-1"></i> 
+                                {{order.created_at}}</span>
+                            <span>&bull;</span>
+                            {% if order.status == "PENDING" %}
+                            <span class="status-badge status-pending">Pending</span>
+                            {% elif order.status == 'CONFIRMED' %}
+                            <span class="status-badge status-confirmed">Confirmed</span>
+                            {% elif order.status == 'SHIPPED' %}
+                            <span class="status-badge status-shipped">Shipped</span>
+                            {% elif order.status == 'DELIVERED' %}
+                            <span class="status-badge status-delivered">Delivered</span>
+                            {% elif order.status == 'CANCELLED' %}
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-3 mt-md-0 d-flex gap-2">
+                        <button class="btn btn-outline-secondary"
+                            onclick="printInvoice()">
+                            <i class="fas fa-print me-2"></i>Download Invoice
+                        </button>
+                        <a href="" class="btn btn-primary">
+                            <i class="fas fa-truck me-2"></i>Track Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-4">
+                <!-- Left Column: Order Items & Payment -->
+                <div class="col-lg-8">
+                    <!-- Hamper Details (Box + Decorations) -->
+                    {% if order_hampers %}
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <h5 class="mb-0 fw-bold">Hamper Configuration</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3">Item</th>
+                                            <th class="py-3">Type</th>
+                                            <th class="py-3 text-end">Price</th>
+                                            <th class="py-3 text-center">Qty</th>
+                                            <th class="py-3 text-end">Total</th>
+                                            <th class="py-3 text-center pe-4">Review
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+
+                                        <img src="{{order_hampers.0.box_image.url}}"
+                                                            alt="Box"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">
+                                                            {{order_hampers.0.hamper_name}}
+                                                        </div>
+                                                        <div class="small text-muted">
+                                                            Size:
+                                                            {{order_hampers.0.size_label}}
+                                                            ({{ order_hampers.0.height|floatformat:0}}x
+                                                            {{order_hampers.0.width|floatformat:0 }}x
+                                                            {{order_hampers.0.depth|floatformat:0 }})</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span
+                                                    class="badge bg-secondary-subtle text-secondary">Box</span>
+                                            </td>
+                                            <td class="text-end">
+                                                ₹{{order_hampers.0.box_price_at_order_time}}
+                                            </td>
+                                            <td class="text-center">1</td>
+                                            <td class="text-end">
+                                                ₹{{order_hampers.0.box_price_at_order_time}}
+                                            </td>
+                                            <td class="text-center pe-4">
+                                                {% if order_hampers.0.user_review %}
+                                                <div class="d-inline-flex align-items-center bg-success text-white rounded-pill shadow-sm text-nowrap">
+                                                    <span class="px-2 py-1 small fw-medium">
+                                                        <i class="fas fa-check fa-xs me-1"></i> Reviewed
+                                                    </span>
+                                                    <div class="vr bg-white opacity-25 py-2"></div>
+                                                    <button type="button" class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
+                                                            onclick="deleteReview('{{order_hampers.0.user_review.id}}', 'box')" 
+                                                            title="Remove Review">
+                                                        <i class="fas fa-trash-alt fa-xs"></i>
+                                                    </button>
+                                                </div>
+                                                {% else %}
+                                                <button
+                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                    onclick="openReviewModal('{{order_hampers.0.hamper_name}}', 'box', 
+                                                    '{{order_hampers.0.hamper.hamper_box.id}}')">
+                                                    <i class="far fa-star me-1"></i>
+                                                    Review
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% for item in order_decorations %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+                                                        <img src="{{item.image.url}}"
+                                                            alt="Deco"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">
+                                                            {{item.decoration_name}}
+                                                        </div>
+                                                        <div class="small text-muted">
+                                                            Position:
+                                                            {%if item.is_inside%}Inside{% else %}Outside{%endif%}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span
+                                                    class="badge bg-info-subtle text-info">Decoration</span>
+                                            </td>
+                                            <td class="text-end">
+                                                ₹{{item.price_at_order_time}}</td>
+                                            <td class="text-center">{{item.quantity}}
+                                            </td>
+                                            <td class="text-end">₹{{item.subtotal}}</td>
+                                            <td class="text-center pe-4">
+                                                {% if item.user_review %}
+                                                <div class="d-inline-flex align-items-center bg-success text-white rounded-pill shadow-sm text-nowrap">
+                                                    <span class="px-2 py-1 small fw-medium">
+                                                        <i class="fas fa-check fa-xs me-1"></i> Reviewed
+                                                    </span>
+                                                    <div class="vr bg-white opacity-25 py-2"></div>
+                                                    <button type="button" class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
+                                                            onclick="deleteReview('{{item.user_review.id}}', 'decoration')" 
+                                                            title="Remove Review">
+                                                        <i class="fas fa-trash-alt fa-xs"></i>
+                                                    </button>
+                                                </div>
+                                                {% else %}
+                                                <button
+                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                    onclick="openReviewModal('{{item.decoration_name}}', 'decoration', '{{item.decoration.id}}')">
+                                                    <i class="far fa-star me-1"></i>
+                                                    Review
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- Order Items (Products) -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <h5 class="mb-0 fw-bold">Order Items</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th class="ps-4 py-3">Product</th>
+                                            <th class="py-3 text-end">Price</th>
+                                            <th class="py-3 text-center">Quantity</th>
+                                            <th class="py-3 text-end">Total</th>
+                                            <th class="py-3 text-center pe-4">Review
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- OrderItem -->
+                                        {% for item in order_items %}
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-1 me-3"
+                                                        style="width: 50px; height: 50px;">
+                                                        <img src="{{item.product_image.url}}"
+                                                            alt="Product"
+                                                            class="img-fluid rounded">
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-medium">
+                                                            {{item.product_name}}</div>
+                                                        <div class="small text-muted">
+                                                            Brand:
+                                                            {{item.product_brand}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end">
+                                                ₹{{item.price_at_order_time}}</td>
+                                            <td class="text-center">{{item.quantity}}
+                                            </td>
+                                            <td class="text-end">₹{{item.subtotal}}</td>
+                                            <td class="text-center pe-4">
+                                                {% if item.user_review %}
+                                                <div class="d-inline-flex align-items-center bg-success text-white rounded-pill shadow-sm text-nowrap">
+                                                    <span class="px-2 py-1 small fw-medium">
+                                                        <i class="fas fa-check fa-xs me-1"></i> Reviewed
+                                                    </span>
+                                                    <div class="vr bg-white opacity-25 py-2"></div>
+                                                    <button type="button" class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
+                                                            onclick="deleteReview('{{item.user_review.id}}', 'product')" 
+                                                            title="Remove Review">
+                                                        <i class="fas fa-trash-alt fa-xs"></i>
+                                                    </button>
+                                                </div>
+                                                {% else %}
+                                                <button
+                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                    onclick="openReviewModal('{{item.product_name}}', 'product', '{{item.product.product.id}}')">
+                                                    <i class="far fa-star me-1"></i>
+                                                    Review
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="border-top">
+                                        {% if order.order_hampers.exists %}
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-end py-2 text-muted">Box
+                                                Price</td>
+                                            <td class="text-end pe-4 py-2">
+                                                ₹{{order_hampers.0.box_price_at_order_time}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-end py-2 text-muted">
+                                                Decorations Total</td>
+                                            <td class="text-end pe-4 py-2">
+                                                ₹{{order.decorations_total}}</td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-end py-2 text-muted">
+                                                Products Total</td>
+                                            <td class="text-end pe-4 py-2">
+                                                ₹{{order.products_total}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-end py-2 fw-bold">Subtotal
+                                            </td>
+                                            <td class="text-end pe-4 py-2 fw-bold">
+                                                ₹{{order.subtotal}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-end py-2 text-muted">
+                                                Discount</td>
+                                            <td class="text-end pe-4 py-2 text-danger">
+                                                -₹{{order.discount}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"
+                                                class="text-end py-2 text-muted">
+                                                Shipping Cost</td>
+                                            <td class="text-end pe-4 py-2"><span
+                                                    class="text-success fw-bold">Free</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="fw-bold fs-5 bg-light">
+                                            <td colspan="4" class="text-end py-3">Total
+                                                Amount</td>
+                                            <td class="text-end pe-4 py-3">
+                                                ₹{{order.total_amount}}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right Column: Customer & Timeline -->
+                <div class="col-lg-4">
+                    <!-- Customer Info -->
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <h5 class="mb-0 fw-bold">Delivery Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="bg-light rounded-circle p-3 me-3">
+                                    <i
+                                        class="fas fa-map-marker-alt fa-lg text-secondary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">
+                                        {{order.delivery_address.recipient_name}}</div>
+                                    <div class="text-muted small">
+                                        {{order.delivery_address.phone_number}}</div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="mb-2">
+                                <h6
+                                    class="fw-bold mb-2 text-uppercase small text-muted">
+                                    Shipping Address</h6>
+                                <p class="mb-0 small text-muted">
+                                    {{order.delivery_address.apartment}},
+                                    {{order.delivery_address.street_address}}<br>
+                                    {{order.delivery_address.city}},
+                                    {{order.delivery_address.postal_code}} <br>
+                                    {{order.delivery_address.country}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Order Timeline -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <h5 class="mb-0 fw-bold">Order History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="fw-medium">Order Placed</div>
+                                    <div class="small text-muted">{{order.created_at}}
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="fw-medium">Payment Confirmed</div>
+                                    <div class="small text-muted">
+                                        {{order.payments.first.updated_at}}</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="fw-medium">Processing Started</div>
+                                    <div class="small text-muted">
+                                        {% if order.created_at == order.updated_at %}
+                                        Not Started
+                                        {% else %}
+                                        {{ order.updated_at }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer class="bg-dark pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h3 class="text-white mb-4">HAM<span class="text-gold">PR.</span>
+                    </h3>
+                    <p class="text-white-50">Premium gift hampers for all occasions.
+                        Curated with love and care.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Shop</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">All
+                                Products</a></li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">New
+                                Arrivals</a></li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">Best
+                                Sellers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h5 class="text-white mb-3">Company</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">About
+                                Us</a></li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">Contact</a>
+                        </li>
+                        <li class="mb-2"><a href="#"
+                                class="text-white-50 text-decoration-none hover-text-gold">Privacy
+                                Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5 class="text-white mb-3">Newsletter</h5>
+                    <div class="input-group">
+                        <input type="text" class="form-control"
+                            placeholder="Your email">
+                        <button class="btn btn-primary hover-ripple">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center text-white-50">
+                <small>&copy; 2023 HAMPR. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+    <!-- Scripts -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Write a Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="text-muted small mb-4">Reviewing: <span
+                            id="reviewItemName" class="fw-bold text-dark"></span></p>
+                    <form id="reviewForm">
+                        <!-- Star Rating -->
+                        <div class="mb-4 text-center">
+                            <label class="form-label d-block mb-2">Rate this
+                                item</label>
+                            <div class="rating-stars">
+                                <i class="far fa-star fa-2x text-warning cursor-pointer"
+                                    data-value="1"></i>
+                                <i class="far fa-star fa-2x text-warning cursor-pointer"
+                                    data-value="2"></i>
+                                <i class="far fa-star fa-2x text-warning cursor-pointer"
+                                    data-value="3"></i>
+                                <i class="far fa-star fa-2x text-warning cursor-pointer"
+                                    data-value="4"></i>
+                                <i class="far fa-star fa-2x text-warning cursor-pointer"
+                                    data-value="5"></i>
+                            </div>
+                            <input type="hidden" name="rating" id="ratingInput"
+                                required>
+                            <input type="hidden" name="order_id" id="reviewOrderId" value="{{order.id}}">
+                            <input type="hidden" name="item_id" id="reviewItemId">
+                            <input type="hidden" name="item_type" id="reviewItemType">
+                            <input type="hidden" name="review_id" id="reviewId">
+                        </div>
+                        <!-- Message -->
+                        <div class="mb-3">
+                            <label class="form-label">Your Review</label>
+                            <textarea name="review_text" class="form-control" rows="4"
+                                placeholder="Share your experience..."
+                                required></textarea>
+                        </div>
+                        <!-- Image Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">Add Photos <span
+                                    class="text-muted small">(Max 5)</span></label>
+                            <input type="file" class="form-control" id="reviewImages"
+                                accept="image/*" multiple>
+                            <div id="imagePreviewContainer"
+                                class="d-flex gap-2 mt-2 flex-wrap"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-gold" id="submitReview">Submit
+                        Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        function hamprAlert({
+    title = 'Notice',
+    message = '',
+    icon = 'success'
+}) {
+    Swal.fire({
+        title: title,
+        html: message,
+        icon: icon,
+        showConfirmButton: true,
+        confirmButtonText: 'OK',
+        background: '#ffffff',
+        width: 380,
+        allowOutsideClick: true,
+        allowEscapeKey: true
+    });
+}
+
+    </script>
+
+        <script>
+        function printInvoice() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('invoice', 'true');
+            window.location.href = url.toString();
+        }
+
+        // Helper to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function deleteReview(reviewId, itemType) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const csrftoken = getCookie('csrftoken');
+                    // URL for deletion - assumes /review/delete/<id>/
+                    let url = "{% url 'review:delete_review' 0 %}".replace('0', reviewId);
+                    
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ item_type: itemType })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Deleted!',
+                                'Your review has been deleted.',
+                                'success'
+                            ).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.error || 'Could not delete review.',
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Error!',
+                            'Something went wrong.',
+                            'error'
+                        );
+                    });
+                }
+            })
+        }
+
+        // Review Modal Logic
+        let currentRating = 0;
+        let accumulatedFiles = new DataTransfer();
+
+        function openReviewModal(itemName, itemType, itemId, rating = 0, reviewText = '', reviewId = '') {
+            document.getElementById('reviewItemName').textContent = itemName;
+            document.getElementById('reviewItemId').value = itemId;
+            document.getElementById('reviewItemType').value = itemType;
+            document.getElementById('reviewId').value = reviewId;
+            
+            // Reset form
+            document.getElementById('reviewForm').reset();
+            document.getElementById('imagePreviewContainer').innerHTML = '';
+            accumulatedFiles = new DataTransfer(); // Reset accumulated files
+            
+            // If editing, set values
+            if (reviewId) {
+                document.querySelector('.modal-title').textContent = 'Edit Review';
+                document.getElementById('ratingInput').value = rating;
+                document.querySelector('textarea[name="review_text"]').value = reviewText;
+                currentRating = rating;
+                highlightStars(rating);
+            } else {
+                document.querySelector('.modal-title').textContent = 'Write a Review';
+                resetStars();
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            modal.show();
+        }
+
+        // Star Rating Interaction
+        document.querySelectorAll('.rating-stars i').forEach(star => {
+            star.addEventListener('mouseover', function () {
+                const value = this.getAttribute('data-value');
+                highlightStars(value);
+            });
+            star.addEventListener('click', function () {
+                currentRating = this.getAttribute('data-value');
+                document.getElementById('ratingInput').value = currentRating;
+                highlightStars(currentRating);
+            });
+        });
+
+        document.querySelector('.rating-stars').addEventListener('mouseleave', function () {
+            highlightStars(currentRating);
+        });
+
+        function highlightStars(value) {
+            document.querySelectorAll('.rating-stars i').forEach(star => {
+                const starValue = star.getAttribute('data-value');
+                if (starValue <= value) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+
+        function resetStars() {
+            currentRating = 0;
+            document.getElementById('ratingInput').value = '';
+            highlightStars(0);
+        }
+
+        // Image Upload Limit & Preview
+        document.getElementById('reviewImages').addEventListener('change', function (e) {
+            const newFiles = Array.from(e.target.files);
+            
+            // Check if adding these files would exceed the limit
+            if (accumulatedFiles.files.length + newFiles.length > 5) {
+                hamprAlert({
+                    title: 'Upload limit reached',
+                    message: 'You can upload a maximum of 5 images.',
+                    icon: 'warning'
+                });
+
+                
+                // Restore the input to the previously accumulated files
+                this.files = accumulatedFiles.files;
+                return;
+            }
+
+            // Add new files to the accumulator
+            newFiles.forEach(file => {
+                // Prevent duplicates based on name and size (basic check)
+                const exists = Array.from(accumulatedFiles.files).some(f => f.name === file.name && f.size === file.size);
+                if (!exists) {
+                    accumulatedFiles.items.add(file);
+                }
+            });
+
+            // Update the input's files property
+            this.files = accumulatedFiles.files;
+            
+            updateImagePreview();
+        });
+
+        function updateImagePreview() {
+            const container = document.getElementById('imagePreviewContainer');
+            container.innerHTML = '';
+
+            Array.from(accumulatedFiles.files).forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'position-relative d-inline-block';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'rounded border';
+                        img.style.width = '60px';
+                        img.style.height = '60px';
+                        img.style.objectFit = 'cover';
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.innerHTML = '&times;';
+                        removeBtn.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0 d-flex align-items-center justify-content-center rounded-circle';
+                        removeBtn.style.width = '18px';
+                        removeBtn.style.height = '18px';
+                        removeBtn.style.fontSize = '12px';
+                        removeBtn.style.transform = 'translate(30%, -30%)';
+                        removeBtn.onclick = function(e) {
+                            e.preventDefault(); // Prevent modal close or form submit
+                            removeFile(index);
+                        };
+
+                        wrapper.appendChild(img);
+                        wrapper.appendChild(removeBtn);
+                        container.appendChild(wrapper);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function removeFile(index) {
+            const newDt = new DataTransfer();
+            Array.from(accumulatedFiles.files).forEach((file, i) => {
+                if (i !== index) {
+                    newDt.items.add(file);
+                }
+            });
+            accumulatedFiles = newDt;
+            document.getElementById('reviewImages').files = accumulatedFiles.files;
+            updateImagePreview();
+        }
+
+        document.getElementById('submitReview').addEventListener('click', function () {
+            const form = document.getElementById('reviewForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            // Append accumulated files manually because the input might not hold all of them if we messed with it, 
+            // but actually we kept the input synced with accumulatedFiles.files, so it should be fine.
+            // However, to be safe and ensure we send exactly what's in accumulatedFiles:
+            formData.delete('reviewImages'); // Remove the default file input data
+            Array.from(accumulatedFiles.files).forEach(file => {
+                formData.append('images', file);
+            });
+
+            // Get CSRF token if available (Django usually puts it in a cookie or a hidden input)
+            // Assuming standard Django CSRF cookie 'csrftoken'
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+
+            fetch('{% url 'review:create_review' %}', { 
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+           .then(async response => {
+                const data = await response.json();  // 🔥 read backend message
+
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(
+                        document.getElementById('reviewModal')
+                    );
+                    modal.hide();
+                    hamprAlert({
+                        title: 'Review submitted',
+                        message: 'Thank you for your feedback.',
+                        icon: 'success'
+                    });
+
+                    window.location.reload();
+                } else {
+                    // 🔥 show REAL backend error
+                    hamprAlert({
+                            title: 'Action failed',
+                            message: data.error || 'Something went wrong. Please try again.',
+                            icon: 'error'
+                        });
+
+                }
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Connection issue',
+                        text: 'Network error. Please check your internet connection and try again.',
+                        icon: 'error',
+                        confirmButtonText: 'Retry',
+                        background: '#ffffff',
+                        width: 380
+                    });
+                });
+        });
+    </script>
+</body>
+</html>

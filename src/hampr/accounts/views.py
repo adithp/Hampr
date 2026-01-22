@@ -242,6 +242,7 @@ class ProfilePageView(LoginRequiredMixin,OnlyForUsers,View):
             
         address = UserAddress.objects.filter(user=request.user)
         has_default_address = UserAddress.objects.filter(user=request.user,is_default=True).exists()
+        orders = orders.order_by('-created_at')
         print(address)
         return render(request,'accounts/account.html',{'form':form,'address':address,'has_default_address':has_default_address,'orders':orders})
     

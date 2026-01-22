@@ -138,7 +138,14 @@
                                             <h6 class="fw-bold mb-1">Order #{{item.order_number}}</h6>
                                             <small class="text-muted">Placed on {{item.created_at}}</small>
                                         </div>
-                                        <span class="badge bg-gold text-dark">{{item.status}}</span>
+                                         <div class="d-flex gap-2">
+                                            {% if item.payment_method == 'COD' %}
+                                            <span class="badge bg-secondary">COD</span>
+                                            {% else %}
+                                            <span class="badge bg-info text-dark">Online</span>
+                                            {% endif %}
+                                            <span class="badge bg-gold text-dark">{{item.status}}</span>
+                                        </div>
                                     </div>
                                     <div class="d-flex align-items-center gap-3 mb-3">
                                         <img src="{{item.order_hampers.all.first.box_image.url}}" width="60" height="60" class="rounded" alt="Product">
@@ -146,8 +153,13 @@
                                         
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                        <a href="{% url 'order:order_detail' item.order_number %}"
+                                        class="btn btn-primary btn-sm rounded-pill px-4">View Details</a>
                                         <a href="tracking.html"
-                                            class="btn btn-outline-primary btn-sm rounded-pill px-4">Track Order</a>
+                                        class="btn btn-outline-primary btn-sm rounded-pill px-4">Track Order</a>
+
+                                        </div>
                                         <span class="fw-bold">₹{{item.total_amount}}</span>
                                     </div>
                                 </div> 
