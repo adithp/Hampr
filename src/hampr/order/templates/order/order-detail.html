@@ -122,8 +122,8 @@
                     <div>
                         <h2 class="fw-bold mb-1">Order #{{order.order_number}}</h2>
                         <div class="d-flex align-items-center gap-2 text-muted">
-                            <span><i class="far fa-calendar me-1"></i> {{
-                                order.created_at }}</span>
+                            <span><i class="far fa-calendar me-1"></i> 
+                                {{order.created_at}}</span>
                             <span>&bull;</span>
                             {% if order.status == "PENDING" %}
                             <span class="status-badge status-pending">Pending</span>
@@ -214,13 +214,11 @@
                                                         <i class="fas fa-check fa-xs me-1"></i> Reviewed
                                                     </span>
                                                     <div class="vr bg-white opacity-25 py-2"></div>
-                                                    <form action="" method="">
-                                                    <button class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
-                                                            onclick="deleteReview('{{order_hampers.0.user_review.id}}')" 
+                                                    <button type="button" class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
+                                                            onclick="deleteReview('{{order_hampers.0.user_review.id}}', 'box')" 
                                                             title="Remove Review">
                                                         <i class="fas fa-trash-alt fa-xs"></i>
                                                     </button>
-                                                    </form>
                                                 </div>
                                                 {% else %}
                                                 <button
@@ -269,8 +267,8 @@
                                                         <i class="fas fa-check fa-xs me-1"></i> Reviewed
                                                     </span>
                                                     <div class="vr bg-white opacity-25 py-2"></div>
-                                                    <button class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
-                                                            onclick="deleteReview('{{item.user_review.id}}')" 
+                                                    <button type="button" class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
+                                                            onclick="deleteReview('{{item.user_review.id}}', 'decoration')" 
                                                             title="Remove Review">
                                                         <i class="fas fa-trash-alt fa-xs"></i>
                                                     </button>
@@ -344,8 +342,8 @@
                                                         <i class="fas fa-check fa-xs me-1"></i> Reviewed
                                                     </span>
                                                     <div class="vr bg-white opacity-25 py-2"></div>
-                                                    <button class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
-                                                            onclick="deleteReview('{{item.user_review.id}}')" 
+                                                    <button type="button" class="btn btn-link text-white text-decoration-none px-2 py-1 border-0" 
+                                                            onclick="deleteReview('{{item.user_review.id}}', 'product')" 
                                                             title="Remove Review">
                                                         <i class="fas fa-trash-alt fa-xs"></i>
                                                     </button>
@@ -654,7 +652,7 @@
             return cookieValue;
         }
 
-        function deleteReview(reviewId) {
+        function deleteReview(reviewId, itemType) {
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -667,7 +665,7 @@
                 if (result.isConfirmed) {
                     const csrftoken = getCookie('csrftoken');
                     // URL for deletion - assumes /review/delete/<id>/
-                    let url = "/review/delete/" + reviewId + "/";
+                    let url = "{% url 'review:delete_review' 0 %}".replace('0', reviewId);
                     
                     fetch(url, {
                         method: 'POST',
@@ -675,7 +673,7 @@
                             'X-CSRFToken': csrftoken,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({})
+                        body: JSON.stringify({ item_type: itemType })
                     })
                     .then(response => response.json())
                     .then(data => {

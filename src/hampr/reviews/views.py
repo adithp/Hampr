@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DeleteView
 import json
 
 from django.contrib.contenttypes.models import ContentType
@@ -107,3 +108,65 @@ class CreateReview(LoginRequiredMixin,View):
             return JsonResponse({"success": True})
         print('error' , form)
         return JsonResponse({"errors": form.errors}, status=400)
+    
+    
+class DeleteReviewModel(DeleteView):
+    def post(self,request,id,*args, **kwargs):
+        data = json.loads(request.body)
+        item_type = data.get('item_type')
+        if item_type == 'box':
+            try:
+                boxReview = BoxReviews.objects.get(id=id)
+            except BoxReviews.DoesNotExist as e:
+                return JsonResponse(
+                {'success': False, 'message': 'review not found'},
+                status=403
+            )
+            if boxReview.user != request.user:
+                return JsonResponse(
+                {'success': False, 'message': 'Unauthorized'},
+                status=403
+            )
+            boxReview.delete()
+            return JsonResponse({
+            'success': True,
+            'message': 'Review deleted successfully'
+                })
+        elif item_type == 'decoration':
+            try:
+                decorationReview = DecorationReviews.objects.get(id=id)
+            except DecorationReviews.DoesNotExist as e:
+                return JsonResponse(
+                {'success': False, 'message': 'review not found'},
+                status=403
+            )
+            if decorationReview.user != request.user:
+                return JsonResponse(
+                {'success': False, 'message': 'Unauthorized'},
+                status=403
+            )
+            decorationReview.delete()
+            return JsonResponse({
+            'success': True,
+            'message': 'Review deleted successfully'
+                })
+            
+        elif item_type == 'product':
+            try:
+                productReview = ProductReviews.objects.get(id=id)
+            except ProductReviews.DoesNotExist as e:
+                return JsonResponse(
+                {'success': False, 'message': 'review not found'},
+                status=403
+            )
+            if productReview.user != request.user:
+                return JsonResponse(
+                {'success': False, 'message': 'Unauthorized'},
+                status=403
+            )
+            productReview.delete()
+            return JsonResponse({
+            'success': True,
+            'message': 'Review deleted successfully'
+                })
+        
