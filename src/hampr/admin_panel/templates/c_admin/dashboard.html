@@ -31,15 +31,13 @@
         :root {
             --primary-gold: #D4AF37;
             --primary-gold-hover: #c5a028;
-            --dark-bg: #1a1a1a;
-            --card-bg: #ffffff;
-            --text-main: #2c2c2c;
-            --text-muted: #6c757d;
-            --border-color: #e9ecef;
+            --text-main: #333;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
         }
 
         body {
-            background-color: #f4f6f9;
+            background-color: var(--bg-light);
             font-family: 'Outfit', sans-serif;
             color: var(--text-main);
         }
@@ -51,26 +49,57 @@
         h5,
         h6 {
             font-family: 'Playfair Display', serif;
-            color: #1a1a1a;
+            color: #000;
         }
 
-        /* Sidebar */
+        /* Sidebar Styles (Restored) */
         .sidebar {
             position: fixed;
             top: 0;
             bottom: 0;
             left: 0;
             z-index: 100;
-            padding: 0;
-            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
             background-color: var(--white);
-            width: 260px;
-            transition: all 0.3s ease;
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
         }
 
         .main-content {
-            margin-left: 260px;
-            padding: 2.5rem;
+            margin-left: 240px;
+            padding: 2rem;
             transition: all 0.3s ease;
         }
 
@@ -78,99 +107,51 @@
         .card {
             border: none;
             border-radius: 16px;
-            background: var(--card-bg);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            overflow: hidden;
         }
 
-        .kpi-card:hover,
-        .action-card:hover {
+        .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.15);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
         .kpi-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            transition: all 0.3s ease;
+            font-size: 1.5rem;
         }
 
-        .kpi-card:hover .kpi-icon {
-            transform: scale(1.1);
-        }
-
-        /* Typography & Elements */
-        .fw-bold {
-            font-weight: 600 !important;
-        }
-
-        .text-gold {
-            color: var(--primary-gold) !important;
-        }
-
-        .bg-gold-subtle {
-            background-color: rgba(212, 175, 55, 0.1);
-        }
-
+        /* Buttons */
         .btn-primary {
             background-color: var(--primary-gold);
             border-color: var(--primary-gold);
             color: #fff;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-gold-hover);
-            border-color: var(--primary-gold-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-white {
-            background: #fff;
-            border: 1px solid transparent;
-            color: var(--text-main);
-        }
-
-        .btn-white:hover {
-            background: #f8f9fa;
-            border-color: #e9ecef;
+            background-color: #c5a028;
+            border-color: #c5a028;
         }
 
         /* Alerts */
         .alert-item {
-            border-left: 4px solid transparent;
-            padding: 1.2rem;
-            background: #fff;
-            border-radius: 10px;
-            margin-bottom: 0.8rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            transition: transform 0.2s;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
         }
 
         .alert-item:hover {
-            transform: translateX(5px);
-        }
-
-        .alert-warning {
-            border-left-color: #ffc107;
-        }
-
-        .alert-danger {
-            border-left-color: #dc3545;
-        }
-
-        .alert-info {
-            border-left-color: #0dcaf0;
+            background-color: #fcfcfc;
         }
 
         /* Mobile */
@@ -185,7 +166,7 @@
 
             .main-content {
                 margin-left: 0;
-                padding: 1.5rem;
+                padding: 1rem;
             }
 
             .mobile-nav-toggle {
@@ -196,15 +177,14 @@
         .mobile-nav-toggle {
             display: none;
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 15px;
+            left: 15px;
             z-index: 1001;
-            background: var(--white);
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            color: var(--primary-gold);
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -213,7 +193,7 @@
 
     <!-- Mobile Toggle -->
     <button class="mobile-nav-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars fa-lg"></i>
+        <i class="fas fa-bars"></i>
     </button>
 
     <!-- Sidebar -->
@@ -225,32 +205,31 @@
         <div class="d-flex justify-content-between align-items-center mb-5 pt-3 pt-md-0">
             <div>
                 <h2 class="fw-bold mb-1">Dashboard</h2>
-                <p class="text-muted mb-0">Overview of your store's performance.</p>
+                <p class="text-muted mb-0">Welcome back, Admin</p>
             </div>
             <div class="d-flex gap-3 align-items-center">
-                <button class="btn btn-white shadow-sm rounded-circle p-2" style="width: 45px; height: 45px;">
-                    <i class="far fa-bell fa-lg text-muted"></i>
-                </button>
+                <button class="btn btn-white shadow-sm rounded-circle p-2" style="width: 40px; height: 40px;"><i
+                        class="far fa-bell"></i></button>
                 <div class="dropdown">
-                    <button class="btn btn-white shadow-sm rounded-pill pe-3 ps-2 py-1 d-flex align-items-center"
+                    <button class="btn btn-white shadow-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2"
                         type="button" data-bs-toggle="dropdown">
                         <img src="https://ui-avatars.com/api/?name=Admin+User&background=D4AF37&color=fff"
-                            class="rounded-circle me-2" width="32" height="32" alt="Admin">
-                        <span class="small fw-bold text-muted">Admin</span>
-                        <i class="fas fa-chevron-down ms-2 small text-muted"></i>
+                            class="rounded-circle" width="28" height="28" alt="Admin">
+                        <span class="small fw-bold">Admin</span>
+                        <i class="fas fa-chevron-down small text-muted"></i>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 rounded-3">
-                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-user me-2 text-gold"></i>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-user me-2 text-muted"></i>
                                 Profile</a></li>
-                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-cog me-2 text-gold"></i>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-cog me-2 text-muted"></i>
                                 Settings</a></li>
                         <li>
-                            <hr class="dropdown-divider my-1">
+                            <hr class="dropdown-divider">
                         </li>
                         <li>
                             <form action="{% url 'core:logout' %}" method="POST">
                                 {% csrf_token %}
-                                <button class="dropdown-item py-2 text-danger"><i class="fas fa-sign-out-alt me-2"></i>
+                                <button class="dropdown-item text-danger py-2"><i class="fas fa-sign-out-alt me-2"></i>
                                     Logout</button>
                             </form>
                         </li>
@@ -263,9 +242,9 @@
         <div class="row g-4 mb-5">
             <!-- Total Revenue -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card h-100 p-4">
+                <div class="card h-100 p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="kpi-icon bg-gold-subtle text-gold">
+                        <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
                             <i class="fas fa-rupee-sign"></i>
                         </div>
                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
@@ -281,7 +260,7 @@
 
             <!-- Total Orders -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card h-100 p-4">
+                <div class="card h-100 p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
                             <i class="fas fa-shopping-bag"></i>
@@ -299,7 +278,7 @@
 
             <!-- Total Customers -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card h-100 p-4">
+                <div class="card h-100 p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="kpi-icon bg-info bg-opacity-10 text-info">
                             <i class="fas fa-users"></i>
@@ -317,10 +296,10 @@
 
             <!-- Sales Today -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card kpi-card h-100 p-4">
+                <div class="card h-100 p-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
-                            <i class="fas fa-chart-pie"></i>
+                        <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                            <i class="fas fa-chart-line"></i>
                         </div>
                         <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">
                             15 Orders
@@ -337,22 +316,24 @@
         <!-- Sales Analytics (Charts) -->
         <div class="row g-4 mb-5">
             <div class="col-lg-8">
-                <div class="card chart-card h-100 p-4">
+                <div class="card h-100 p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">Revenue Analytics</h5>
-                        <select class="form-select form-select-sm w-auto border-0 bg-light">
+                        <select class="form-select form-select-sm w-auto border-0 bg-light fw-bold text-muted">
                             <option>This Week</option>
                             <option>This Month</option>
                             <option>This Year</option>
                         </select>
                     </div>
-                    <canvas id="salesChart" height="300"></canvas>
+                    <div style="height: 350px;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="card chart-card h-100 p-4">
+                <div class="card h-100 p-4">
                     <h5 class="fw-bold mb-4">Orders Overview</h5>
-                    <div class="position-relative" style="height: 300px;">
+                    <div class="position-relative" style="height: 350px;">
                         <canvas id="ordersChart"></canvas>
                     </div>
                 </div>
@@ -363,38 +344,51 @@
             <!-- Reports & Exports -->
             <div class="col-lg-6">
                 <div class="card h-100 p-4">
-                    <h5 class="fw-bold mb-4">Reports & Exports</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Reports & Exports</h5>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="exportDateRange"
+                                onchange="toggleCustomDate()">
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="custom">Custom Date</option>
+                            </select>
+                            <input type="date" class="form-control form-control-sm d-none" id="customDateInput">
+                        </div>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-sm-6">
-                            <div
-                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
-                                <div class="mb-3 text-success"><i class="fas fa-file-csv fa-2x"></i></div>
+                            <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
+                                <i class="fas fa-file-csv fa-2x text-success mb-3"></i>
                                 <h6 class="fw-bold mb-1">Sales Report</h6>
-                                <p class="small text-muted mb-0">Download CSV</p>
+                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    CSV</button>
                             </div>
                         </div>
                         <div class="col-sm-6">
-                            <div
-                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
-                                <div class="mb-3 text-success"><i class="fas fa-file-excel fa-2x"></i></div>
+                            <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
+                                <i class="fas fa-file-excel fa-2x text-success mb-3"></i>
                                 <h6 class="fw-bold mb-1">Order Report</h6>
-                                <p class="small text-muted mb-0">Download Excel</p>
+                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    Excel</button>
                             </div>
                         </div>
                         <div class="col-sm-6">
-                            <div
-                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
-                                <div class="mb-3 text-primary"><i class="fas fa-file-invoice-dollar fa-2x"></i></div>
+                            <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
+                                <i class="fas fa-file-invoice-dollar fa-2x text-primary mb-3"></i>
                                 <h6 class="fw-bold mb-1">Tax / GST Report</h6>
-                                <p class="small text-muted mb-0">Download PDF</p>
+                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    PDF</button>
                             </div>
                         </div>
                         <div class="col-sm-6">
-                            <div
-                                class="action-card bg-light text-center cursor-pointer p-4 rounded-3 border border-light">
-                                <div class="mb-3 text-info"><i class="fas fa-users fa-2x"></i></div>
+                            <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
+                                <i class="fas fa-users fa-2x text-info mb-3"></i>
                                 <h6 class="fw-bold mb-1">Customer List</h6>
-                                <p class="small text-muted mb-0">Download CSV</p>
+                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    CSV</button>
                             </div>
                         </div>
                     </div>
@@ -410,12 +404,12 @@
                     </div>
 
                     <div class="alert-list">
-                        <div class="alert-item alert-warning d-flex align-items-start">
+                        <div class="alert-item d-flex align-items-start mb-3 pb-3">
                             <div class="me-3 mt-1">
                                 <span
                                     class="bg-warning bg-opacity-10 text-warning rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
-                                    style="width: 32px; height: 32px;">
-                                    <i class="fas fa-bell fa-sm"></i>
+                                    style="width: 40px; height: 40px;">
+                                    <i class="fas fa-bell"></i>
                                 </span>
                             </div>
                             <div>
@@ -426,12 +420,12 @@
                             </div>
                         </div>
 
-                        <div class="alert-item alert-danger d-flex align-items-start">
+                        <div class="alert-item d-flex align-items-start mb-3 pb-3">
                             <div class="me-3 mt-1">
                                 <span
                                     class="bg-danger bg-opacity-10 text-danger rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
-                                    style="width: 32px; height: 32px;">
-                                    <i class="fas fa-exclamation-triangle fa-sm"></i>
+                                    style="width: 40px; height: 40px;">
+                                    <i class="fas fa-exclamation-triangle"></i>
                                 </span>
                             </div>
                             <div>
@@ -442,12 +436,12 @@
                             </div>
                         </div>
 
-                        <div class="alert-item alert-info d-flex align-items-start">
+                        <div class="alert-item d-flex align-items-start">
                             <div class="me-3 mt-1">
                                 <span
                                     class="bg-info bg-opacity-10 text-info rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
-                                    style="width: 32px; height: 32px;">
-                                    <i class="fas fa-credit-card fa-sm"></i>
+                                    style="width: 40px; height: 40px;">
+                                    <i class="fas fa-credit-card"></i>
                                 </span>
                             </div>
                             <div>
@@ -469,6 +463,16 @@
     <script>
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function toggleCustomDate() {
+            const select = document.getElementById('exportDateRange');
+            const customInput = document.getElementById('customDateInput');
+            if (select.value === 'custom') {
+                customInput.classList.remove('d-none');
+            } else {
+                customInput.classList.add('d-none');
+            }
         }
 
         // Chart.js Initialization
@@ -557,7 +561,7 @@
                         data: [12, 19, 3, 5, 2, 3, 15],
                         backgroundColor: '#D4AF37',
                         borderRadius: 6,
-                        barThickness: 20
+                        barThickness: 25
                     }]
                 },
                 options: {
