@@ -1,0 +1,621 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Requests | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --primary-gold-hover: #c5a028;
+            --text-main: #333;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Playfair Display', serif;
+            color: #000;
+        }
+
+        /* Sidebar Styles (Restored) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table */
+        .table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            border-bottom-width: 1px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Media Grid in Modal */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .media-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid #eee;
+        }
+
+        .media-item img,
+        .media-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .media-item:hover img,
+        .media-item:hover video {
+            transform: scale(1.05);
+        }
+
+        .media-item .icon-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .mobile-nav-toggle {
+                display: block !important;
+            }
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        /* Toast Base */
+.custom-toast {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #0e0e0e;
+    color: #fff;
+    padding: 16px 18px;
+    border-radius: 14px;
+    min-width: 320px;
+    max-width: 420px;
+    margin-bottom: 14px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+    border-left: 5px solid;
+    animation: slideIn 0.4s ease;
+    position: relative;
+}
+
+/* Icons */
+.toast-icon {
+    font-size: 1.8rem;
+}
+
+/* Content */
+.toast-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #D4AF37;
+}
+
+.toast-text {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+/* Close button */
+.toast-close {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.toast-close:hover {
+    color: #fff;
+}
+
+/* Success */
+.toast-success {
+    border-color: #D4AF37;
+}
+
+.toast-success .toast-icon {
+    color: #D4AF37;
+}
+
+/* Error */
+.toast-error {
+    border-color: #dc3545;
+}
+
+.toast-error .toast-icon {
+    color: #dc3545;
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+    </style>
+    <script>
+    function closeToast(btn) {
+        btn.closest('.custom-toast').remove();
+    }
+
+    // Auto-close after 4 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.custom-toast').forEach(toast => {
+            toast.remove();
+        });
+    }, 4000);
+</script>
+
+</head>
+
+<body>
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    {% include 'c_admin/admin_main_side_nav_bar.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5 pt-3 pt-md-0">
+            <div>
+                <h2 class="fw-bold mb-1">Return Requests</h2>
+                <p class="text-muted mb-0">Manage and process customer return requests</p>
+            </div>
+            <div class="d-flex gap-3 align-items-center">
+                <button class="btn btn-white shadow-sm rounded-circle p-2" style="width: 40px; height: 40px;"><i
+                        class="far fa-bell"></i></button>
+                <div class="dropdown">
+                    <button class="btn btn-white shadow-sm rounded-pill px-3 py-2 d-flex align-items-center gap-2"
+                        type="button" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=D4AF37&color=fff"
+                            class="rounded-circle" width="28" height="28" alt="Admin">
+                        <span class="small fw-bold">Admin</span>
+                        <i class="fas fa-chevron-down small text-muted"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-user me-2 text-muted"></i>
+                                Profile</a></li>
+                        <li><a class="dropdown-item py-2" href="#"><i class="fas fa-cog me-2 text-muted"></i>
+                                Settings</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <form action="{% url 'core:logout' %}" method="POST">
+                                {% csrf_token %}
+                                <button class="dropdown-item text-danger py-2"><i class="fas fa-sign-out-alt me-2"></i>
+                                    Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0 rounded-start">Order ID</th>
+                            <th class="border-0">Customer</th>
+                            <th class="border-0">Reason</th>
+                            <th class="border-0">Date Requested</th>
+                            <th class="border-0">Status</th>
+                            <th class="border-0 rounded-end text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for return_req in return_requests %}
+                        <tr>
+                            <td class="fw-bold text-primary">#{{ return_req.order.order_number }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if return_req.user.profile_picture %}
+                                    <img src="{{ return_req.user.profile_picture.url }}" class="avatar-sm" alt="User">
+                                    {% else %}
+                                    <img src="https://ui-avatars.com/api/?name={{ return_req.user.first_name }}+{{ return_req.user.last_name }}"
+                                        class="avatar-sm" alt="User">
+                                    {% endif %}
+                                    <span>{{ return_req.user.first_name }} {{ return_req.user.last_name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ return_req.reason }}</td>
+                            <td>{{ return_req.requested_at|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge rounded-pill 
+                                    {% if return_req.status == 'REQUESTED' %}bg-warning text-dark
+                                    {% elif return_req.status == 'APPROVED' %}bg-info text-white
+                                    {% elif return_req.status == 'PICKED_UP' %}bg-primary
+                                    {% elif return_req.status == 'REFUNDED' %}bg-success
+                                    {% elif return_req.status == 'REJECTED' %}bg-danger
+                                    {% endif %}">
+                                    {{ return_req.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-dark rounded-pill px-3"
+                                    onclick="openReturnModal('{{ return_req.id }}', '{{ return_req.order.order_number }}', 
+                                    '{{ return_req.user.first_name }} {{ return_req.user.last_name }}', '{{ return_req.reason }}', 
+                                    `{{ return_req.description }}`, '{{ return_req.status }}','{% url 'cadmin:return_approve' return_req.id %}' )">
+                                    
+                                    View & Manage
+                                </button>
+                                <!-- Hidden data for media (populated via JS or loop if needed, but for simplicity we'll fetch or use data attributes) -->
+                                <div id="media-{{ return_req.id }}" class="d-none">
+                                    <!-- Images -->
+                                    {% for img in return_req.images.all %}
+                                    <div data-type="image" data-src="{{ img.image.url }}"></div>
+                                    {% endfor %}
+                                    <!-- Videos -->
+                                    {% for vid in return_req.videos.all %}
+                                    <div data-type="video" data-src="{{ vid.video.url }}"></div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                                <p>No return requests found.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Return Detail Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="modalOrderNumber">Order #...</h5>
+                        <p class="text-muted small mb-0" id="modalCustomer">Customer Name</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-7">
+                            <h6 class="fw-bold mb-3">Evidence (Images & Videos)</h6>
+                            <div class="media-grid" id="modalMediaGrid">
+                                <!-- Media items injected here -->
+                            </div>
+                            <div id="noMediaMsg" class="text-muted small d-none">No media uploaded.</div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="bg-light p-3 rounded-3 mb-4">
+                                <h6 class="fw-bold mb-2">Reason</h6>
+                                <p class="text-muted mb-3" id="modalReason">...</p>
+                                <h6 class="fw-bold mb-2">Description</h6>
+                                <p class="text-muted mb-0 small" id="modalDescription">...</p>
+                            </div>
+
+                            <h6 class="fw-bold mb-3">Update Status</h6>
+                            <form id="statusForm" action="" method="POST">
+                                {% csrf_token %}
+                                <div id="statusActions">
+                                    <!-- Dynamic buttons based on status -->
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Lightbox Modal for Media Preview -->
+    <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered modal-xl bg-transparent shadow-none">
+            <div class="modal-content bg-transparent border-0 shadow-none">
+                <div class="modal-body p-0 text-center position-relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div id="lightboxContent" class="d-flex justify-content-center align-items-center"
+                        style="min-height: 80vh;">
+                        <!-- Image or Video injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if messages %}
+<div class="toast-container position-fixed top-0 end-0 p-4" style="z-index: 1100;">
+    {% for message in messages %}
+    <div class="custom-toast 
+        {% if message.tags == 'success' %}toast-success
+        {% elif message.tags == 'error' %}toast-error
+        {% endif %}">
+        
+        <div class="toast-icon">
+            {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle"></i>
+            {% elif message.tags == 'error' %}
+                <i class="fas fa-times-circle"></i>
+            {% endif %}
+        </div>
+
+        <div class="toast-content">
+            <h6 class="toast-title">
+                {% if message.tags == 'success' %}Success{% else %}Error{% endif %}
+            </h6>
+            <p class="toast-text">{{ message }}</p>
+        </div>
+
+        <button class="toast-close" onclick="closeToast(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+
+        function openReturnModal(id, orderNum, customer, reason, description, status, updateUrl) {
+            document.getElementById('modalOrderNumber').textContent = 'Order #' + orderNum;
+            document.getElementById('modalCustomer').textContent = customer;
+            document.getElementById('modalReason').textContent = reason;
+            document.getElementById('modalDescription').textContent = description;
+
+            const form = document.getElementById('statusForm');
+            form.action = updateUrl;
+
+            // Media
+            const mediaContainer = document.getElementById('media-' + id);
+            const grid = document.getElementById('modalMediaGrid');
+            const noMediaMsg = document.getElementById('noMediaMsg');
+            grid.innerHTML = '';
+
+            if (mediaContainer && mediaContainer.children.length > 0) {
+                noMediaMsg.classList.add('d-none');
+                Array.from(mediaContainer.children).forEach(item => {
+                    const type = item.getAttribute('data-type');
+                    const src = item.getAttribute('data-src');
+                    const div = document.createElement('div');
+                    div.className = 'media-item';
+                    div.onclick = () => openLightbox(type, src);
+
+                    if (type === 'image') {
+                        div.innerHTML = `<img src="${src}" alt="Evidence">`;
+                    } else {
+                        div.innerHTML = `<video src="${src}#t=0.1" preload="metadata"></video><div class="icon-overlay"><i class="fas fa-play-circle"></i></div>`;
+                    }
+                    grid.appendChild(div);
+                });
+            } else {
+                noMediaMsg.classList.remove('d-none');
+            }
+
+            // Status Actions
+            const actionsDiv = document.getElementById('statusActions');
+            actionsDiv.innerHTML = '';
+
+            if (status === 'REQUESTED') {
+                actionsDiv.innerHTML = `
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="status" value="APPROVED" class="btn btn-success text-white">Approve Request</button>
+                        <button type="submit" name="status" value="REJECTED" class="btn btn-danger">Reject Request</button>
+                    </div>
+                `;
+            } else if (status === 'APPROVED') {
+                actionsDiv.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Current: Approved</label>
+                        <select name="status" class="form-select">
+                            <option value="PICKED_UP">Mark as Picked Up</option>
+                            <option value="REFUNDED">Mark as Refunded</option>
+                        </select>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </div>
+                `;
+            } else if (status === 'PICKED_UP') {
+                actionsDiv.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Current: Picked Up</label>
+                        <select name="status" class="form-select">
+                            <option value="REFUNDED">Mark as Refunded</option>
+                        </select>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </div>
+                `;
+            } else {
+                actionsDiv.innerHTML = `<div class="alert alert-secondary mb-0 text-center">Status: ${status}</div>`;
+            }
+
+            new bootstrap.Modal(document.getElementById('returnModal')).show();
+        }
+
+        function openLightbox(type, src) {
+            const content = document.getElementById('lightboxContent');
+            if (type === 'image') {
+                content.innerHTML = `<img src="${src}" class="img-fluid rounded" style="max-height: 90vh;">`;
+            } else {
+                content.innerHTML = `<video src="${src}" controls autoplay class="w-100 rounded" style="max-height: 90vh;"></video>`;
+            }
+            new bootstrap.Modal(document.getElementById('lightboxModal')).show();
+        }
+    </script>
+</body>
+
+</html>

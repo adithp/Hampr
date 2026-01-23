@@ -126,12 +126,12 @@ class Order(models.Model):
     )
 
     #
-    delivery_date = models.DateTimeField(
+    confirmed_date = models.DateTimeField(
         blank=True,
         null=True
     )
 
-    expected_delivery = models.DateTimeField(
+    shipped_date = models.DateTimeField(
         blank=True,
         null=True
     )

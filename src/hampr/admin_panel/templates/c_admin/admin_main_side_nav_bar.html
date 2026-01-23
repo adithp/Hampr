@@ -54,6 +54,13 @@
                     Orders
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_url == 'return_manage' %}active{% endif %}"
+                    href=" {% url 'cadmin:return_manage' %}">
+                    <i class="fas fa-undo-alt"></i>
+                    Returns
+                </a>
+            </li>
 
             <!-- Settings -->
             <li class="nav-item">

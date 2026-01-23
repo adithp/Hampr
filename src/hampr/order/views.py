@@ -8,6 +8,7 @@ from django.shortcuts import redirect,render
 from django.contrib import messages
 from django.conf import settings
 from django.http import JsonResponse
+from django.views.generic import DetailView
 import json
 
 
@@ -228,3 +229,12 @@ class OrderDetail(LoginRequiredMixin,View):
             'order_decorations': order_decorations,
         }
         return render(request, 'order/order-detail.html', context)
+    
+    
+class OrderTracking(LoginRequiredMixin,DetailView):
+    model = Order
+    template_name = 'order/order-tracking.html'
+    
+    
+    
+    

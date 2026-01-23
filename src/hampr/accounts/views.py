@@ -273,9 +273,6 @@ class AddAddressView(LoginRequiredMixin,OnlyForUsers,View):
             address = form.save(commit=False)
             address.user = request.user
             address.save()
-
-        
-            
             return redirect('accounts:user_profile',)
         address = UserAddress.objects.filter(user=request.user)
         return render(request,'accounts/account.html',{'form':form,'address':address})
@@ -298,6 +295,7 @@ class EditAddressView(LoginRequiredMixin,OnlyForUsers,View):
 class DeleteAddressView(DeleteView):
     model = UserAddress
     success_url = reverse_lazy("accounts:user_profile")
+
 
 class EditProfileDetails(LoginRequiredMixin,OnlyForUsers,View):
     def post(self,request,*args,**kwargs):

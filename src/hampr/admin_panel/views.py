@@ -25,6 +25,7 @@ from catalog.models import BoxCategory,BoxMaterial,HamperBox,BoxCategoryImage,Bo
 from coupons.models import PromoCode
 from order.models import Order
 from core.utils import invoice_generator
+from returns.models import OrderReturn
 
 
 class AdminLoginView(NeverCacheMixin,LoginInRedirectMixin,View):
@@ -1433,6 +1434,7 @@ class AdminOrderDetail(NeverCacheMixin,StaffRequiredMixin,View):
     
     
 class AdminUpdateOrderStatus(StaffRequiredMixin,View):
+    
     def post(self,request,*args, **kwargs):
         data = json.loads(request.body)
         try:
@@ -1455,10 +1457,60 @@ class AdminUpdateOrderStatus(StaffRequiredMixin,View):
                     },
                     status=400
                 )
+        
         order.status = status
+        now = timezone.now()
+        if order.status == "CONFIRMED":
+            order.confirmed_date = now
+        elif order.status == "SHIPPED":
+            order.shipped_date = now
+        elif order.status == "DELIVERED":
+            order.delivered_at = now
+    
         order.save()
         return JsonResponse({"success": "Order status updated"})
             
+            
+            
+class AdminReturnManage(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        return_requests = OrderReturn.objects.all().order_by('-requested_at')
+        return render(request,'c_admin/admin-order-return.html',{'return_requests':return_requests})
+    
+    
+class ReturnApprove(StaffRequiredMixin,View):
+    def post(self,request,id,*args, **kwargs):
+        status = request.POST.get('status')
+        try:
+            order_return = OrderReturn.objects.get(id=id)
+        except OrderReturn.DoesNotExist as e:
+            print(e)
+            messages.error(request,"Only support approved or Rejected")
+            return redirect('cadmin:return_manage')
+        if order_return.status == "REQUESTED":
+            if status == "APPROVED" or status == "REJECTED":
+                    order_return.status = status
+                    order_return.save()
+                    messages.success(request,f"{status} Succsessfull")
+            else:
+                messages.error(request,f"Only Approved Return Can{status} ")
+        if order_return.status == "APPROVED" and status == "PICKED_UP":
+            order_return.status = status
+            order_return.save()
+            messages.success(request,"Updated Status From APPROVED to PICKED_UP")
+            return redirect('cadmin:return_manage')
+        if order_return.status == "PICKED_UP" and status == "REFUNDED":
+            order_return.status = status
+            order_return.save()
+            messages.success(request,"Updated Status From APPROVED to PICKED_UP")
+            return redirect('cadmin:return_manage')
+                
+                
+        messages.error(request,'Only Appropriate Status Being Update')
+            
+        return redirect('cadmin:return_manage')
+    
+
         
         
         

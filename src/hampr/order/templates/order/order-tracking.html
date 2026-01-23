@@ -1,0 +1,299 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order | HAMPR</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animation CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'accounts/css/animations.css' %}">
+    <style>
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 1;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            background-color: #D4AF37;
+            color: white;
+            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .step-item.completed .step-circle {
+            background-color: #198754;
+            /* Success Green */
+            color: white;
+        }
+
+        .step-item:not(.active):not(.completed) .step-circle {
+            background-color: #fff;
+            border: 2px solid #e9ecef;
+            color: #adb5bd;
+        }
+
+        .progress-line-container {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: #e9ecef;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        .progress-line-fill {
+            height: 100%;
+            background-color: #D4AF37;
+            transition: width 1s ease-in-out;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .return-badge {
+            font-size: 0.8rem;
+            padding: 0.35em 0.65em;
+            border-radius: 50rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    {% include 'catalog/nav-bar.html' %}
+
+    <!-- Tracking Section -->
+    <section class="py-5" style="margin-top: 80px;">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h1 class="display-5 fw-bold mb-3" style="font-family: 'Playfair Display', serif;">Track Your Order</h1>
+                <p class="text-muted">Order ID: <span class="text-dark fw-bold">#{{ order.order_number }}</span></p>
+                {% if order.status == 'CANCELLED' %}
+                <span class="badge bg-danger fs-6 mt-2">Order Cancelled</span>
+                {% endif %}
+            </div>
+
+            <!-- Order Timeline -->
+            {% if order.status != 'CANCELLED' %}
+            <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-lg-10">
+                    <div class="position-relative d-flex justify-content-between align-items-start text-center">
+                        <!-- Progress Line -->
+                        <div class="progress-line-container">
+                            <div class="progress-line-fill" style="width: 
+                                {% if order.status == 'PENDING' %}15%
+                                {% elif order.status == 'CONFIRMED' %}40%
+                                {% elif order.status == 'SHIPPED' %}70%
+                                {% elif order.status == 'DELIVERED' %}100%
+                                {% else %}0%{% endif %};">
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Placed -->
+                        <div
+                            class="step-item {% if order.status != 'PENDING' and order.status != 'CANCELLED' %}completed{% else %}active{% endif %}">
+                            <div class="step-circle mx-auto mb-3">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">Order Placed</h6>
+                            <small class="text-muted">{{ order.created_at|date:"M d, h:i A" }}</small>
+                        </div>
+
+                        <!-- Step 2: Confirmed -->
+                        <div
+                            class="step-item {% if order.status == 'SHIPPED' or order.status == 'DELIVERED' %}completed{% elif order.status == 'CONFIRMED' %}active{% endif %}">
+                            <div class="step-circle mx-auto mb-3">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">Confirmed</h6>
+                            {% if order.confirmed_date %}
+                            <small class="text-muted">{{ order.confirmed_date|date:"M d, h:i A" }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Step 3: Shipped -->
+                        <div
+                            class="step-item {% if order.status == 'DELIVERED' %}completed{% elif order.status == 'SHIPPED' %}active{% endif %}">
+                            <div class="step-circle mx-auto mb-3">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">Shipped</h6>
+                            {% if order.shipped_date %}
+                            <small class="text-muted">{{ order.shipped_date|date:"M d, h:i A" }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Step 4: Delivered -->
+                        <div class="step-item {% if order.status == 'DELIVERED' %}active{% endif %}">
+                            <div class="step-circle mx-auto mb-3">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">Delivered</h6>
+                            {% if order.delivered_at %}
+                            <small class="text-muted">{{ order.delivered_at|date:"M d, h:i A" }}</small>
+                            {% else %}
+                            <small class="text-muted">Estimated Arrival</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Return Status (If Applicable) -->
+            {% if order.orderreturn_set.exists %}
+            {% with return_req=order.orderreturn_set.first %}
+            <div class="row justify-content-center mb-5" data-aos="fade-up">
+                <div class="col-lg-8">
+                    <div class="card border-warning shadow-sm">
+                        <div class="card-header bg-warning bg-opacity-10 border-warning border-opacity-25">
+                            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-undo me-2"></i>Return Status</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold">Current Status:</span>
+                                <span class="badge 
+                                        {% if return_req.status == 'APPROVED' or return_req.status == 'REFUNDED' %}bg-success
+                                        {% elif return_req.status == 'REJECTED' %}bg-danger
+                                        {% else %}bg-warning text-dark{% endif %} fs-6">
+                                    {{ return_req.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="text-muted mb-0"><strong>Reason:</strong> {{ return_req.reason }}</p>
+                            <p class="text-muted mb-0"><strong>Requested on:</strong>
+                                 {{ return_req.requested_at|date:"M d, Y" }}</p>
+                            {% if return_req.processed_at %}
+                            <p class="text-muted mb-0"><strong>Processed on:</strong> {{ return_req.processed_at|date:"M
+                                d, Y" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endif %}
+
+            <!-- Order Details -->
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card border-0 shadow-sm p-4">
+                        <h5 class="fw-bold mb-4">Order Details</h5>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <h6 class="text-muted small text-uppercase mb-2">Shipping Address</h6>
+                                <p class="mb-0 fw-bold">{{ order.delivery_address.name }}</p>
+                                <p class="text-muted mb-0">{{ order.delivery_address.street_address }}</p>
+                                {% if order.delivery_address.apartment %}
+                                <p class="text-muted mb-0">{{ order.delivery_address.apartment }}</p>
+                                {% endif %}
+                                <p class="text-muted mb-0">{{ order.delivery_address.city }},
+                                     {{ order.delivery_address.state }} {{ order.delivery_address.postal_code }}</p>
+                                <p class="text-muted mb-0">{{ order.delivery_address.country }}</p>
+                                <p class="text-muted mb-0">Phone: {{ order.delivery_address.phone_number }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted small text-uppercase mb-2">Payment Method</h6>
+                                <p class="mb-0">
+                                    {% if order.payment_method == 'COD' %}
+                                    <i class="fas fa-money-bill-wave me-2"></i>Cash on Delivery
+                                    {% else %}
+                                    <i class="fas fa-credit-card me-2"></i>Online Payment
+                                    {% endif %}
+                                </p>
+                                <p class="mt-2 mb-0"><strong>Total Amount:</strong> ₹{{ order.total_amount }}</p>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+
+                        <!-- Order Items -->
+                        {% for item in order.order_hampers.all %}
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            {% if item.box_image %}
+                            <img src="{{ item.box_image.url }}" class="rounded" width="80" height="80"
+                                style="object-fit: cover;" alt="Product">
+                            {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                style="width: 80px; height: 80px;">
+                                <i class="fas fa-gift text-muted"></i>
+                            </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold">Custom Hamper</h6>
+                                <!-- Assuming generic name or field from hamper model -->
+                                <small class="text-muted">Qty: 1</small>
+                            </div>
+                            <span class="fw-bold">₹{{item.box_price_at_order_time}}</span> <!-- Assuming price field -->
+                        </div>
+                        {% endfor %}
+
+                        <!-- Summary -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal</span>
+                                <span>₹{{ order.subtotal }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Shipping</span>
+                                <span>₹{{ order.shipping_cost }}</span>
+                            </div>
+                            {% if order.discount > 0 %}
+                            <div class="d-flex justify-content-between mb-2 text-success">
+                                <span>Discount</span>
+                                <span>-₹{{ order.discount }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                                <span>Total</span>
+                                <span>₹{{ order.total_amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+</body>
+
+</html>

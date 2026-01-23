@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
     'courier.apps.CourierConfig',
     'reviews.apps.ReviewsConfig',
-    'return.apps.ReturnConfig',
+    'returns.apps.ReturnsConfig',
 ]
 
 
