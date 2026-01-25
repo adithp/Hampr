@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 
 from order.models import Order
+from order.services import send_order_email
 # Create your views here.
 
 
@@ -73,6 +74,7 @@ class ReturnPage(View):
                 obj = ReturnVideo(video=i,return_request=return_obj)
                 obj.save()
             messages.success(request,"return Request Succsessfully Completed")
+            
                 
                 
         return render(request,'return/return_create.html',{'form':form})

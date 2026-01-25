@@ -190,6 +190,10 @@
                                                 class="btn btn-primary btn-sm rounded-pill px-4">View Details</a>
                                             <a href="{% url 'order:order_tracking' item.id %}"
                                                 class="btn btn-outline-primary btn-sm rounded-pill px-4">Track Order</a>
+                                            {% if item.status != 'DELIVERED' and item.status != 'CANCELLED' %}
+                                            <button onclick="openCancelModal('{{item.id}}')"
+                                                class="btn btn-outline-danger btn-sm rounded-pill px-4">Cancel Order</button>
+                                            {% endif %}
                                             {% if item.status == 'DELIVERED' %}
                                             <a href="{% url 'return:create_return' item.id %}"
                                                 class="btn btn-outline-danger btn-sm rounded-pill px-4">Return
@@ -307,14 +311,14 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">New Password</label>
-                                            <input type="password"
-                                             {% if not user.has_usable_password %}disabled{% endif %} class="form-control" name="new_password1">
+                                            <input type="password" {% if not user.has_usable_password %}disabled
+                                            {% endif %} class="form-control" name="new_password1">
                                             {{password_form.new_password1.errors}}
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Confirm Password</label>
                                             <input type="password" {% if not user.has_usable_password %}disabled
-                                            {% endif %} class="form-control" name="new_password2">
+                                             {% endif %} class="form-control" name="new_password2">
                                             {{password_form.new_password1.errors}}
                                         </div>
                                     </div>
@@ -327,11 +331,50 @@
             </div>
         </div>
     </section>
+    <!-- Cancel Order Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-header bg-dark border-0">
+                    <h5 class="modal-title fw-bold text-gold">Cancel Order</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-exclamation-circle fa-3x text-gold"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Are you sure?</h5>
+                    <p class="text-muted mb-0">Do you really want to cancel this order? This process cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                        data-bs-dismiss="modal">No, Keep It</button>
+                    <form id="cancelForm" method="POST" action="">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">Yes, Cancel Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script>
+        function openCancelModal(orderId) {
+            const form = document.getElementById('cancelForm');
+            const baseUrl = "{% url 'accounts:order_cancel' 0 %}";
+            form.action = baseUrl.replace('0', orderId);
+
+            const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+    </script>
     <!-- Address Modal -->
     <div class="modal fade" id="addAddressModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

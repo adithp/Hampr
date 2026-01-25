@@ -10,6 +10,8 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.generic import DetailView
 import json
+from .services import send_order_email
+from django.utils import timezone
 
 
 from order.models import Order
@@ -42,14 +44,11 @@ class CreateOrderView(LoginRequiredMixin,View):
                 work_promo = None
                 subtotal=cart.get_grand_total()
         else:
-            #return the error message
             return False
         if data.get('deliveryAddress',''):
             try:
                 address_id = data.get('deliveryAddress','')
                 address_obj = UserAddress.objects.get(id=address_id, user=request.user)
-        
-                
             except UserAddress.DoesNotExist as e:
                 print(e)
             is_serviceable = check_serviceability(address_obj.postal_code)
@@ -70,6 +69,14 @@ class CreateOrderView(LoginRequiredMixin,View):
                     order_no = generate_order_number(order_obj.id)
                     order_obj.order_number = order_no
                     order_obj.save()
+                    payment = Payment.objects.create(
+                        user=user,
+                        order=order_obj,
+                        amount=order_obj.total_amount,
+                        payment_method="COD",
+                        transaction_id=f"INIT-{uuid.uuid4()}",
+                        status="PENDING"
+                    )
             elif data.get('paymentMethod') == 'ONLINE':
                 with transaction.atomic():
                     address = create_order_address(address_obj,request.user)
@@ -115,6 +122,7 @@ class CreateOrderView(LoginRequiredMixin,View):
                     work_promo.used_count = work_promo.used_count + 1
                     work_promo.save()
                 order_obj.save()
+                send_order_email(request.user,order_obj,'ORDER_COMPLETED',)
                 return redirect('order:order_succsess',order_id=order_obj.order_number)
             elif order_obj.is_cod == False:
                 return JsonResponse({
@@ -154,6 +162,7 @@ def razorpay_verify(request):
     # mark payment success
     payment.transaction_id = data["razorpay_payment_id"]
     payment.status = "SUCCESS"
+    payment.completed_at = timezone.now()
     payment.save()
 
     order = payment.order
@@ -171,6 +180,7 @@ def razorpay_verify(request):
 
     order.status = "CONFIRMED"
     order.save()
+    send_order_email(request.user,order,'ORDER_COMPLETED',)
     
 
     return JsonResponse({

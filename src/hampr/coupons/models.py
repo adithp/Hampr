@@ -102,7 +102,7 @@ class PromoCodeUsage(models.Model):
         decimal_places=2
     )
     promo_code = models.ForeignKey(
-        PromoCode,on_delete=models.CASCADE
+        PromoCode,on_delete=models.CASCADE,related_name='usages'
     )
     used_at = models.DateTimeField(
         auto_now=True

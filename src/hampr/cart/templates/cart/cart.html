@@ -256,16 +256,7 @@
     </section>
     
     <!-- Footer -->
-    <footer {% if not cart %}style="margin-top:25% !important"{% endif %} class="mt-5 bg-dark text-white py-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <h3 class="text-white mb-4">HAM<span class="text-gold">PR.</span></h3>
-                    <p class="text-white-50">Premium gift hampers for all occasions. Curated with love and care.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+   {% include 'core/footer.html' %}
     {% csrf_token %}
 
     <script>

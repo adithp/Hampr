@@ -16,6 +16,10 @@ def sendmail(address,subject,message):
     
     mail_thread = threading.Thread(target=sendmail_thread)
     mail_thread.start()
+    
+    
+    
+    
 FMT = "%d-%m-%Y %H:%M:%S"
 
 def invoice_generator(order):
