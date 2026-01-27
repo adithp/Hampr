@@ -11,8 +11,9 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse,JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator
-from datetime import timedelta
+from datetime import timedelta,datetime
 import openpyxl
+from openpyxl.utils import get_column_letter
 from django.utils import timezone
 import json
 from payment.models import Payment
@@ -78,21 +79,18 @@ class AdminDashboardView(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # --- KPI Cards Data ---
         today = timezone.now().date()
         today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        
-        # Total Revenue (Sum of all successful payments)
+ 
         total_revenue = Payment.objects.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum'] or 0
         context['total_revenue'] = "{:,}".format(total_revenue)
         
-        # Total Orders
+        
         context['total_orders'] = Order.objects.count()
         
-        # Total Customers (excluding superusers/staff)
         context['users_count'] = CustomUser.objects.filter(is_superuser=False, is_staff=False).count()
         
-        # Sales Today
+        
         sales_today = Payment.objects.filter(status='SUCCESS', created_at__gte=today_start).aggregate(Sum('amount'))['amount__sum'] or 0
         context['sales_today'] = "{:,}".format(sales_today)
         
@@ -1708,4 +1706,93 @@ class ReturnApprove(StaffRequiredMixin,View):
 
         
         
+class AdminPaymentManage(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        payments = Payment.objects.all()
+        if request.GET.get('search',''):
+            search=request.GET.get('search')
+            payments = payments.filter(Q(transaction_id__icontains=search) | Q(order__order_number__icontains=search) | Q(user__username__icontains=search) | Q(user__email__icontains=search) | Q(user__first_name__icontains=search) | Q(user__last_name__icontains=search))
+        if request.GET.get('status',''):
+            status = request.GET.get('status')
+            if status == 'success':
+                payments = payments.filter(Q(status='COMPLETED') | Q(status='SUCCESS'))
+            elif status == 'pending':
+                payments = payments.filter(status='PENDING')
+        if request.GET.get('date_filter',''):
+            date_filter = request.GET.get('date_filter','')
+            if date_filter == 'today':
+                date = timezone.now().date()
+                payments = payments.filter(created_at__date=date)
+            if date_filter == 'last7':
+                last_7_days = timezone.now() - timedelta(days=7)
+                payments = payments.filter(created_at__gte=last_7_days)
+            if date_filter == 'custom':
+                if request.GET.get('start_date') and request.GET.get('end_date'):
+                    start = request.GET.get('start_date')
+                    end = request.GET.get('end_date')
+                    start_date = timezone.make_aware(
+                        datetime.strptime(start, "%Y-%m-%d")
+                    )
+                    end_date = timezone.make_aware(
+                        datetime.strptime(end, "%Y-%m-%d")
+                    ) + timedelta(days=1)
+                    print(start_date,end_date)
+                    payments = payments.filter(created_at__gte=start_date, created_at__lt=end_date )
+                    
+        if request.GET.get('export',''):         
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Payments"
+
+            headers = [
+                "Payment ID",
+                "User",
+                "Order ID",
+                "Amount",
+                "Payment Method",
+                "Card Brand",
+                "Last 4",
+                "Transaction ID",
+                "Status",
+                "Completed At",
+                "Created At",
+            ]
+            ws.append(headers)
+
+            for payment in payments:
+                ws.append([
+                    str(payment.id),
+                    payment.user.email if payment.user else "",
+                    str(payment.order.id),
+                    float(payment.amount),  # Decimal → float (IMPORTANT)
+                    payment.payment_method,
+                    payment.card_brand or "",
+                    payment.card_last_four or "",
+                    payment.transaction_id,
+                    payment.status,
+                    payment.completed_at.strftime("%Y-%m-%d %H:%M") if payment.completed_at else "",
+                    payment.created_at.strftime("%Y-%m-%d %H:%M"),
+                ])
+
+
+            for col in ws.columns:
+                max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+                ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2
+
         
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = 'attachment; filename="payments.xlsx"'
+
+            wb.save(response)
+            return response
+                
+        paginator = Paginator(payments,8)
+        page_number = self.request.GET.get('page')
+        payments =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+            
+        total_page_num= range(1,total_pages+1)
+        
+        return render(request,'c_admin/admin_payment_manage.html',{'payments':payments,'total_page_num':total_page_num})

@@ -61,14 +61,22 @@
                     Returns
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if current_url == 'payment_manage' %}active{% endif %}"
+                    href=" {% url 'cadmin:payment_manage' %}">
+                    <i class="fas fa-credit-card"></i>
+
+                    Payments
+                </a>
+            </li>
 
             <!-- Settings -->
-            <li class="nav-item">
+            <!-- <li class="nav-item">
                 <a class="nav-link" href="#">
                     <i class="fas fa-cog"></i>
                     Settings
                 </a>
-            </li>
+            </li> -->
 
         </ul>
 
