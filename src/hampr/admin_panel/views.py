@@ -32,6 +32,7 @@ from coupons.models import PromoCode
 from order.models import Order
 from core.utils import invoice_generator
 from returns.models import OrderReturn
+from ticket.models import Ticket
 
 
 class AdminLoginView(NeverCacheMixin,LoginInRedirectMixin,View):
@@ -1796,3 +1797,23 @@ class AdminPaymentManage(StaffRequiredMixin,View):
         total_page_num= range(1,total_pages+1)
         
         return render(request,'c_admin/admin_payment_manage.html',{'payments':payments,'total_page_num':total_page_num})
+    
+    
+class AdminTicketManage(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        tickets = Ticket.objects.all().order_by('-created_at')
+        return render(request,'c_admin/admin_tickets_manage.html',{'tickets':tickets})
+    
+    
+class AdminUpdateTicketStatusView(View):
+    def post(self, request, pk):
+        try:
+            ticket = Ticket.objects.get(pk=pk)
+        except Ticket.DoesNotExist as e:
+            print(e)
+        status = request.POST.get('status')
+        if status in ['open', 'closed']:
+            ticket.status = status
+            ticket.save()
+            messages.success(request, f"Ticket #{ticket.id} status updated to {status}.")
+        return redirect('cadmin:ticket_manage')

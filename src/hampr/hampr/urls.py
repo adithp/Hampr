@@ -21,7 +21,8 @@ urlpatterns = [
     path('courier/',include('courier.urls')),
     path('order/',include('order.urls')),
     path('review/',include('reviews.urls')),
-    path('return/',include('returns.urls'))
+    path('return/',include('returns.urls')),
+    path('contact/',include('ticket.urls')),
     
     
 
