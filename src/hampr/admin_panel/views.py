@@ -11,13 +11,19 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse,JsonResponse
 from django.db import transaction
 from django.core.paginator import Paginator
-from datetime import timedelta
+from datetime import timedelta,datetime
 import openpyxl
+from openpyxl.utils import get_column_letter
 from django.utils import timezone
 import json
+from payment.models import Payment
+from django.db.models import Sum,Count
+from django.db.models.functions import TruncDate
+import csv
+from decimal import Decimal
+from django.core.serializers.json import DjangoJSONEncoder
 
-
-
+from order.services import send_order_email
 from .mixins import StaffRequiredMixin,LoginInRedirectMixin
 from core.mixins import NeverCacheMixin
 from .forms import HamperBoxForm,BoxTypeForm,BoxCategoryAdd,BoxSizeForm,ProductCategoryForm,ProductForm,ProductSimpleVairentForm,ColorForm,SizeForm,DecorationForm,PromoCodeForm
@@ -26,6 +32,7 @@ from coupons.models import PromoCode
 from order.models import Order
 from core.utils import invoice_generator
 from returns.models import OrderReturn
+from ticket.models import Ticket
 
 
 class AdminLoginView(NeverCacheMixin,LoginInRedirectMixin,View):
@@ -58,18 +65,192 @@ class AdminLoginView(NeverCacheMixin,LoginInRedirectMixin,View):
 class AdminDashboardView(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/dashboard.html'
     
+    def get(self, request, *args, **kwargs):
+        # Check for export request
+        export_type = request.GET.get('export')
+        if export_type:
+            if export_type == 'sales_csv':
+                return self.export_sales_csv()
+            elif export_type == 'orders_excel':
+                return self.export_orders_csv()
+            elif export_type == 'customers_csv':
+                return self.export_customers_csv()
+        
+        return super().get(request, *args, **kwargs)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        users_count = CustomUser.objects.filter(is_superuser=False,is_staff=False).count()
-        active_users = CustomUser.objects.filter(is_superuser=False,is_staff=False,is_active=True).count()
-        blocked_users =  CustomUser.objects.filter(is_superuser=False,is_staff=False,is_active=False).count()
-        context['users_count'] = users_count
-        context['active_users'] = active_users
-        context['blocked_users'] = blocked_users
+        
+        today = timezone.now().date()
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+ 
+        total_revenue = Payment.objects.filter(status='SUCCESS').aggregate(Sum('amount'))['amount__sum'] or 0
+        context['total_revenue'] = "{:,}".format(total_revenue)
+        
+        
+        context['total_orders'] = Order.objects.count()
+        
+        context['users_count'] = CustomUser.objects.filter(is_superuser=False, is_staff=False).count()
+        
+        
+        sales_today = Payment.objects.filter(status='SUCCESS', created_at__gte=today_start).aggregate(Sum('amount'))['amount__sum'] or 0
+        context['sales_today'] = "{:,}".format(sales_today)
+        
+        # --- Charts Data ---
+        today_date = timezone.now().date()
+        last_7_days = today_date - timedelta(days=6)
+        
+        # Revenue Chart Data
+        # Using created_at for consistency if completed_at is not reliably populated
+        revenue_data_qs = Payment.objects.filter(
+            status='SUCCESS', 
+            created_at__date__gte=last_7_days
+        ).annotate(date=TruncDate('created_at')).values('date').annotate(total=Sum('amount')).order_by('date')
+        
+        # Orders Chart Data
+        orders_data_qs = Order.objects.filter(
+            created_at__date__gte=last_7_days
+        ).annotate(date=TruncDate('created_at')).values('date').annotate(count=Count('id')).order_by('date')
+        
+        # Prepare data for charts
+        dates = [(last_7_days + timedelta(days=i)) for i in range(7)]
+        revenue_labels = [date.strftime('%a') for date in dates] # Mon, Tue, etc.
+        
+        revenue_map = {item['date']: item['total'] for item in revenue_data_qs}
+        revenue_values = [revenue_map.get(date, 0) for date in dates]
+        
+        orders_map = {item['date']: item['count'] for item in orders_data_qs}
+        orders_values = [orders_map.get(date, 0) for date in dates]
+        
+        context['revenue_labels'] = json.dumps(revenue_labels)
+        
+        # Fix for Decimal serialization
+        revenue_values = [
+                float(value) if isinstance(value, Decimal) else value
+                for value in revenue_values
+            ]
+        context['revenue_data'] = json.dumps(
+                    revenue_values,
+                    cls=DjangoJSONEncoder
+                )
+        context['orders_data'] = json.dumps(orders_values)
+        
+        # Notifications (Mocking recent activities based on orders/payments)
+        notifications = []
+        
+        # Recent Orders
+        recent_orders = Order.objects.order_by('-created_at')[:3]
+        for order in recent_orders:
+            notifications.append({
+                'type': 'warning',
+                'icon': 'bell',
+                'title': 'New Order Received',
+                'message': f'Order #{order.id} received.',
+                'time_ago': order.created_at.strftime('%H:%M') # Simplified
+            })
+            
+        # Recent Failed Payments
+        failed_payments = Payment.objects.filter(status='FAILED').order_by('-created_at')[:2]
+        for payment in failed_payments:
+            notifications.append({
+                'type': 'info',
+                'icon': 'credit-card',
+                'title': 'Payment Failed',
+                'message': f'Payment for Order #{payment.order.id} failed.',
+                'time_ago': payment.created_at.strftime('%H:%M')
+            })
+            
+        context['notifications'] = notifications
         
         return context
-    
-
+    def get_date_range_filters(self, date_field='created_at'):
+        # Default to 'all' so exports work even if the frontend link drops the range parameter
+        range_type = self.request.GET.get('range', 'all') 
+        today = timezone.now().date()
+        filters = {}
+        
+        print(f"DEBUG: Export Request - Range: {range_type}, Field: {date_field}")
+        
+        if range_type == 'all':
+            return {} # No date filters, return all data
+        elif range_type == 'today':
+            filters[f'{date_field}__date'] = today
+        elif range_type == 'week':
+            start_date = today - timedelta(days=today.weekday()) # Start of week (Mon)
+            filters[f'{date_field}__date__gte'] = start_date
+        elif range_type == 'month':
+            filters[f'{date_field}__month'] = today.month
+            filters[f'{date_field}__year'] = today.year
+        elif range_type == 'custom':
+            start_str = self.request.GET.get('start_date')
+            end_str = self.request.GET.get('end_date')
+            if start_str and end_str:
+                filters[f'{date_field}__date__range'] = [start_str, end_str]
+        
+        print(f"DEBUG: Applied Filters: {filters}")
+        return filters
+    # --- Export Methods ---
+    def export_sales_csv(self):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="sales_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Order ID', 'Amount', 'Date', 'Status'])
+        
+        filters = self.get_date_range_filters('created_at')
+        filters['status'] = 'SUCCESS'
+        
+        payments = Payment.objects.filter(**filters).order_by('-created_at')
+        for payment in payments:
+            writer.writerow([
+                payment.order.id, 
+                payment.amount, 
+                payment.created_at.strftime('%Y-%m-%d'), 
+                payment.status
+            ])
+            
+        return response
+    def export_orders_csv(self):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="orders_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Order ID', 'User', 'Total Amount', 'Date', 'Status'])
+        
+        filters = self.get_date_range_filters('created_at')
+        
+        orders = Order.objects.filter(**filters).order_by('-created_at')
+        for order in orders:
+            writer.writerow([
+                order.id, 
+                order.user.email, 
+                order.total_amount, 
+                order.created_at.strftime('%Y-%m-%d'), 
+                order.status
+            ])
+            
+        return response
+    def export_customers_csv(self):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="customers_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Email', 'Name', 'Date Joined', 'Active'])
+        
+        filters = self.get_date_range_filters('date_joined')
+        filters['is_superuser'] = False
+        filters['is_staff'] = False
+        
+        users = CustomUser.objects.filter(**filters)
+        for user in users:
+            writer.writerow([
+                user.id, 
+                user.email, 
+                user.get_full_name(), 
+                user.date_joined.strftime('%Y-%m-%d'), 
+                user.is_active
+            ])
+            
+        return response
 class AdminUserManagement(NeverCacheMixin,StaffRequiredMixin,TemplateView):
     template_name = 'c_admin/user_management.html'
     
@@ -1461,13 +1642,24 @@ class AdminUpdateOrderStatus(StaffRequiredMixin,View):
         order.status = status
         now = timezone.now()
         if order.status == "CONFIRMED":
+            
             order.confirmed_date = now
         elif order.status == "SHIPPED":
+            send_order_email(request.user,order,'ORDER_SHIPPED')
             order.shipped_date = now
         elif order.status == "DELIVERED":
+            try:
+                payment = Payment.objects.get(order=order)
+            except Payment.DoesNotExist as e:
+                print(e)
+            payment.status = 'SUCCESS'
+            payment.completed_at = timezone.now()
+            payment.save()
+            send_order_email(request.user,order,'ORDER_DELIVERED')
             order.delivered_at = now
     
         order.save()
+        
         return JsonResponse({"success": "Order status updated"})
             
             
@@ -1491,6 +1683,8 @@ class ReturnApprove(StaffRequiredMixin,View):
             if status == "APPROVED" or status == "REJECTED":
                     order_return.status = status
                     order_return.save()
+                    if order_return.status == 'REJECTED':
+                        send_order_email(request.user,order_return.order,'RETURN_REJECTED' )
                     messages.success(request,f"{status} Succsessfull")
             else:
                 messages.error(request,f"Only Approved Return Can{status} ")
@@ -1513,4 +1707,113 @@ class ReturnApprove(StaffRequiredMixin,View):
 
         
         
+class AdminPaymentManage(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        payments = Payment.objects.all()
+        if request.GET.get('search',''):
+            search=request.GET.get('search')
+            payments = payments.filter(Q(transaction_id__icontains=search) | Q(order__order_number__icontains=search) | Q(user__username__icontains=search) | Q(user__email__icontains=search) | Q(user__first_name__icontains=search) | Q(user__last_name__icontains=search))
+        if request.GET.get('status',''):
+            status = request.GET.get('status')
+            if status == 'success':
+                payments = payments.filter(Q(status='COMPLETED') | Q(status='SUCCESS'))
+            elif status == 'pending':
+                payments = payments.filter(status='PENDING')
+        if request.GET.get('date_filter',''):
+            date_filter = request.GET.get('date_filter','')
+            if date_filter == 'today':
+                date = timezone.now().date()
+                payments = payments.filter(created_at__date=date)
+            if date_filter == 'last7':
+                last_7_days = timezone.now() - timedelta(days=7)
+                payments = payments.filter(created_at__gte=last_7_days)
+            if date_filter == 'custom':
+                if request.GET.get('start_date') and request.GET.get('end_date'):
+                    start = request.GET.get('start_date')
+                    end = request.GET.get('end_date')
+                    start_date = timezone.make_aware(
+                        datetime.strptime(start, "%Y-%m-%d")
+                    )
+                    end_date = timezone.make_aware(
+                        datetime.strptime(end, "%Y-%m-%d")
+                    ) + timedelta(days=1)
+                    print(start_date,end_date)
+                    payments = payments.filter(created_at__gte=start_date, created_at__lt=end_date )
+                    
+        if request.GET.get('export',''):         
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Payments"
+
+            headers = [
+                "Payment ID",
+                "User",
+                "Order ID",
+                "Amount",
+                "Payment Method",
+                "Card Brand",
+                "Last 4",
+                "Transaction ID",
+                "Status",
+                "Completed At",
+                "Created At",
+            ]
+            ws.append(headers)
+
+            for payment in payments:
+                ws.append([
+                    str(payment.id),
+                    payment.user.email if payment.user else "",
+                    str(payment.order.id),
+                    float(payment.amount),  # Decimal → float (IMPORTANT)
+                    payment.payment_method,
+                    payment.card_brand or "",
+                    payment.card_last_four or "",
+                    payment.transaction_id,
+                    payment.status,
+                    payment.completed_at.strftime("%Y-%m-%d %H:%M") if payment.completed_at else "",
+                    payment.created_at.strftime("%Y-%m-%d %H:%M"),
+                ])
+
+
+            for col in ws.columns:
+                max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+                ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2
+
         
+            response = HttpResponse(
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = 'attachment; filename="payments.xlsx"'
+
+            wb.save(response)
+            return response
+                
+        paginator = Paginator(payments,8)
+        page_number = self.request.GET.get('page')
+        payments =paginator.get_page(page_number)
+        total_pages = paginator.num_pages
+            
+        total_page_num= range(1,total_pages+1)
+        
+        return render(request,'c_admin/admin_payment_manage.html',{'payments':payments,'total_page_num':total_page_num})
+    
+    
+class AdminTicketManage(StaffRequiredMixin,View):
+    def get(self,request,*args, **kwargs):
+        tickets = Ticket.objects.all().order_by('-created_at')
+        return render(request,'c_admin/admin_tickets_manage.html',{'tickets':tickets})
+    
+    
+class AdminUpdateTicketStatusView(View):
+    def post(self, request, pk):
+        try:
+            ticket = Ticket.objects.get(pk=pk)
+        except Ticket.DoesNotExist as e:
+            print(e)
+        status = request.POST.get('status')
+        if status in ['open', 'closed']:
+            ticket.status = status
+            ticket.save()
+            messages.success(request, f"Ticket #{ticket.id} status updated to {status}.")
+        return redirect('cadmin:ticket_manage')

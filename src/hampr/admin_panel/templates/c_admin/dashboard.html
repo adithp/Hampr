@@ -247,13 +247,13 @@
                         <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
                             <i class="fas fa-rupee-sign"></i>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                        {% comment %} <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
                             <i class="fas fa-arrow-up me-1"></i> 12.5%
-                        </span>
+                        </span> {% endcomment %}
                     </div>
                     <div>
                         <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Total Revenue</p>
-                        <h3 class="fw-bold mb-0">₹42,500</h3>
+                        <h3 class="fw-bold mb-0">₹{{total_revenue}}</h3>
                     </div>
                 </div>
             </div>
@@ -265,13 +265,13 @@
                         <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
                             <i class="fas fa-shopping-bag"></i>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                        {% comment %} <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
                             <i class="fas fa-arrow-up me-1"></i> 8.2%
-                        </span>
+                        </span> {% endcomment %}
                     </div>
                     <div>
                         <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Total Orders</p>
-                        <h3 class="fw-bold mb-0">1,240</h3>
+                        <h3 class="fw-bold mb-0">{{total_orders}}</h3>
                     </div>
                 </div>
             </div>
@@ -283,13 +283,13 @@
                         <div class="kpi-icon bg-info bg-opacity-10 text-info">
                             <i class="fas fa-users"></i>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                        {% comment %} <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
                             <i class="fas fa-arrow-up me-1"></i> 5.3%
-                        </span>
+                        </span> {% endcomment %}
                     </div>
                     <div>
                         <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Total Customers</p>
-                        <h3 class="fw-bold mb-0">850</h3>
+                        <h3 class="fw-bold mb-0">{{users_count}}</h3>
                     </div>
                 </div>
             </div>
@@ -301,13 +301,13 @@
                         <div class="kpi-icon bg-success bg-opacity-10 text-success">
                             <i class="fas fa-chart-line"></i>
                         </div>
-                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">
+                        {% comment %} <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">
                             15 Orders
-                        </span>
+                        </span> {% endcomment %}
                     </div>
                     <div>
                         <p class="text-muted mb-1 small text-uppercase fw-bold tracking-wide">Sales Today</p>
-                        <h3 class="fw-bold mb-0">₹1,250</h3>
+                        <h3 class="fw-bold mb-0">₹{{sales_today}}</h3>
                     </div>
                 </div>
             </div>
@@ -354,7 +354,12 @@
                                 <option value="month">This Month</option>
                                 <option value="custom">Custom Date</option>
                             </select>
-                            <input type="date" class="form-control form-control-sm d-none" id="customDateInput">
+                            <div id="customDateContainer" class="d-none d-flex gap-2">
+                                <input type="date" class="form-control form-control-sm" id="startDateInput"
+                                    placeholder="Start Date">
+                                <input type="date" class="form-control form-control-sm" id="endDateInput"
+                                    placeholder="End Date">
+                            </div>
                         </div>
                     </div>
 
@@ -363,94 +368,67 @@
                             <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
                                 <i class="fas fa-file-csv fa-2x text-success mb-3"></i>
                                 <h6 class="fw-bold mb-1">Sales Report</h6>
-                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
-                                    CSV</button>
+                                <a href="?export=sales_csv" class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    CSV</a>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
                                 <i class="fas fa-file-excel fa-2x text-success mb-3"></i>
                                 <h6 class="fw-bold mb-1">Order Report</h6>
-                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
-                                    Excel</button>
+                                <a href="?export=orders_excel" class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    CSV</a>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
                                 <i class="fas fa-file-invoice-dollar fa-2x text-primary mb-3"></i>
                                 <h6 class="fw-bold mb-1">Tax / GST Report</h6>
-                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
-                                    PDF</button>
+                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill" disabled>Coming Soon</button>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="border rounded-3 p-3 text-center bg-light hover-shadow transition">
                                 <i class="fas fa-users fa-2x text-info mb-3"></i>
                                 <h6 class="fw-bold mb-1">Customer List</h6>
-                                <button class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
-                                    CSV</button>
+                                <a href="?export=customers_csv" class="btn btn-sm btn-outline-dark mt-2 w-100 rounded-pill">Download
+                                    CSV</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
+            
             <!-- Notifications & Alerts -->
             <div class="col-lg-6">
                 <div class="card h-100 p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-bold mb-0">Notifications</h5>
-                        <span class="badge bg-danger rounded-pill px-3">3 New</span>
+                        <span class="badge bg-danger rounded-pill px-3">{{ notifications|length }} New</span>
                     </div>
 
                     <div class="alert-list">
+                        {% for notification in notifications %}
                         <div class="alert-item d-flex align-items-start mb-3 pb-3">
                             <div class="me-3 mt-1">
-                                <span
-                                    class="bg-warning bg-opacity-10 text-warning rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
+                                <span class="bg-{{ notification.type }} bg-opacity-10 text-{{ notification.type }} rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
                                     style="width: 40px; height: 40px;">
-                                    <i class="fas fa-bell"></i>
+                                    <i class="fas fa-{{ notification.icon }}"></i>
                                 </span>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-1">New Order Received</h6>
-                                <p class="small text-muted mb-1">Order #ORD-7830 received from John Doe.</p>
+                                <h6 class="fw-bold mb-1">{{ notification.title }}</h6>
+                                <p class="small text-muted mb-1">{{ notification.message }}</p>
                                 <small class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>
-                                    2 mins ago</small>
+                                    {{ notification.time_ago }}</small>
                             </div>
                         </div>
-
-                        <div class="alert-item d-flex align-items-start mb-3 pb-3">
-                            <div class="me-3 mt-1">
-                                <span
-                                    class="bg-danger bg-opacity-10 text-danger rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
-                                    style="width: 40px; height: 40px;">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </span>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1">Low Stock Warning</h6>
-                                <p class="small text-muted mb-1">Product "Premium Gift Box" is running low (Qty: 3).</p>
-                                <small class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>
-                                    1 hour ago</small>
-                            </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="far fa-bell-slash mb-2"></i>
+                            <p class="mb-0">No new notifications</p>
                         </div>
-
-                        <div class="alert-item d-flex align-items-start">
-                            <div class="me-3 mt-1">
-                                <span
-                                    class="bg-info bg-opacity-10 text-info rounded-circle p-2 d-inline-flex align-items-center justify-content-center"
-                                    style="width: 40px; height: 40px;">
-                                    <i class="fas fa-credit-card"></i>
-                                </span>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1">Payment Failed</h6>
-                                <p class="small text-muted mb-1">Payment for Order #ORD-7829 failed.</p>
-                                <small class="text-muted" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>
-                                    3 hours ago</small>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -467,13 +445,61 @@
 
         function toggleCustomDate() {
             const select = document.getElementById('exportDateRange');
-            const customInput = document.getElementById('customDateInput');
+            const customContainer = document.getElementById('customDateContainer');
             if (select.value === 'custom') {
-                customInput.classList.remove('d-none');
+                customContainer.classList.remove('d-none');
             } else {
-                customInput.classList.add('d-none');
+                customContainer.classList.add('d-none');
+                updateUrl(select.value);
             }
         }
+
+        function updateUrl(range, start = null, end = null) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('range', range);
+            if (start && end) {
+                url.searchParams.set('start_date', start);
+                url.searchParams.set('end_date', end);
+            } else {
+                url.searchParams.delete('start_date');
+                url.searchParams.delete('end_date');
+            }
+            window.location.href = url.toString();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const startDateInput = document.getElementById('startDateInput');
+            const endDateInput = document.getElementById('endDateInput');
+            const select = document.getElementById('exportDateRange');
+
+            if (startDateInput && endDateInput) {
+                function checkAndApplyCustomDate() {
+                    if (startDateInput.value && endDateInput.value) {
+                        updateUrl('custom', startDateInput.value, endDateInput.value);
+                    }
+                }
+                startDateInput.addEventListener('change', checkAndApplyCustomDate);
+                endDateInput.addEventListener('change', checkAndApplyCustomDate);
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const range = urlParams.get('range');
+            if (range && select) {
+                select.value = range;
+                if (range === 'custom') {
+                    const customContainer = document.getElementById('customDateContainer');
+                    if (customContainer) customContainer.classList.remove('d-none');
+                    if (startDateInput) startDateInput.value = urlParams.get('start_date') || '';
+                    if (endDateInput) endDateInput.value = urlParams.get('end_date') || '';
+                }
+            }
+        });
+
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
 
         // Chart.js Initialization
         document.addEventListener('DOMContentLoaded', function () {
@@ -488,13 +514,17 @@
             gradient.addColorStop(0, 'rgba(212, 175, 55, 0.2)');
             gradient.addColorStop(1, 'rgba(212, 175, 55, 0)');
 
+            // Dynamic Data from Django
+            const revenueLabels = {{ revenue_labels|safe }};
+            const revenueData = {{ revenue_data|safe }};
+
             new Chart(salesCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: revenueLabels,
                     datasets: [{
                         label: 'Revenue (₹)',
-                        data: [12000, 19000, 30000, 50000, 23000, 34000, 42500],
+                        data: revenueData,
                         borderColor: '#D4AF37',
                         backgroundColor: gradient,
                         borderWidth: 3,
@@ -552,13 +582,15 @@
 
             // Orders Chart (Bar)
             const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            const ordersData = {{ orders_data|safe }};
+            
             new Chart(ordersCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: revenueLabels, // Using same labels (dates)
                     datasets: [{
                         label: 'Orders',
-                        data: [12, 19, 3, 5, 2, 3, 15],
+                        data: ordersData,
                         backgroundColor: '#D4AF37',
                         borderRadius: 6,
                         barThickness: 25
@@ -590,15 +622,6 @@
                     }
                 }
             });
-        });
-    </script>
-    <script>
-        window.addEventListener("beforeunload", function () { });
-        window.addEventListener("unload", function () { });
-        window.addEventListener("pageshow", function (event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
         });
     </script>
 

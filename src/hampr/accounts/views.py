@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from datetime import timedelta
 from django.contrib.auth import login
 from django.db.models import Q
@@ -16,6 +16,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+
 
 
 
@@ -320,6 +321,29 @@ class EditProfileDetails(LoginRequiredMixin,OnlyForUsers,View):
         else:
                 return render(request,'accounts/account.html',{'profile_form': profile_form,'password_form': password_form, })  
 
+
+class OrderCancel(LoginRequiredMixin,View):
+    def post(self,request,order_id,*args, **kwargs):
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist as e:
+            print(e)
+        if order.status  in ['DELIVERED','CANCELLED']:
+            return HttpResponse("Not a Valid Click")
+        if order.is_cod != True:
+            payment = order.payments.first()
+            payment.status = 'CANCELLED'
+            payment.save()
+            order.status = 'CANCELLED'
+            order.save()
+            if order.promo_code:
+                order.promo_code.used_count -= 1
+                order.promo_code.usages.first().delete()
+                order.promo_code.save()
+            return redirect('accounts:user_profile')
+        order.status ='CANCELLED'
+        order.save()
+        return redirect('accounts:user_profile')
             
         
     

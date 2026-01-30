@@ -3,6 +3,13 @@ from order.models import OrderAddress
 from django.contrib import messages
 from django.shortcuts import redirect
 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils.timezone import localtime
+
+from .order_email_config import ORDER_EMAIL_CONFIG
+
 
 from .models import OrderItem,OrderDecoration,OrderHamper
 from coupons.models import PromoCode
@@ -153,4 +160,40 @@ def create_order_items(cart,order_obj):
         
 
     
+
+
+def send_order_email(user, order, email_type, extra_context=None):
+    try:
+        print("Email Sending Started")
+        config = ORDER_EMAIL_CONFIG.get(email_type)
+        if not config:
+            return
+
+        context = {
+            "customer_name": user.first_name or "Customer",
+            "email_message": config["message"],
+            "order_id": order.order_number,
+            "order_date": order.created_at.strftime("%d %b %Y"),
+            "order_status": config["status"],
+            "total_amount": order.total_amount,
+            "order_url": f"https://yourwebsite.com/orders/{order.id}/",
+        }
+
+        if extra_context:
+            context.update(extra_context)
+
+        html_content = render_to_string("order/order-email.html", context)
+
+        email = EmailMultiAlternatives(
+            subject=config["subject"],
+            body=config["status"],
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        print("✅ After email.send()")
+    except Exception as e:
+        print(e)
 

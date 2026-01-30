@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'courier.apps.CourierConfig',
     'reviews.apps.ReviewsConfig',
     'returns.apps.ReturnsConfig',
+    'ticket.apps.TicketConfig'
 ]
 
 

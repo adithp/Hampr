@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Update | HAMPR</title>
+    <style>
+        /* Reset styles */
+        body,
+        table,
+        td,
+        a {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        table,
+        td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+        }
+
+        table {
+            border-collapse: collapse !important;
+        }
+
+        body {
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Custom styles */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background-color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #000000;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            padding: 40px 30px;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        .message-box {
+            background-color: #fdfbf7;
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .order-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 30px;
+            background-color: #d4af37;
+            /* Gold color matching your theme */
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #b39025;
+        }
+
+        .footer {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .social-links {
+            margin-bottom: 20px;
+        }
+
+        .social-link {
+            display: inline-block;
+            margin: 0 10px;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .footer-text {
+            color: #999999;
+            margin-bottom: 10px;
+        }
+
+        .unsubscribe {
+            color: #d4af37;
+            text-decoration: underline;
+        }
+
+        /* Mobile responsive */
+        @media screen and (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+        }
+    </style>
+    <!-- Import Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <div class="email-container">
+                    <!-- Header -->
+                    <div class="header">
+                        <a href="https://yourwebsite.com" class="logo">HAMPR</a>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="content">
+                        <div class="greeting">Hi {{ customer_name }},</div>
+
+                        <!-- Dynamic Message Area -->
+                        <div class="message-box">
+                            {{ email_message|safe }}
+                        </div>
+
+                        <p>Here are the details for your reference:</p>
+
+                        <!-- Order Info -->
+                        <div class="order-info">
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td width="50%" style="padding-bottom: 10px;">
+                                        <div class="info-item">
+                                            <div class="info-label">Order ID</div>
+                                            <div class="info-value">#{{ order_id }}</div>
+                                        </div>
+                                    </td>
+                                    <td width="50%" style="padding-bottom: 10px;">
+                                        <div class="info-item">
+                                            <div class="info-label">Order Date</div>
+                                            <div class="info-value">{{ order_date }}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td width="50%">
+                                        <div class="info-item">
+                                            <div class="info-label">Status</div>
+                                            <div class="info-value" style="color: #d4af37;">{{ order_status }}</div>
+                                        </div>
+                                    </td>
+                                    <td width="50%">
+                                        <div class="info-item">
+                                            <div class="info-label">Total Amount</div>
+                                            <div class="info-value">₹{{ total_amount }}</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="btn-container">
+                            <a href="{{ order_url }}" class="btn">View Order Details</a>
+                        </div>
+
+                        <p style="font-size: 14px; color: #666;">If you have any questions, please reply to this email
+                            or contact our support team.</p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="footer">
+                        <div class="social-links">
+                            <!-- Add your actual social media links here -->
+                            <a href="#" class="social-link">Instagram</a>
+                            <a href="#" class="social-link">Facebook</a>
+                            <a href="#" class="social-link">Twitter</a>
+                        </div>
+                        <div class="footer-text">
+                            &copy; 2024 HAMPR. All rights reserved.<br>
+                            123 Street Name, City, Country
+                        </div>
+                        <div class="footer-text">
+                            You are receiving this email because you made a purchase at HAMPR.
+                        </div>
+                        <a href="#" class="unsubscribe">Unsubscribe</a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

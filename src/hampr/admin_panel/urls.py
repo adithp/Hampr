@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory,AdminProductEdit,AdminProductSimpleVarientEdit,AdminProductVarientEdit,redirect_to_add_varient,AdminDecorationEdit,AddPromoCode,AdminManagePromoCode,AdminOrderManage,AdminOrderDetail,AdminUpdateOrderStatus,AdminReturnManage,ReturnApprove
+from .views import AdminLoginView,AdminDashboardView,AdminUserManagement,AdminBlockUser,AdminProductsMainPage,AdminBoxProductsMainPage,AdminBoxProductsAddItem,AdminBoxTypeItemAdd,AdminBoxCategoryItemAdd,AdminBoxTypeManage,AdminBoxCategoryManage,AdminBoxProductsAddItemSecond,AdminBoxProductsAddItemThird,redirect_to_image_upload_box,productBox_adding_cancel,AdminProductAddCategory,AdminProductCategoryManage,AdminProductAdd,AdminProductSimpleVarientAdd,varient_or_not,AdminProductVarientAdd,varients_finshed,AdminProductManage,cancel_add_product,AdminDecorationAdd,AdminDecortionManage,AdminBoxTypeDelete,AdminBoxCategoryDelete,AdminProductCategoryDelete,AdminProductVarientDelete,AdminDecorationDelete,AdminBoxDelete,AdminBoxCategoryItemEdit,AdminBoxTypeItemEdit,AdminBoxProductsEditItem,AdminMainProductDelete,AdminBoxProductsEditItemSecond,AdminBoxProductsEditItemThird,AdminProductDelete,AdminProductEditCategory,AdminProductEdit,AdminProductSimpleVarientEdit,AdminProductVarientEdit,redirect_to_add_varient,AdminDecorationEdit,AddPromoCode,AdminManagePromoCode,AdminOrderManage,AdminOrderDetail,AdminUpdateOrderStatus,AdminReturnManage,ReturnApprove,AdminPaymentManage,AdminTicketManage,AdminUpdateTicketStatusView
 
 
 
@@ -78,7 +78,12 @@ urlpatterns = [
     path('order-detail/<str:id>/',AdminOrderDetail.as_view(),name='order_detail'),
     path('order-update/',AdminUpdateOrderStatus.as_view(),name='order_update'),
     path('manage-return/',AdminReturnManage.as_view(),name='return_manage'),
-    path('return-approve/<int:id>/',ReturnApprove.as_view(),name='return_approve')
+    path('return-approve/<int:id>/',ReturnApprove.as_view(),name='return_approve'),
+    
+    
+    path('payment-manage/',AdminPaymentManage.as_view(),name='payment_manage'),
+    path('ticket-manage/',AdminTicketManage.as_view(),name='ticket_manage'),
+    path('ticket-update/<int:pk>/',AdminUpdateTicketStatusView.as_view(),name='ticket_update')
     
     
     

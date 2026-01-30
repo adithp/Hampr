@@ -1,0 +1,465 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments Management | Admin Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+    <style>
+        /* Dashboard Specific Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: var(--white);
+            width: 240px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #333;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: var(--primary-gold);
+            background-color: rgba(212, 175, 55, 0.05);
+            border-right: 3px solid var(--primary-gold);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .table-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-failed {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .status-refunded {
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    {% include 'c_admin/admin_main_side_nav_bar.html' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                <div class="mb-3 mb-md-0">
+                    <h2 class="fw-bold mb-1">Payments Management</h2>
+                    <p class="text-muted mb-0">View and manage payment transactions</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-dark d-md-none" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn btn-success" onclick="exportData()">
+                        <i class="fas fa-file-export me-2"></i>Export Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="searchInput" class="form-control border-start-0 ps-0"
+                                    placeholder="Search Payment ID, Order ID, User...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex gap-2">
+                                <select class="form-select" id="dateFilter">
+                                    <option value="all">All Dates</option>
+                                    <option value="today">Today</option>
+                                    <option value="last7">Last 7 Days</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            <div id="customDateRange" class="mt-2 d-none">
+                                <div class="input-group input-group-sm">
+                                    <input type="date" class="form-control" id="startDate" placeholder="Start">
+                                    <span class="input-group-text">-</span>
+                                    <input type="date" class="form-control" id="endDate" placeholder="End">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="statusFilter" id="statusAll" value="all"
+                                    autocomplete="off" checked>
+                                <label class="btn btn-outline-secondary" for="statusAll">All</label>
+
+                                <input type="radio" class="btn-check" name="statusFilter" id="statusSuccess"
+                                    value="success" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="statusSuccess">Success</label>
+
+                                <input type="radio" class="btn-check" name="statusFilter" id="statusPending"
+                                    value="pending" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="statusPending">Pending</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Table -->
+            <div class="card table-card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3">Payment ID</th>
+                                    <th class="py-3">Order ID</th>
+                                    <th class="py-3">User</th>
+                                    <th class="py-3">Amount</th>
+                                    <th class="py-3">Method</th>
+                                    <th class="py-3">Date</th>
+                                    <th class="py-3">Status</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">{{ payment.transaction_id }}</td>
+                                    <td><a href="{% url 'cadmin:order_detail' payment.order.order_number %}"
+                                            class="text-decoration-none">#{{ payment.order.order_number }}</a></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-2 d-flex align-items-center justify-content-center"
+                                                style="width: 35px; height: 35px;">
+                                                {% if payment.user.profile_picture %}
+                                                <img src="{{ payment.user.profile_picture.url }}" class="rounded-circle"
+                                                    width="35" height="35" alt="User">
+                                                {% else %}
+                                                <i class="fas fa-user text-muted"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ payment.user.first_name }}
+                                                    {{ payment.user.last_name }}</div>
+                                                <div class="small text-muted">{{ payment.user.email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>₹{{ payment.amount }}</td>
+                                    <td>{{ payment.payment_method }}</td>
+                                    <td>{{ payment.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if payment.status == 'SUCCESS' or payment.status == 'COMPLETED' %}
+                                        <span class="status-badge status-success">{{ payment.status|title }}</span>
+                                        {% elif payment.status == 'PENDING' %}
+                                        {% if payment.order.is_cod %}
+                                        <span class="status-badge status-pending">COD Pending</span>
+                                        {% else %}
+                                        <span class="status-badge status-pending">Pending</span>
+                                        {% endif %}
+                                        {% elif payment.status == 'FAILED' %}
+                                        <span class="status-badge status-failed">Failed</span>
+                                        {% elif payment.status == 'REFUNDED' %}
+                                        <span class="status-badge status-refunded">Refunded</span>
+                                        {% else %}
+                                        <span class="status-badge bg-secondary text-white">
+                                            {{ payment.status|title}}</span>
+                                        {% endif %}
+                                    </td>
+                                    {% comment %} <td class="text-end pe-4">
+                                        <button class="btn btn-sm btn-light" title="View Details"><i
+                                                class="fas fa-eye"></i></button>
+                                    </td> {% endcomment %}
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        No payments found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <p class="text-muted small mb-0"> </p>
+                    <nav>
+                        <ul class="pagination mb-0" id="pagination">
+
+                            <li class="page-item" data-type="prev">
+                                <a class="page-link" href="#">Previous</a>
+                            </li>
+
+                            {% for i in total_page_num %}
+                            <li class="page-item" data-page="{{ i }}">
+                                <a class="page-link" href="#">{{ i }}</a>
+                            </li>
+                            {% endfor %}
+
+                            <li class="page-item" data-type="next">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+
+                        </ul>
+
+                    </nav>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function exportData() {
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.set('export', 'True');
+            window.location.search = currentParams.toString();
+        }
+    </script>
+    <script>
+        const pagination = document.getElementById('pagination');
+        const searchInput = document.getElementById('searchInput');
+        const dateFilter = document.getElementById('dateFilter');
+        const customDateRange = document.getElementById('customDateRange');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const statusRadios = document.querySelectorAll('input[name="statusFilter"]');
+
+        // Get current params from URL
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = parseInt(params.get('page')) || 1;
+
+        // Initialize UI from URL params
+        function initFilters() {
+            // Search
+            if (params.has('search')) {
+                searchInput.value = params.get('search');
+            }
+
+            // Date Filter
+            if (params.has('date_filter')) {
+                dateFilter.value = params.get('date_filter');
+                if (dateFilter.value === 'custom') {
+                    customDateRange.classList.remove('d-none');
+                    if (params.has('start_date')) startDateInput.value = params.get('start_date');
+                    if (params.has('end_date')) endDateInput.value = params.get('end_date');
+                }
+            }
+
+            // Status Filter
+            if (params.has('status')) {
+                const status = params.get('status');
+                const radio = document.querySelector(`input[name="statusFilter"][value="${status}"]`);
+                if (radio) radio.checked = true;
+            }
+
+            // Pagination Active State
+            const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+            const totalPages = pageItems.length;
+
+            pageItems.forEach(item => {
+                if (parseInt(item.dataset.page) === currentPage) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            const newParams = new URLSearchParams();
+
+            // Search
+            if (searchInput.value.trim()) {
+                newParams.set('search', searchInput.value.trim());
+            }
+
+            // Date
+            if (dateFilter.value !== 'all') {
+                newParams.set('date_filter', dateFilter.value);
+                if (dateFilter.value === 'custom') {
+                    if (startDateInput.value) newParams.set('start_date', startDateInput.value);
+                    if (endDateInput.value) newParams.set('end_date', endDateInput.value);
+                }
+            }
+
+            // Status
+            const selectedStatus = document.querySelector('input[name="statusFilter"]:checked');
+            if (selectedStatus && selectedStatus.value !== 'all') {
+                newParams.set('status', selectedStatus.value);
+            }
+
+            // Reset to page 1 on filter change
+            newParams.set('page', 1);
+
+            window.location.search = newParams.toString();
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') applyFilters();
+        });
+
+        dateFilter.addEventListener('change', function () {
+            if (this.value === 'custom') {
+                customDateRange.classList.remove('d-none');
+            } else {
+                customDateRange.classList.add('d-none');
+                applyFilters();
+            }
+        });
+
+        startDateInput.addEventListener('change', function () {
+            if (endDateInput.value) applyFilters();
+        });
+
+        endDateInput.addEventListener('change', function () {
+            if (startDateInput.value) applyFilters();
+        });
+
+        statusRadios.forEach(radio => {
+            radio.addEventListener('change', applyFilters);
+        });
+
+        // Pagination Click
+        pagination.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const li = e.target.closest('.page-item');
+            if (!li) return;
+
+            // Preserve existing filters
+            const currentParams = new URLSearchParams(window.location.search);
+
+            // Page number click
+            if (li.dataset.page) {
+                currentParams.set('page', li.dataset.page);
+                window.location.search = currentParams.toString();
+            }
+
+            // Previous
+            if (li.dataset.type === 'prev' && currentPage > 1) {
+                currentParams.set('page', currentPage - 1);
+                window.location.search = currentParams.toString();
+            }
+
+            // Next
+            // Note: totalPages needs to be available.
+            // In this context, we can infer it from the DOM or pass it from backend.
+            // Assuming the loop for pages is rendered, we can check the last page item.
+            const pageItems = pagination.querySelectorAll('.page-item[data-page]');
+            const totalPages = pageItems.length > 0 ? parseInt(pageItems[pageItems.length - 1].dataset.page) : 1;
+
+            if (li.dataset.type === 'next' && currentPage < totalPages) {
+                currentParams.set('page', currentPage + 1);
+                window.location.search = currentParams.toString();
+            }
+        }); // Initialize initFilters(); </script>
+
+</body>
+
+</html>

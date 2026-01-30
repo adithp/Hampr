@@ -2,7 +2,7 @@ from django.urls import path
 
 
 
-from .views import not_active_error,UserSignupView,Otp_Verify_View,Otp_Resend,CustomLoginView,ResetPasswordLinkSend,ResetPassword,ProfilePageView,ProfilePictureUpdate,AddAddressView,EditAddressView,DeleteAddressView,EditProfileDetails
+from .views import not_active_error,UserSignupView,Otp_Verify_View,Otp_Resend,CustomLoginView,ResetPasswordLinkSend,ResetPassword,ProfilePageView,ProfilePictureUpdate,AddAddressView,EditAddressView,DeleteAddressView,EditProfileDetails,OrderCancel
 
 app_name = 'accounts'
 
@@ -19,5 +19,6 @@ urlpatterns = [
     path('user-add-address/',AddAddressView.as_view(),name='add_address'),
     path('user-edit-address/<uuid:id>',EditAddressView.as_view(),name='address_edit'),
     path('delete-address/<uuid:pk>/',DeleteAddressView.as_view(),name='address_delete'),
-    path('profile-edit/',EditProfileDetails.as_view(),name='profile_edit')
+    path('profile-edit/',EditProfileDetails.as_view(),name='profile_edit'),
+    path('order_cancel/<int:order_id>/',OrderCancel.as_view(),name='order_cancel')
 ]
